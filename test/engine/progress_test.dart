@@ -95,12 +95,18 @@ void main() {
     expect(p.streakOn(DateTime(2026, 3, 10)), 0);
   });
 
+  test('records the last finished lesson', () {
+    final p = record(const Progress(), b, b.lessons[1]);
+    expect(p.lastLesson, 'b/5');
+  });
+
   test('survives JSON round trip', () {
     final p = record(const Progress(), a, a.lessons[0], mistakes: 1);
     final back = Progress.fromJson(p.toJson());
     expect(back.xp, p.xp);
     expect(back.streak, p.streak);
     expect(back.lastPractice, p.lastPractice);
+    expect(back.lastLesson, p.lastLesson);
     expect(back.stars, p.stars);
   });
 }

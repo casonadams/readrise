@@ -1,5 +1,6 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/recording_host.dart';
@@ -19,7 +20,7 @@ void main() {
     expect(find.text('Fire'), findsOneWidget);
     await tester.tap(find.text('Hot'));
     await tester.pump();
-    expect(find.widgetWithText(Chip, 'Fire'), findsOneWidget);
+    expect(find.byKey(const ValueKey('placed:Fire')), findsOneWidget);
     expect(find.text('Ice'), findsOneWidget);
 
     await tester.tap(find.text('Cold'));
@@ -38,7 +39,7 @@ void main() {
 
     await tester.tap(find.text('Cold'));
     await tester.pump();
-    expect(find.widgetWithText(Chip, 'Fire'), findsNothing);
+    expect(find.byKey(const ValueKey('placed:Fire')), findsNothing);
     expect(find.text('Fire'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 600));
 
@@ -63,6 +64,38 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.widgetWithText(Chip, 'Fire'), findsOneWidget);
+    expect(find.byKey(const ValueKey('placed:Fire')), findsOneWidget);
+  });
+  testWidgets('a long label wraps in a narrow bin instead of being cut off', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(900, 1600);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await pumpActivity(
+      tester,
+      const SortActivity(
+        prompt: 'Sort',
+        bins: ['One', 'Two', 'Three'],
+        items: [SortItem('Extraordinarily long label here', bin: 0)],
+      ),
+    );
+    await tester.tap(find.text('One'));
+    await tester.pump();
+
+    final placed = find.descendant(
+      of: find.byKey(const ValueKey('placed:Extraordinarily long label here')),
+      matching: find.byType(Text),
+    );
+    final paragraph = tester.renderObject<RenderParagraph>(placed);
+    expect(paragraph.didExceedMaxLines, isFalse);
+    final lines = paragraph
+        .getBoxesForSelection(
+          const TextSelection(baseOffset: 0, extentOffset: 31),
+        )
+        .map((b) => b.top.round())
+        .toSet();
+    expect(lines.length, greaterThan(1));
+    expect(tester.takeException(), isNull);
   });
 }

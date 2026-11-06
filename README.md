@@ -14,9 +14,13 @@ words or grammar.
 | `packages/activity_kit` | Reusable activities: info card, choice quiz, drag-to-sort; `BasicLesson` |
 | `packages/phonics_alphabet` | Course plugin: letter shapes and sounds (Alphabet 1 and 2), ages 3-6 |
 | `packages/science_matter` | Course plugin: states of matter with an interactive particle model, grades 5-8 (NGSS MS-PS1) |
-| `lib/engine` | Plugin registry, progress, unlock rules, scoring (XP, stars, streaks) |
-| `lib/ui`, `lib/state`, `lib/data` | Screens, Riverpod providers, local storage and text-to-speech |
+| `lib/engine` | Plugin registry, progress, unlock rules, scoring (XP, stars, streaks), subject summaries and "continue" target |
+| `lib/ui`, `lib/state`, `lib/data` | Home (subjects + Continue), subject path, lesson runner and celebration screens; Riverpod providers; local storage and text-to-speech |
 | `lib/plugins.dart` | The list of installed courses |
+
+Each course declares a `Subject` (title, emoji, colour). The home screen groups
+courses by subject, and each subject gets its own colour through its path,
+lessons and activities.
 
 A course plugin owns its content and logic. It returns lessons; each lesson
 returns activities (intro, quiz, game, ...); each activity builds a widget and

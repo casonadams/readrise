@@ -17,12 +17,50 @@ enum Grade {
   grade12,
 }
 
+/// A school subject. Courses with the same subject are grouped under one card
+/// and share its colour.
+class Subject {
+  const Subject({
+    required this.id,
+    required this.title,
+    required this.emoji,
+    required this.color,
+  });
+
+  static const reading = Subject(
+    id: 'reading',
+    title: 'Reading',
+    emoji: '\u{1F4D6}',
+    color: Color(0xFFFF7A2F),
+  );
+
+  static const science = Subject(
+    id: 'science',
+    title: 'Science',
+    emoji: '\u{1F52C}',
+    color: Color(0xFF1976D2),
+  );
+
+  final String id;
+  final String title;
+  final String emoji;
+  final Color color;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Subject && other.id == id && other.title == title;
+
+  @override
+  int get hashCode => Object.hash(id, title);
+}
+
 /// A course: an ordered set of lessons the engine shows as one learning path.
 abstract interface class CoursePlugin {
   /// Stable and unique across all registered courses; progress is keyed by it.
   String get id;
   String get title;
   Grade get grade;
+  Subject get subject;
 
   /// Ids of courses that must be complete before this one opens.
   List<String> get requires;

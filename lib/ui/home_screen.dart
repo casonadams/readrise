@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:readrise_plugin_api/readrise_plugin_api.dart';
-
-import '../engine/progress.dart';
-import '../engine/registry.dart';
+import '../engine/subjects.dart';
 import '../state/providers.dart';
+import 'theme.dart';
+import 'widgets/page_frame.dart';
+import 'widgets/stat_chip.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -16,159 +16,247 @@ class HomeScreen extends ConsumerWidget {
     final registry = ref.watch(registryProvider);
     final progress = ref.watch(progressProvider);
     final streak = progress.streakOn(ref.watch(clockProvider)());
+    final target = continueTarget(registry, progress);
+    final summaries = summarizeSubjects(registry, progress);
+    final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Readrise'),
-        actions: [
-          _Badge(emoji: '\u{1F525}', value: streak),
-          _Badge(emoji: '\u2B50', value: progress.xp),
-          const SizedBox(width: 12),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        children: [
-          for (final course in registry.courses)
-            _CourseSection(
-              registry: registry,
-              course: course,
-              progress: progress,
-            ),
-        ],
+      body: SafeArea(
+        child: PageFrame(
+          maxWidth: 720,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Readrise',
+                      style: text.headlineMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  StatChip(
+                    emoji: '\u{1F525}',
+                    value: streak,
+                    label: 'day streak',
+                    highlight: streak > 0,
+                  ),
+                  const SizedBox(width: 8),
+                  StatChip(emoji: '\u2B50', value: progress.xp, label: 'XP'),
+                ],
+              ),
+              const SizedBox(height: 24),
+              if (target != null)
+                _ContinueCard(
+                  target: target,
+                  started: progress.lastLesson != null,
+                )
+              else
+                const _AllDoneCard(),
+              const SizedBox(height: 28),
+              Text('Pick a subject', style: text.titleLarge),
+              const SizedBox(height: 12),
+              LayoutBuilder(
+                builder: (context, box) {
+                  final columns = box.maxWidth >= 560 ? 2 : 1;
+                  final width = (box.maxWidth - 16 * (columns - 1)) / columns;
+                  return Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      for (final s in summaries)
+                        SizedBox(
+                          width: width,
+                          child: _SubjectCard(summary: s),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _CourseSection extends StatelessWidget {
-  const _CourseSection({
-    required this.registry,
-    required this.course,
-    required this.progress,
-  });
+class _ContinueCard extends StatelessWidget {
+  const _ContinueCard({required this.target, required this.started});
 
-  final PluginRegistry registry;
-  final CoursePlugin course;
-  final Progress progress;
+  final LessonRef target;
+  final bool started;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final open = progress.isCourseUnlocked(registry, course);
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: open ? scheme.primaryContainer : scheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            course.title,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-        for (var i = 0; i < course.lessons.length; i++)
-          Align(
-            alignment: Alignment(((i % 4) - 1.5) * 0.35, 0),
-            child: _LessonNode(
-              courseId: course.id,
-              lesson: course.lessons[i],
-              stars: progress.starsFor(course, course.lessons[i]),
-              unlocked: progress.isLessonUnlocked(
-                registry,
-                course,
-                course.lessons[i],
-              ),
+    final subject = target.course.subject;
+    final text = Theme.of(context).textTheme;
+    return Semantics(
+      container: true,
+      button: true,
+      label:
+          '${started ? 'Continue' : 'Start learning'}: ${target.lesson.title}, '
+          '${target.course.title}',
+      excludeSemantics: true,
+      child: Material(
+        color: subject.color,
+        borderRadius: BorderRadius.circular(28),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: () =>
+              context.push('/lesson/${target.course.id}/${target.lesson.id}'),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    subject.emoji,
+                    style: const TextStyle(fontSize: 32),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (started ? 'Continue' : 'Start learning').toUpperCase(),
+                        style: text.labelMedium?.copyWith(
+                          color: onColor(subject.color).withValues(alpha: 0.8),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      Text(
+                        target.lesson.title,
+                        style: text.headlineSmall?.copyWith(
+                          color: onColor(subject.color),
+                        ),
+                      ),
+                      Text(
+                        target.course.title,
+                        style: text.bodyMedium?.copyWith(
+                          color: onColor(subject.color),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.play_circle_fill_rounded,
+                  size: 48,
+                  color: onColor(subject.color),
+                ),
+              ],
             ),
           ),
-      ],
+        ),
+      ),
     );
   }
 }
 
-class _Badge extends StatelessWidget {
-  const _Badge({required this.emoji, required this.value});
-
-  final String emoji;
-  final int value;
+class _AllDoneCard extends StatelessWidget {
+  const _AllDoneCard();
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: 12),
-    child: Text('$emoji $value', style: Theme.of(context).textTheme.titleLarge),
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          const Text('\u{1F389}', style: TextStyle(fontSize: 40)),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'All caught up! Replay any lesson to earn more stars.',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+        ],
+      ),
+    ),
   );
 }
 
-class _LessonNode extends StatelessWidget {
-  const _LessonNode({
-    required this.courseId,
-    required this.lesson,
-    required this.stars,
-    required this.unlocked,
-  });
+class _SubjectCard extends StatelessWidget {
+  const _SubjectCard({required this.summary});
 
-  final LessonPlugin lesson;
-  final String courseId;
-  final int stars;
-  final bool unlocked;
+  final SubjectSummary summary;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Semantics(
-            button: true,
-            enabled: unlocked,
-            label: 'Lesson ${lesson.title}',
-            child: Material(
-              color: unlocked ? scheme.primary : scheme.surfaceContainerHighest,
-              shape: const CircleBorder(),
-              elevation: unlocked ? 4 : 0,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: unlocked
-                    ? () => context.push('/lesson/$courseId/${lesson.id}')
-                    : null,
-                child: SizedBox(
-                  width: 112,
-                  height: 112,
-                  child: Center(
-                    child: unlocked
-                        ? Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                lesson.title,
-                                maxLines: 1,
-                                softWrap: false,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium
-                                    ?.copyWith(color: scheme.onPrimary),
-                              ),
-                            ),
-                          )
-                        : Icon(Icons.lock, size: 40, color: scheme.outline),
+    final subject = summary.subject;
+    final text = Theme.of(context).textTheme;
+    final status = summary.finished
+        ? 'All ${summary.lessonsTotal} lessons done'
+        : summary.started
+        ? '${summary.lessonsDone} of ${summary.lessonsTotal} lessons'
+        : '${summary.lessonsTotal} lessons';
+    return Semantics(
+      container: true,
+      button: true,
+      label: '${subject.title}, $status',
+      excludeSemantics: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push('/subject/${subject.id}'),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: subject.color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    subject.emoji,
+                    style: const TextStyle(fontSize: 34),
                   ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(subject.title, style: text.titleLarge),
+                      const SizedBox(height: 2),
+                      Text(status, style: text.bodyMedium),
+                      const SizedBox(height: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: summary.fraction,
+                          minHeight: 10,
+                          color: subject.color,
+                          backgroundColor: subject.color.withValues(
+                            alpha: 0.15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.chevron_right_rounded),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            [for (var s = 1; s <= 3; s++) s <= stars ? '\u2B50' : '\u2606']
-                .join(),
-            style: const TextStyle(fontSize: 24),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -26,6 +26,7 @@ class Progress {
     this.xp = 0,
     this.streak = 0,
     this.lastPractice,
+    this.lastLesson,
     this.stars = const {},
   });
 
@@ -36,6 +37,7 @@ class Progress {
       final String s => DateTime.parse(s),
       _ => null,
     },
+    lastLesson: json['lastLesson'] as String?,
     stars: {
       for (final e in (json['stars'] as Map? ?? {}).entries)
         e.key as String: e.value as int,
@@ -46,6 +48,9 @@ class Progress {
   final int streak;
   final DateTime? lastPractice;
 
+  /// [lessonKey] of the most recently finished lesson.
+  final String? lastLesson;
+
   /// Best stars per [lessonKey].
   final Map<String, int> stars;
 
@@ -53,6 +58,7 @@ class Progress {
     'xp': xp,
     'streak': streak,
     'lastPractice': lastPractice?.toIso8601String(),
+    'lastLesson': lastLesson,
     'stars': stars,
   };
 
@@ -103,6 +109,7 @@ class Progress {
       xp: xp + outcome.xp,
       streak: nextStreak,
       lastPractice: day,
+      lastLesson: lessonKey(course, lesson),
       stars: {
         ...stars,
         lessonKey(course, lesson): outcome.stars > best ? outcome.stars : best,

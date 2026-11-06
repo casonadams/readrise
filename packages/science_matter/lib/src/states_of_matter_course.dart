@@ -20,6 +20,9 @@ class StatesOfMatterCourse implements CoursePlugin {
   Grade get grade => Grade.grade6;
 
   @override
+  Subject get subject => Subject.science;
+
+  @override
   List<String> get requires => const [];
 
   @override

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'score.dart';
+import 'shake.dart';
 
 class ChoiceQuestion {
   const ChoiceQuestion({
@@ -49,6 +51,7 @@ class _QuizView extends StatefulWidget {
 class _QuizViewState extends State<_QuizView> {
   int _index = 0;
   final Set<int> _wrong = {};
+  final Map<int, int> _shakes = {};
   bool _solved = false;
   int _firstTry = 0;
   int _recovered = 0;
@@ -59,12 +62,18 @@ class _QuizViewState extends State<_QuizView> {
 
   void _pick(int option) {
     if (_solved || _wrong.contains(option)) return;
+    if (option == _question.answer) {
+      HapticFeedback.selectionClick();
+    } else {
+      HapticFeedback.lightImpact();
+    }
     setState(() {
       if (option == _question.answer) {
         _solved = true;
         _wrong.isEmpty ? _firstTry++ : _recovered++;
       } else {
         _wrong.add(option);
+        _shakes[option] = (_shakes[option] ?? 0) + 1;
         _mistakes++;
       }
     });
@@ -122,15 +131,18 @@ class _QuizViewState extends State<_QuizView> {
                   for (var i = 0; i < q.options.length; i++)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: FilledButton.tonal(
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(56),
-                          backgroundColor: _solved && i == q.answer
-                              ? Colors.green.shade300
-                              : null,
+                      child: Shake(
+                        trigger: _shakes[i] ?? 0,
+                        child: FilledButton.tonal(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(56),
+                            backgroundColor: _solved && i == q.answer
+                                ? Colors.green.shade300
+                                : null,
+                          ),
+                          onPressed: _wrong.contains(i) ? null : () => _pick(i),
+                          child: Text(q.options[i]),
                         ),
-                        onPressed: _wrong.contains(i) ? null : () => _pick(i),
-                        child: Text(q.options[i]),
                       ),
                     ),
                   if (_solved)

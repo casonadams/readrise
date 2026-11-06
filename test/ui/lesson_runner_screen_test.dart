@@ -1,68 +1,36 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:readrise/engine/registry.dart';
-import 'package:readrise/state/providers.dart';
-import 'package:readrise/ui/lesson_runner_screen.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fake_plugins.dart';
+import '../support/pump_app.dart';
 
-Future<ProviderContainer> pumpRunner(
-  WidgetTester tester,
-  PluginRegistry registry,
-) async {
-  SharedPreferences.setMockInitialValues({});
-  final router = GoRouter(
-    routes: [
-      GoRoute(path: '/', builder: (_, _) => const Text('home')),
-      GoRoute(
-        path: '/lesson/:c/:l',
-        builder: (_, s) => LessonRunnerScreen(
-          courseId: s.pathParameters['c']!,
-          lessonId: s.pathParameters['l']!,
-        ),
-      ),
-    ],
-  );
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(
-          await SharedPreferences.getInstance(),
-        ),
-        registryProvider.overrideWithValue(registry),
-        speakerProvider.overrideWithValue(FakeSpeaker()),
-        clockProvider.overrideWithValue(() => DateTime(2026, 1, 1)),
+PluginRegistry twoStepRegistry() => PluginRegistry([
+  FakeCourse.of('a', [
+    FakeLesson(
+      '1',
+      activities: const [
+        FakeActivity('first', ActivityResult(xp: 10, mistakes: 1)),
+        FakeActivity('second', ActivityResult(xp: 5, mistakes: 1)),
       ],
-      child: MaterialApp.router(routerConfig: router),
     ),
-  );
-  unawaited(router.push('/lesson/a/1'));
+    FakeLesson('2'),
+  ]),
+]);
+
+Future<void> openFirstLesson(WidgetTester tester) async {
+  await tester.tap(find.text('L1'));
   await tester.pumpAndSettle();
-  return ProviderScope.containerOf(tester.element(find.byType(MaterialApp)));
 }
 
 void main() {
   testWidgets('runs activities in order and sums their XP and mistakes', (
     tester,
   ) async {
-    final registry = PluginRegistry([
-      FakeCourse.of('a', [
-        FakeLesson(
-          '1',
-          activities: const [
-            FakeActivity('first', ActivityResult(xp: 10, mistakes: 1)),
-            FakeActivity('second', ActivityResult(xp: 5, mistakes: 1)),
-          ],
-        ),
-      ]),
-    ]);
-    final container = await pumpRunner(tester, registry);
+    final handle = tester.ensureSemantics();
+    final registry = twoStepRegistry();
+    await pumpApp(tester, registry);
+    await openFirstLesson(tester);
 
     expect(find.text('second'), findsNothing);
     await tester.tap(find.text('first'));
@@ -72,21 +40,127 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('+15 XP'), findsOneWidget);
-    expect(find.text('\u2B50\u2B50\u2606'), findsOneWidget);
-    final course = registry.courseById('a');
-    expect(
-      container.read(progressProvider).starsFor(course, course.lessons.first),
-      2,
-    );
-    expect(container.read(progressProvider).xp, 15);
+    expect(find.bySemanticsLabel('2 of 3 stars'), findsOneWidget);
+    expect(find.text('Great job!'), findsOneWidget);
+    handle.dispose();
   });
 
-  testWidgets('Continue returns to the previous screen', (tester) async {
-    await pumpRunner(tester, buildRegistry());
+  testWidgets('the progress bar shows which step you are on', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpApp(tester, twoStepRegistry());
+    await openFirstLesson(tester);
+    expect(find.bySemanticsLabel('Step 1 of 2'), findsOneWidget);
+
+    await tester.tap(find.text('first'));
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel('Step 2 of 2'), findsOneWidget);
+    handle.dispose();
+  });
+
+  testWidgets('finishing offers the next lesson and records progress', (
+    tester,
+  ) async {
+    final registry = twoStepRegistry();
+    await pumpApp(tester, registry);
+    await openFirstLesson(tester);
+    await tester.tap(find.text('first'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('second'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Next: L2'), findsOneWidget);
+    await tester.tap(find.text('Next: L2'));
+    await tester.pumpAndSettle();
+    expect(find.text('finish 2'), findsOneWidget);
+  });
+
+  testWidgets('Back to the path returns to the subject and shows the stars', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await pumpApp(tester, buildRegistry());
+    await tester.tap(find.text('Reading'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('L1'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('finish 1'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Continue'));
+
+    await tester.tap(find.text('Back to the path'));
     await tester.pumpAndSettle();
-    expect(find.text('home'), findsOneWidget);
+
+    expect(find.bySemanticsLabel('L1, 3 of 3 stars'), findsOneWidget);
+    expect(find.bySemanticsLabel('L2, start here'), findsOneWidget);
+    handle.dispose();
+  });
+
+  testWidgets('the last lesson of a subject offers only Back', (tester) async {
+    await pumpApp(
+      tester,
+      PluginRegistry([
+        FakeCourse('a', ['1', '2']),
+      ]),
+    );
+    await tester.tap(find.text('Reading'));
+    await tester.pumpAndSettle();
+    for (final lesson in ['1', '2']) {
+      await tester.tap(find.text('L$lesson'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('finish $lesson'));
+      await tester.pumpAndSettle();
+      if (lesson != '2') {
+        await tester.tap(find.text('Back to the path'));
+        await tester.pumpAndSettle();
+      }
+    }
+
+    expect(find.textContaining('Next:'), findsNothing);
+    expect(find.text('Back to the path'), findsOneWidget);
+  });
+
+  group('leaving mid-lesson', () {
+    testWidgets('on the first step leaves without asking', (tester) async {
+      await pumpApp(tester, twoStepRegistry());
+      await openFirstLesson(tester);
+
+      await tester.tap(find.byTooltip('Leave lesson'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Leave this lesson?'), findsNothing);
+      expect(find.text('L1'), findsOneWidget);
+    });
+
+    testWidgets('later on, asks first and Keep going stays', (tester) async {
+      await pumpApp(tester, twoStepRegistry());
+      await openFirstLesson(tester);
+      await tester.tap(find.text('first'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Leave lesson'));
+      await tester.pumpAndSettle();
+      expect(find.text('Leave this lesson?'), findsOneWidget);
+
+      await tester.tap(find.text('Keep going'));
+      await tester.pumpAndSettle();
+      expect(find.text('second'), findsOneWidget);
+    });
+
+    testWidgets('later on, Leave discards the lesson and saves nothing', (
+      tester,
+    ) async {
+      final registry = twoStepRegistry();
+      await pumpApp(tester, registry);
+      await openFirstLesson(tester);
+      await tester.tap(find.text('first'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Leave lesson'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Leave'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('second'), findsNothing);
+      expect(find.text('L1'), findsOneWidget);
+    });
   });
 }

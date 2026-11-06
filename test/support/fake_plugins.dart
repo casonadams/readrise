@@ -40,10 +40,19 @@ class FakeLesson implements LessonPlugin {
 }
 
 class FakeCourse implements CoursePlugin {
-  FakeCourse(this.id, List<String> lessonIds, {this.requires = const []})
-    : lessons = [for (final l in lessonIds) FakeLesson(l)];
+  FakeCourse(
+    this.id,
+    List<String> lessonIds, {
+    this.requires = const [],
+    this.subject = Subject.reading,
+  }) : lessons = [for (final l in lessonIds) FakeLesson(l)];
 
-  FakeCourse.of(this.id, this.lessons, {this.requires = const []});
+  FakeCourse.of(
+    this.id,
+    this.lessons, {
+    this.requires = const [],
+    this.subject = Subject.reading,
+  });
 
   @override
   final String id;
@@ -53,6 +62,9 @@ class FakeCourse implements CoursePlugin {
 
   @override
   Grade get grade => Grade.preK;
+
+  @override
+  final Subject subject;
 
   @override
   final List<String> requires;
@@ -65,4 +77,12 @@ class FakeCourse implements CoursePlugin {
 PluginRegistry buildRegistry() => PluginRegistry([
   FakeCourse('a', ['1', '2', '3']),
   FakeCourse('b', ['4', '5'], requires: ['a']),
+]);
+
+/// Reading "r1" (lessons a, b) then "r2" (lesson c, needs r1), plus Science
+/// "s1" (lessons x, y). Lesson titles are "La", "Lb", ...
+PluginRegistry buildSubjectRegistry() => PluginRegistry([
+  FakeCourse('r1', ['a', 'b']),
+  FakeCourse('r2', ['c'], requires: ['r1']),
+  FakeCourse('s1', ['x', 'y'], subject: Subject.science),
 ]);

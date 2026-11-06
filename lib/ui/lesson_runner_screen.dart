@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import '../engine/progress.dart';
+import '../engine/subjects.dart';
 import '../state/providers.dart';
+import 'lesson_result.dart';
+import 'theme.dart';
+import 'widgets/page_frame.dart';
 
 /// Runs a lesson's activities in order and scores the result.
 class LessonRunnerScreen extends ConsumerStatefulWidget {
@@ -42,27 +47,133 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
     }
     final outcome = LessonOutcome(xp: _xp, mistakes: _mistakes);
     setState(() => _outcome = outcome);
+    HapticFeedback.mediumImpact();
     await ref
         .read(progressProvider.notifier)
         .recordLesson(course: _course, lesson: _lesson, outcome: outcome);
   }
 
+  Future<void> _confirmLeave() async {
+    if (_index == 0) {
+      context.pop();
+      return;
+    }
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Leave this lesson?'),
+        content: const Text('Your progress in this lesson will be lost.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep going'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Leave'),
+          ),
+        ],
+      ),
+    );
+    if (leave == true && mounted) context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final outcome = _outcome;
-    if (outcome != null) return _Result(outcome: outcome);
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          tooltip: 'Leave lesson',
-          onPressed: context.pop,
-        ),
+    return Theme(
+      data: subjectTheme(_course.subject),
+      child: Builder(
+        builder: (context) {
+          if (outcome != null) return _result(outcome);
+          return Scaffold(
+            body: SafeArea(
+              child: PageFrame(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 8, 20, 4),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded),
+                            tooltip: 'Leave lesson',
+                            onPressed: _confirmLeave,
+                          ),
+                          Expanded(
+                            child: _Segments(
+                              total: _lesson.activities.length,
+                              done: _index,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: _ActivityHost(
+                        key: ValueKey(_index),
+                        activity: _lesson.activities[_index],
+                        onDone: _onActivityDone,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
-      body: _ActivityHost(
-        key: ValueKey(_index),
-        activity: _lesson.activities[_index],
-        onDone: _onActivityDone,
+    );
+  }
+
+  Widget _result(LessonOutcome outcome) {
+    final registry = ref.watch(registryProvider);
+    final progress = ref.watch(progressProvider);
+    final next = nextUp(registry, progress, subjectId: _course.subject.id);
+    return LessonResult(
+      outcome: outcome,
+      streak: progress.streakOn(ref.watch(clockProvider)()),
+      next: next,
+      onBack: context.pop,
+      onNext: () => context.pushReplacement(
+        '/lesson/${next!.course.id}/${next.lesson.id}',
+      ),
+    );
+  }
+}
+
+class _Segments extends StatelessWidget {
+  const _Segments({required this.total, required this.done});
+
+  final int total;
+  final int done;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      container: true,
+      label: 'Step ${done + 1} of $total',
+      excludeSemantics: true,
+      child: Row(
+        children: [
+          for (var i = 0; i < total; i++)
+            Expanded(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: 12,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: i < done
+                      ? scheme.primary
+                      : i == done
+                      ? scheme.primary.withValues(alpha: 0.35)
+                      : scheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -98,35 +209,4 @@ class _ActivityHostState extends ConsumerState<_ActivityHost>
 
   @override
   Widget build(BuildContext context) => widget.activity.build(context, this);
-}
-
-class _Result extends StatelessWidget {
-  const _Result({required this.outcome});
-
-  final LessonOutcome outcome;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            [
-              for (var s = 1; s <= 3; s++)
-                s <= outcome.stars ? '\u2B50' : '\u2606',
-            ].join(),
-            style: const TextStyle(fontSize: 64),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '+${outcome.xp} XP',
-            style: Theme.of(context).textTheme.headlineLarge,
-          ),
-          const SizedBox(height: 32),
-          FilledButton(onPressed: context.pop, child: const Text('Continue')),
-        ],
-      ),
-    ),
-  );
 }

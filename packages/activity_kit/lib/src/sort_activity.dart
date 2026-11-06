@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'score.dart';
+import 'shake.dart';
 
 class SortItem {
   const SortItem(this.label, {required this.bin});
@@ -44,6 +46,7 @@ class _SortView extends StatefulWidget {
 class _SortViewState extends State<_SortView> {
   int _next = 0;
   int? _flashBin;
+  final Map<int, int> _shakes = {};
   bool _currentMissed = false;
   int _firstTry = 0;
   int _recovered = 0;
@@ -59,6 +62,7 @@ class _SortViewState extends State<_SortView> {
     if (_done) return;
     final item = _a.items[_next];
     if (item.bin == bin) {
+      HapticFeedback.selectionClick();
       setState(() {
         _placed[bin].add(item);
         _currentMissed ? _recovered++ : _firstTry++;
@@ -67,10 +71,12 @@ class _SortViewState extends State<_SortView> {
       });
       return;
     }
+    HapticFeedback.lightImpact();
     setState(() {
       _mistakes++;
       _currentMissed = true;
       _flashBin = bin;
+      _shakes[bin] = (_shakes[bin] ?? 0) + 1;
     });
     await Future<void>.delayed(const Duration(milliseconds: 500));
     if (mounted) setState(() => _flashBin = null);
@@ -131,42 +137,45 @@ class _SortViewState extends State<_SortView> {
               children: [
                 for (var i = 0; i < _a.bins.length; i++)
                   Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(left: i == 0 ? 0 : 12),
-                      child: DragTarget<SortItem>(
-                        onWillAcceptWithDetails: (_) => true,
-                        onAcceptWithDetails: (_) => _drop(i),
-                        builder: (context, candidates, _) => InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () => _drop(i),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: _flashBin == i
-                                  ? scheme.errorContainer
-                                  : candidates.isNotEmpty
-                                  ? scheme.primaryContainer
-                                  : scheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(_a.bins[i], style: text.titleMedium),
-                                const SizedBox(height: 8),
-                                Expanded(
-                                  child: SingleChildScrollView(
-                                    child: Wrap(
-                                      spacing: 6,
-                                      runSpacing: 6,
-                                      children: [
-                                        for (final item in _placed[i])
-                                          Chip(label: Text(item.label)),
-                                      ],
+                    child: Shake(
+                      trigger: _shakes[i] ?? 0,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: i == 0 ? 0 : 12),
+                        child: DragTarget<SortItem>(
+                          onWillAcceptWithDetails: (_) => true,
+                          onAcceptWithDetails: (_) => _drop(i),
+                          builder: (context, candidates, _) => InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => _drop(i),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: _flashBin == i
+                                    ? scheme.errorContainer
+                                    : candidates.isNotEmpty
+                                    ? scheme.primaryContainer
+                                    : scheme.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(_a.bins[i], style: text.titleMedium),
+                                  const SizedBox(height: 8),
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      child: Wrap(
+                                        spacing: 6,
+                                        runSpacing: 6,
+                                        children: [
+                                          for (final item in _placed[i])
+                                            _PlacedItem(item.label),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -199,4 +208,25 @@ class _ItemCard extends StatelessWidget {
       child: Text(label, style: Theme.of(context).textTheme.headlineSmall),
     ),
   );
+}
+
+class _PlacedItem extends StatelessWidget {
+  const _PlacedItem(this.label) : super(key: null);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      key: ValueKey('placed:$label'),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+    );
+  }
 }

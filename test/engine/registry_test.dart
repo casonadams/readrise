@@ -1,3 +1,4 @@
+import 'package:flutter/painting.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readrise/engine/registry.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
@@ -29,6 +30,32 @@ void main() {
     final registry = buildRegistry();
     expect(() => registry.courseById('nope'), throwsArgumentError);
     expect(() => registry.lessonById('a', 'nope'), throwsArgumentError);
+  });
+
+  test('one subject id with two different titles is rejected', () {
+    const clash = Subject(
+      id: 'reading',
+      title: 'Literacy',
+      emoji: 'x',
+      color: Color(0xFF000000),
+    );
+    expect(
+      () => PluginRegistry([
+        FakeCourse('a', ['1']),
+        FakeCourse('b', ['2'], subject: clash),
+      ]),
+      throwsArgumentError,
+    );
+  });
+
+  test('courses may share a subject', () {
+    expect(
+      () => PluginRegistry([
+        FakeCourse('a', ['1']),
+        FakeCourse('b', ['2']),
+      ]),
+      returnsNormally,
+    );
   });
 
   final invalid = <String, List<CoursePlugin> Function()>{

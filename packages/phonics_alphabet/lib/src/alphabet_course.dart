@@ -50,6 +50,9 @@ class AlphabetCourse implements CoursePlugin {
   final Grade grade;
 
   @override
+  Subject get subject => Subject.reading;
+
+  @override
   final List<String> requires;
 
   @override

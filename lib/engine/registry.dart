@@ -5,6 +5,7 @@ class PluginRegistry {
   PluginRegistry(List<CoursePlugin> courses)
     : courses = List.unmodifiable(courses) {
     final seen = <String>{};
+    final subjects = <String, Subject>{};
     for (final course in courses) {
       if (!seen.add(course.id)) {
         throw ArgumentError('duplicate course ${course.id}');
@@ -17,6 +18,14 @@ class PluginRegistry {
           );
         }
       }
+      final known = subjects[course.subject.id];
+      if (known != null && known != course.subject) {
+        throw ArgumentError(
+          'course ${course.id} declares subject ${course.subject.id} as '
+          '"${course.subject.title}" but "${known.title}" was already registered',
+        );
+      }
+      subjects[course.subject.id] = course.subject;
       if (course.lessons.isEmpty) {
         throw ArgumentError('course ${course.id} has no lessons');
       }
