@@ -27,6 +27,9 @@ Tests mirror the `lib/` layout in the app and in each package.
 
 ## Develop
 
+Toolchain is pinned in `mise.toml` (Flutter, which bundles Dart); CI uses the same file.
+
+    mise install
     flutter pub get
     flutter test                                   # app
     (cd packages/phonics_alphabet && flutter test) # a plugin
