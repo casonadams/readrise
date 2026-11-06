@@ -4,9 +4,9 @@ import 'letter.dart';
 import 'letter_lesson.dart';
 import 'letters.dart';
 
-/// Teaches [letters] one lesson each. [before] are letters taught by earlier
-/// courses (review items); [after] are letters not taught yet (distractors
-/// when too few letters are known).
+/// One set of letters: a lesson per letter and a review at the end.
+/// [before] are letters from earlier courses (review items); [after] are
+/// letters not taught yet (wrong-answer pool when too few are known).
 class AlphabetCourse implements CoursePlugin {
   AlphabetCourse({
     required this.id,
@@ -23,22 +23,24 @@ class AlphabetCourse implements CoursePlugin {
              learned: [...before, ...letters.take(i)],
              unseen: [...letters.skip(i + 1), ...after],
            ),
+         ReviewLesson(letters: letters, known: [...before, ...letters]),
        ];
 
-  factory AlphabetCourse.set1() => AlphabetCourse(
-    id: 'alphabet-1',
-    title: 'Alphabet 1',
-    letters: set1,
-    after: set2,
-  );
-
-  factory AlphabetCourse.set2() => AlphabetCourse(
-    id: 'alphabet-2',
-    title: 'Alphabet 2',
-    letters: set2,
-    requires: const ['alphabet-1'],
-    before: set1,
-  );
+  /// The whole alphabet as seven courses in teaching order.
+  static List<AlphabetCourse> all() => [
+    for (var n = 0; n < letterSets.length; n++)
+      AlphabetCourse(
+        id: 'alphabet-${n + 1}',
+        title:
+            'Alphabet ${n + 1}: '
+            '${letterSets[n].map((l) => l.upper).join(' ')}',
+        letters: letterSets[n],
+        grade: n < 4 ? Grade.preK : Grade.kindergarten,
+        requires: n == 0 ? const [] : ['alphabet-$n'],
+        before: [for (final s in letterSets.take(n)) ...s],
+        after: [for (final s in letterSets.skip(n + 1)) ...s],
+      ),
+  ];
 
   @override
   final String id;

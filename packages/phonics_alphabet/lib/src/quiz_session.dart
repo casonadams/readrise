@@ -3,7 +3,13 @@ import 'dart:math';
 
 import 'letter.dart';
 
-enum ExerciseKind { soundToLetter, pictureToLetter }
+enum ExerciseKind {
+  /// Hear a letter, pick it.
+  soundToLetter,
+
+  /// See a picture and hear its word, pick the letter it starts with.
+  pictureToLetter,
+}
 
 class Exercise {
   const Exercise({
@@ -18,29 +24,54 @@ class Exercise {
 }
 
 class QuizSession {
-  QuizSession({
+  QuizSession._(this._random, this._queue, {required this.maxOptions});
+
+  /// A lesson quiz for a newly taught [letter]: it is asked three times and the
+  /// two most recently learned letters are reviewed. While [letter] is new its
+  /// mirror twin (b/d, p/q) is kept out of the choices.
+  factory QuizSession.lesson({
     required Letter letter,
-    this.learned = const [],
-    this.unseen = const [],
+    List<Letter> learned = const [],
+    List<Letter> unseen = const [],
     Random? random,
-    this.maxOptions = 3,
-  }) : _random = random ?? Random() {
+  }) {
+    final r = random ?? Random();
+    final known = [...learned, letter];
     final targets = [letter, letter, ...learned.reversed.take(2), letter];
-    for (var i = 0; i < targets.length; i++) {
-      _queue.add(
-        _build(ExerciseKind.values[i % 2], targets[i], [...learned, letter]),
+    return QuizSession._(r, Queue(), maxOptions: _optionCount(known.length))
+      .._fill(
+        [
+          for (var i = 0; i < targets.length; i++)
+            (targets[i], ExerciseKind.values[i % 2]),
+        ],
+        known: known,
+        unseen: unseen,
+        avoid: {letter.mirrorChar},
       );
-    }
   }
 
-  /// Letters from earlier lessons: review targets and preferred distractors.
-  final List<Letter> learned;
+  /// A review quiz over [letters]: each is heard once and seen once, in random
+  /// order. [known] are all letters taught so far (the wrong-answer pool).
+  factory QuizSession.review({
+    required List<Letter> letters,
+    required List<Letter> known,
+    Random? random,
+  }) {
+    final r = random ?? Random();
+    final plan = [
+      for (final l in letters)
+        for (final k in ExerciseKind.values) (l, k),
+    ]..shuffle(r);
+    return QuizSession._(r, Queue(), maxOptions: _optionCount(known.length))
+      .._fill(plan, known: known, unseen: const [], avoid: const {});
+  }
 
-  /// Letters not taught yet; distractors only when too few learned exist.
-  final List<Letter> unseen;
+  /// Three choices at first, four once enough letters are known.
+  static int _optionCount(int known) => known >= 8 ? 4 : 3;
+
   final int maxOptions;
   final Random _random;
-  final Queue<Exercise> _queue = Queue();
+  final Queue<Exercise> _queue;
   final Set<Letter> _eliminated = {};
   final Set<Exercise> _retried = {};
   bool _currentMissed = false;
@@ -54,7 +85,10 @@ class QuizSession {
   double get progress => completed / (completed + _queue.length);
   int get xp => _firstTry * 10 + _recovered * 5;
 
-  /// Options still shown; wrong picks are removed so the choice narrows.
+  bool isEliminated(Letter letter) => _eliminated.contains(letter);
+
+  /// Options still selectable; wrong picks are crossed out so the choice
+  /// narrows while every option keeps its place on screen.
   List<Letter> get visibleOptions => [
     for (final o in current.options)
       if (!_eliminated.contains(o)) o,
@@ -65,9 +99,13 @@ class QuizSession {
     final exercise = current;
     if (choice == exercise.target) {
       _queue.removeFirst();
-      if (_currentMissed) {
+      if (_retried.contains(exercise)) {
+        // Practice round after a miss: no credit, so missing on purpose
+        // never pays.
+      } else if (_currentMissed) {
         _recovered++;
-        if (_retried.add(exercise)) _queue.addLast(exercise);
+        _retried.add(exercise);
+        _queue.addLast(exercise);
       } else {
         _firstTry++;
       }
@@ -81,7 +119,34 @@ class QuizSession {
     return false;
   }
 
-  Exercise _build(ExerciseKind kind, Letter target, List<Letter> known) {
+  void _fill(
+    List<(Letter, ExerciseKind)> plan, {
+    required List<Letter> known,
+    required List<Letter> unseen,
+    required Set<String?> avoid,
+  }) {
+    for (final (letter, kind) in plan) {
+      _queue.add(
+        _build(
+          kind == ExerciseKind.pictureToLetter && !letter.startsWord
+              ? ExerciseKind.soundToLetter
+              : kind,
+          letter,
+          known,
+          unseen,
+          avoid,
+        ),
+      );
+    }
+  }
+
+  Exercise _build(
+    ExerciseKind kind,
+    Letter target,
+    List<Letter> known,
+    List<Letter> unseen,
+    Set<String?> avoid,
+  ) {
     final wanted = maxOptions - 1;
     final distractors = [
       ...known.where((l) => l != target).toList()..shuffle(_random),
@@ -89,7 +154,12 @@ class QuizSession {
     if (distractors.length < wanted) {
       distractors.addAll([...unseen]..shuffle(_random));
     }
-    final options = [target, ...distractors.take(wanted)]..shuffle(_random);
+    final preferred = [
+      for (final l in distractors)
+        if (!avoid.contains(l.char)) l,
+    ];
+    final pool = preferred.length >= wanted ? preferred : distractors;
+    final options = [target, ...pool.take(wanted)]..shuffle(_random);
     return Exercise(kind: kind, target: target, options: options);
   }
 }

@@ -4,7 +4,8 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'letter.dart';
 import 'letter_text.dart';
 
-/// "Meet the letter": shows the letter and key word and speaks the letter and word.
+/// "Meet the letter": shows the letter, a picture and its word with the
+/// letter picked out in colour, and says the letter, then the word.
 class LetterIntroActivity implements ActivityPlugin {
   const LetterIntroActivity(this.letter);
 
@@ -48,44 +49,82 @@ class _IntroViewState extends State<_IntroView> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
     final letter = widget.letter;
+    final at = letter.highlightIndex;
+    final base = letterTextStyle(40, color: scheme.onSurface);
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Expanded(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(32),
+            child: Semantics(
+              container: true,
+              button: true,
+              label: 'Letter ${letter.char}, ${letter.word}. Tap to hear it.',
+              excludeSemantics: true,
               onTap: _speak,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    LetterText(
-                      letter.display,
-                      style: TextStyle(
-                        fontSize: 140,
-                        fontWeight: FontWeight.bold,
-                        color: scheme.primary,
-                      ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(32),
+                onTap: _speak,
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        LetterText(
+                          letter.display,
+                          style: letterTextStyle(150, color: scheme.primary),
+                        ),
+                        Text(
+                          letter.emoji,
+                          style: const TextStyle(fontSize: 96),
+                        ),
+                        const SizedBox(height: 8),
+                        Text.rich(
+                          TextSpan(
+                            style: base,
+                            children: [
+                              TextSpan(text: letter.word.substring(0, at)),
+                              TextSpan(
+                                text: letter.word.substring(at, at + 1),
+                                style: base.copyWith(
+                                  color: scheme.primary,
+                                  decoration: TextDecoration.underline,
+                                  decorationThickness: 3,
+                                ),
+                              ),
+                              TextSpan(text: letter.word.substring(at + 1)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.volume_up_rounded,
+                              color: scheme.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Text('Tap to hear', style: text.labelLarge),
+                          ],
+                        ),
+                      ],
                     ),
-                    Text(letter.emoji, style: const TextStyle(fontSize: 96)),
-                    const SizedBox(height: 8),
-                    Icon(
-                      Icons.volume_up_rounded,
-                      size: 48,
-                      color: scheme.primary,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-          FilledButton(
-            onPressed: () => widget.host.complete(const ActivityResult()),
-            child: const Text('Start'),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () => widget.host.complete(const ActivityResult()),
+              child: const Text('Next'),
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
         ],
       ),
     );

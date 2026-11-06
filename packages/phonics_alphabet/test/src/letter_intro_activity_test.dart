@@ -1,72 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:phonics_alphabet/src/letter_intro_activity.dart';
-import 'package:phonics_alphabet/src/letters.dart';
-import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
-class RecordingSpeaker implements Speaker {
-  final List<String> spoken = [];
+import '../support/letters.dart';
 
-  @override
-  Future<void> speak(String text) async => spoken.add(text);
-}
-
-class _Host implements ActivityHost {
-  _Host(this.speaker);
-
-  @override
-  final Speaker speaker;
-
-  @override
-  void complete(ActivityResult result) {}
-}
-
-Future<RecordingSpeaker> pumpIntro(WidgetTester tester) async {
-  final speaker = RecordingSpeaker();
-  await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(
-        body: Builder(
-          builder: (context) =>
-              LetterIntroActivity(set1[1]).build(context, _Host(speaker)),
-        ),
-      ),
-    ),
+List<String> underlined(WidgetTester tester) {
+  final text = tester.widget<Text>(
+    find.byWidgetPredicate((w) => w is Text && w.textSpan != null),
   );
-  await tester.pump();
-  return speaker;
+  return [
+    for (final span in (text.textSpan! as TextSpan).children!)
+      if (span is TextSpan &&
+          span.style?.decoration == TextDecoration.underline)
+        span.text!,
+  ];
 }
 
 void main() {
   testWidgets('says the letter, then the word after a pause', (tester) async {
-    final speaker = await pumpIntro(tester);
-    expect(speaker.spoken, ['a']);
+    final host = await pumpActivity(tester, LetterIntroActivity(letterOf('a')));
+    final said = (host.speaker as RecordingSpeaker).spoken;
+    expect(said, ['a']);
 
     await tester.pump(const Duration(milliseconds: 300));
-    expect(speaker.spoken, ['a']);
+    expect(said, ['a']);
 
     await tester.pump(const Duration(milliseconds: 200));
-    expect(speaker.spoken, ['a', 'apple']);
+    expect(said, ['a', 'apple']);
   });
 
   testWidgets('tapping again restarts instead of overlapping', (tester) async {
-    final speaker = await pumpIntro(tester);
+    final host = await pumpActivity(tester, LetterIntroActivity(letterOf('a')));
+    final said = (host.speaker as RecordingSpeaker).spoken;
     await tester.pump(const Duration(milliseconds: 200));
     await tester.tap(find.text('Aa'));
     await tester.pump(const Duration(milliseconds: 250));
-
-    expect(speaker.spoken, ['a', 'a']);
+    expect(said, ['a', 'a']);
 
     await tester.pump(const Duration(milliseconds: 200));
-    expect(speaker.spoken, ['a', 'a', 'apple']);
+    expect(said, ['a', 'a', 'apple']);
   });
 
   testWidgets('leaving the screen during the pause says nothing more', (
     tester,
   ) async {
-    final speaker = await pumpIntro(tester);
+    final host = await pumpActivity(tester, LetterIntroActivity(letterOf('a')));
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 1));
-    expect(speaker.spoken, ['a']);
+    expect((host.speaker as RecordingSpeaker).spoken, ['a']);
+  });
+
+  testWidgets('picks the letter out inside its word', (tester) async {
+    await pumpActivity(tester, LetterIntroActivity(letterOf('b')));
+    expect(find.text('Bb'), findsOneWidget);
+    expect(find.text('\u{1F41D}'), findsOneWidget);
+    expect(underlined(tester), ['b']);
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('for x the highlighted letter is the one at the end of fox', (
+    tester,
+  ) async {
+    await pumpActivity(tester, LetterIntroActivity(letterOf('x')));
+    expect(underlined(tester), ['x']);
+    final text = tester.widget<Text>(
+      find.byWidgetPredicate((w) => w is Text && w.textSpan != null),
+    );
+    expect(text.textSpan!.toPlainText(), 'fox');
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('Next finishes the activity with no score of its own', (
+    tester,
+  ) async {
+    final host = await pumpActivity(tester, LetterIntroActivity(letterOf('a')));
+    await tester.tap(find.text('Next'));
+    expect(host.results, hasLength(1));
+    expect(host.results.single.xp, 0);
+    expect(host.results.single.mistakes, 0);
+    await tester.pump(const Duration(seconds: 1));
   });
 }

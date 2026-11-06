@@ -12,7 +12,7 @@ words or grammar.
 | --- | --- |
 | `packages/readrise_plugin_api` | Interfaces: `CoursePlugin` > `LessonPlugin` > `ActivityPlugin`, plus `ActivityHost` and `Speaker` |
 | `packages/activity_kit` | Reusable activities: info card, choice quiz, drag-to-sort; `BasicLesson` |
-| `packages/phonics_alphabet` | Course plugin: letter shapes and sounds (Alphabet 1 and 2), ages 3-6 |
+| `packages/phonics_alphabet` | Course plugins for the whole alphabet (7 courses, ages 3-6): meet a letter, trace it, pop balloons, feed the monster, then a review per set |
 | `packages/science_matter` | Course plugin: states of matter with an interactive particle model, grades 5-8 (NGSS MS-PS1) |
 | `lib/engine` | Plugin registry, progress, unlock rules, scoring (XP, stars, streaks), subject summaries and "continue" target |
 | `lib/ui`, `lib/state`, `lib/data` | Home (subjects + Continue), subject path, lesson runner and celebration screens; Riverpod providers; local storage and text-to-speech |
@@ -45,3 +45,9 @@ Pushes to `main` run analyze and tests, then deploy the web build to GitHub Page
 
 Letter sounds currently use platform text-to-speech; recorded phoneme audio
 is the planned replacement.
+
+## Third-party assets
+
+Letter shapes use the Andika font (SIL Open Font License 1.1), bundled
+unmodified in `packages/phonics_alphabet/assets/fonts/` with its licence
+(`Andika-OFL.txt`).
