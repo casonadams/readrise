@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'letter.dart';
+import 'letter_text.dart';
 
 /// "Meet the letter": shows the letter and key word and speaks the letter and word.
 class LetterIntroActivity implements ActivityPlugin {
@@ -25,14 +26,24 @@ class _IntroView extends StatefulWidget {
 }
 
 class _IntroViewState extends State<_IntroView> {
+  static const _pause = Duration(milliseconds: 400);
+  int _speakId = 0;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _speak());
   }
 
-  void _speak() =>
-      widget.host.speaker.speak('${widget.letter.char}. ${widget.letter.word}');
+  /// Says the letter, pauses, then says the word. A newer call cancels the
+  /// rest of an older one.
+  Future<void> _speak() async {
+    final id = ++_speakId;
+    await widget.host.speaker.speak(widget.letter.char);
+    await Future<void>.delayed(_pause);
+    if (!mounted || id != _speakId) return;
+    await widget.host.speaker.speak(widget.letter.word);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +61,7 @@ class _IntroViewState extends State<_IntroView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    LetterText(
                       letter.display,
                       style: TextStyle(
                         fontSize: 140,

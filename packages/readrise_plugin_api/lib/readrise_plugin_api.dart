@@ -46,5 +46,6 @@ class ActivityResult {
 }
 
 abstract interface class Speaker {
+  /// Completes when the speech finishes or is interrupted by a newer call.
   Future<void> speak(String text);
 }

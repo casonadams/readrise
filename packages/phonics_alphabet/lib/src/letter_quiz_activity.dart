@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'letter.dart';
+import 'letter_text.dart';
 import 'quiz_session.dart';
 
 /// Hear a sound or see a picture, then pick the matching letter.
@@ -169,6 +170,7 @@ class _OptionButton extends StatelessWidget {
         label: 'Letter ${letter.char}',
         child: FilledButton(
           style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             backgroundColor: correct == true
                 ? Colors.green.shade300
                 : scheme.secondaryContainer,
@@ -178,7 +180,10 @@ class _OptionButton extends StatelessWidget {
             ),
           ),
           onPressed: onTap,
-          child: Text(letter.display, style: const TextStyle(fontSize: 40)),
+          child: LetterText(
+            letter.display,
+            style: const TextStyle(fontSize: 40),
+          ),
         ),
       ),
     );

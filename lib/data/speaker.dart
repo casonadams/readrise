@@ -5,6 +5,7 @@ class TtsSpeaker implements Speaker {
   TtsSpeaker() {
     _tts.setSpeechRate(0.4);
     _tts.setPitch(1.1);
+    _tts.awaitSpeakCompletion(true);
   }
 
   final FlutterTts _tts = FlutterTts();

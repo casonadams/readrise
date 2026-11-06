@@ -141,10 +141,20 @@ class _LessonNode extends StatelessWidget {
                   height: 112,
                   child: Center(
                     child: unlocked
-                        ? Text(
-                            lesson.title,
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(color: scheme.onPrimary),
+                        ? Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                lesson.title,
+                                maxLines: 1,
+                                softWrap: false,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(color: scheme.onPrimary),
+                              ),
+                            ),
                           )
                         : Icon(Icons.lock, size: 40, color: scheme.outline),
                   ),
