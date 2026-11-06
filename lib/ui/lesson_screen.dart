@@ -6,26 +6,38 @@ import '../domain/curriculum.dart';
 import '../domain/lesson_session.dart';
 import '../state/providers.dart';
 
-class LessonScreen extends ConsumerStatefulWidget {
-  const LessonScreen({required this.skill, super.key});
+class LetterLessonScreen extends ConsumerStatefulWidget {
+  const LetterLessonScreen({required this.lesson, super.key});
 
-  final Skill skill;
+  final LetterLesson lesson;
 
   @override
-  ConsumerState<LessonScreen> createState() => _LessonScreenState();
+  ConsumerState<LetterLessonScreen> createState() => _LetterLessonScreenState();
 }
 
-class _LessonScreenState extends ConsumerState<LessonScreen> {
+class _LetterLessonScreenState extends ConsumerState<LetterLessonScreen> {
   late final LessonSession _session = LessonSession(
-    skill: widget.skill,
-    pool: curriculum.lettersThrough(widget.skill),
+    lesson: widget.lesson,
+    learned: ref.read(curriculumProvider).lettersBefore(widget.lesson),
+    unseen: ref.read(curriculumProvider).lettersAfter(widget.lesson),
   );
   Letter? _correctPick;
+  bool _introDone = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _speakPrompt());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _speakIntro());
+  }
+
+  void _speakIntro() {
+    final letter = widget.lesson.letter;
+    ref.read(speakerProvider).speak('${letter.sound}. ${letter.word}');
+  }
+
+  void _startExercises() {
+    setState(() => _introDone = true);
+    _speakPrompt();
   }
 
   void _speakPrompt() {
@@ -53,7 +65,7 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
       await ref
           .read(progressProvider.notifier)
           .recordLesson(
-            skill: widget.skill,
+            lesson: widget.lesson,
             stars: _session.stars,
             xp: _session.xp,
           );
@@ -64,6 +76,13 @@ class _LessonScreenState extends ConsumerState<LessonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_introDone) {
+      return _Intro(
+        letter: widget.lesson.letter,
+        onHear: _speakIntro,
+        onStart: _startExercises,
+      );
+    }
     if (_session.isComplete) return _Result(session: _session);
     final exercise = _session.current;
     return Scaffold(
@@ -214,4 +233,67 @@ class _Result extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _Intro extends StatelessWidget {
+  const _Intro({
+    required this.letter,
+    required this.onHear,
+    required this.onStart,
+  });
+
+  final Letter letter;
+  final VoidCallback onHear;
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: 'Leave lesson',
+          onPressed: context.pop,
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(32),
+                onTap: onHear,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        letter.display,
+                        style: TextStyle(
+                          fontSize: 140,
+                          fontWeight: FontWeight.bold,
+                          color: scheme.primary,
+                        ),
+                      ),
+                      Text(letter.emoji, style: const TextStyle(fontSize: 96)),
+                      const SizedBox(height: 8),
+                      Icon(
+                        Icons.volume_up_rounded,
+                        size: 48,
+                        color: scheme.primary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            FilledButton(onPressed: onStart, child: const Text('Start')),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
 }

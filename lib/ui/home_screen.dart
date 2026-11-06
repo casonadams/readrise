@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../domain/curriculum.dart';
+import '../domain/progress.dart';
 import '../state/providers.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -10,32 +11,77 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final curriculum = ref.watch(curriculumProvider);
     final progress = ref.watch(progressProvider);
     final streak = progress.streakOn(ref.watch(clockProvider)());
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Readrise'),
+        title: Text(curriculum.title),
         actions: [
           _Badge(emoji: '\u{1F525}', value: streak),
           _Badge(emoji: '\u2B50', value: progress.xp),
           const SizedBox(width: 12),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 32),
-        itemCount: curriculum.skills.length,
-        itemBuilder: (context, i) {
-          final skill = curriculum.skills[i];
-          return Align(
-            alignment: Alignment(((i % 4) - 1.5) * 0.35, 0),
-            child: _SkillNode(
-              skill: skill,
-              stars: progress.starsFor(skill),
-              unlocked: progress.isUnlocked(curriculum, skill),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        children: [
+          for (final course in curriculum.courses)
+            _CourseSection(
+              curriculum: curriculum,
+              course: course,
+              progress: progress,
             ),
-          );
-        },
+        ],
       ),
+    );
+  }
+}
+
+class _CourseSection extends StatelessWidget {
+  const _CourseSection({
+    required this.curriculum,
+    required this.course,
+    required this.progress,
+  });
+
+  final Curriculum curriculum;
+  final Course course;
+  final Progress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final open = progress.isCourseUnlocked(curriculum, course);
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: open ? scheme.primaryContainer : scheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            course.title,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+        for (var i = 0; i < course.lessons.length; i++)
+          Align(
+            alignment: Alignment(((i % 4) - 1.5) * 0.35, 0),
+            child: _LessonNode(
+              lesson: course.lessons[i],
+              stars: progress.starsFor(course.lessons[i]),
+              unlocked: progress.isLessonUnlocked(
+                curriculum,
+                course,
+                course.lessons[i],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -53,14 +99,14 @@ class _Badge extends StatelessWidget {
   );
 }
 
-class _SkillNode extends StatelessWidget {
-  const _SkillNode({
-    required this.skill,
+class _LessonNode extends StatelessWidget {
+  const _LessonNode({
+    required this.lesson,
     required this.stars,
     required this.unlocked,
   });
 
-  final Skill skill;
+  final Lesson lesson;
   final int stars;
   final bool unlocked;
 
@@ -75,7 +121,7 @@ class _SkillNode extends StatelessWidget {
           Semantics(
             button: true,
             enabled: unlocked,
-            label: 'Lesson ${skill.title}',
+            label: 'Lesson ${lesson.title}',
             child: Material(
               color: unlocked ? scheme.primary : scheme.surfaceContainerHighest,
               shape: const CircleBorder(),
@@ -83,7 +129,7 @@ class _SkillNode extends StatelessWidget {
               child: InkWell(
                 customBorder: const CircleBorder(),
                 onTap: unlocked
-                    ? () => context.push('/lesson/${skill.id}')
+                    ? () => context.push('/lesson/${lesson.id}')
                     : null,
                 child: SizedBox(
                   width: 112,
@@ -91,7 +137,7 @@ class _SkillNode extends StatelessWidget {
                   child: Center(
                     child: unlocked
                         ? Text(
-                            skill.title,
+                            lesson.title,
                             style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(color: scheme.onPrimary),
                           )

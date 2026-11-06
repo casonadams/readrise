@@ -12,42 +12,72 @@ class Letter {
   final String emoji;
 
   String get upper => char.toUpperCase();
+  String get display => '$upper$char';
 }
 
-class Skill {
-  const Skill({required this.id, required this.letters});
+enum Grade { preK, kindergarten, grade1 }
+
+sealed class Lesson {
+  const Lesson({required this.id, required this.title});
 
   final String id;
-  final List<Letter> letters;
+  final String title;
+}
 
-  String get title => letters.map((l) => l.upper + l.char).join(' ');
+/// Teaches one letter: its shape, sound and a key word.
+class LetterLesson extends Lesson {
+  LetterLesson({required super.id, required this.letter})
+    : super(title: letter.display);
+
+  final Letter letter;
+}
+
+class Course {
+  const Course({
+    required this.id,
+    required this.title,
+    required this.grade,
+    required this.lessons,
+    this.requires = const [],
+  });
+
+  final String id;
+  final String title;
+  final Grade grade;
+  final List<Lesson> lessons;
+
+  /// Ids of courses that must be complete before this one opens.
+  final List<String> requires;
 }
 
 class Curriculum {
-  const Curriculum(this.skills);
+  Curriculum({required this.id, required this.title, required this.courses})
+    : _lessons = {
+        for (final c in courses)
+          for (final l in c.lessons) l.id: l,
+      };
 
-  final List<Skill> skills;
+  final String id;
+  final String title;
+  final List<Course> courses;
+  final Map<String, Lesson> _lessons;
 
-  Skill byId(String id) => skills.firstWhere((s) => s.id == id);
+  Iterable<Lesson> get lessons => courses.expand((c) => c.lessons);
 
-  int indexOf(Skill skill) => skills.indexOf(skill);
+  Course courseById(String id) => courses.firstWhere((c) => c.id == id);
 
-  /// Letters taught up to and including [skill]; distractor pool for lessons.
-  List<Letter> lettersThrough(Skill skill) => [
-    for (final s in skills.take(indexOf(skill) + 1)) ...s.letters,
+  Lesson lessonById(String id) =>
+      _lessons[id] ?? (throw ArgumentError.value(id, 'id', 'unknown lesson'));
+
+  /// Letters taught by lessons that precede [lesson] across all courses.
+  List<Letter> lettersBefore(Lesson lesson) => [
+    for (final l in lessons.takeWhile((l) => l != lesson))
+      if (l case LetterLesson(:final letter)) letter,
+  ];
+
+  /// Letters taught by lessons that follow [lesson] across all courses.
+  List<Letter> lettersAfter(Lesson lesson) => [
+    for (final l in lessons.skipWhile((l) => l != lesson).skip(1))
+      if (l case LetterLesson(:final letter)) letter,
   ];
 }
-
-const _s = Letter(char: 's', sound: 'sss', word: 'sun', emoji: '\u2600\uFE0F');
-const _a = Letter(char: 'a', sound: 'aah', word: 'apple', emoji: '\u{1F34E}');
-const _t = Letter(char: 't', sound: 'tuh', word: 'tiger', emoji: '\u{1F42F}');
-const _p = Letter(char: 'p', sound: 'puh', word: 'pig', emoji: '\u{1F437}');
-const _i = Letter(char: 'i', sound: 'ih', word: 'igloo', emoji: '\u{1F9CA}');
-const _n = Letter(char: 'n', sound: 'nnn', word: 'nest', emoji: '\u{1FAB9}');
-
-/// Phonics order SATPIN: early letters combine into many simple words.
-const curriculum = Curriculum([
-  Skill(id: 'sa', letters: [_s, _a]),
-  Skill(id: 'tp', letters: [_t, _p]),
-  Skill(id: 'in', letters: [_i, _n]),
-]);

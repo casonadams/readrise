@@ -26,6 +26,8 @@ class Progress {
   final int xp;
   final int streak;
   final DateTime? lastPractice;
+
+  /// Best stars per lesson id.
   final Map<String, int> stars;
 
   Map<String, dynamic> toJson() => {
@@ -35,12 +37,19 @@ class Progress {
     'stars': stars,
   };
 
-  int starsFor(Skill skill) => stars[skill.id] ?? 0;
+  int starsFor(Lesson lesson) => stars[lesson.id] ?? 0;
 
-  /// First skill is always open; later ones need a star on the previous one.
-  bool isUnlocked(Curriculum c, Skill skill) {
-    final i = c.indexOf(skill);
-    return i == 0 || starsFor(c.skills[i - 1]) > 0;
+  bool isCourseComplete(Course course) =>
+      course.lessons.every((l) => starsFor(l) > 0);
+
+  bool isCourseUnlocked(Curriculum c, Course course) =>
+      course.requires.every((id) => isCourseComplete(c.courseById(id)));
+
+  /// Open when the course is open and the previous lesson has a star.
+  bool isLessonUnlocked(Curriculum c, Course course, Lesson lesson) {
+    if (!isCourseUnlocked(c, course)) return false;
+    final i = course.lessons.indexOf(lesson);
+    return i == 0 || starsFor(course.lessons[i - 1]) > 0;
   }
 
   /// Streak as shown on [today]: lapses to 0 after a missed day.
@@ -52,7 +61,7 @@ class Progress {
   }
 
   Progress recordLesson({
-    required Skill skill,
+    required Lesson lesson,
     required int earnedStars,
     required int earnedXp,
     required DateTime today,
@@ -65,12 +74,12 @@ class Progress {
       1 => streak + 1,
       _ => 1,
     };
-    final best = starsFor(skill);
+    final best = starsFor(lesson);
     return Progress(
       xp: xp + earnedXp,
       streak: nextStreak,
       lastPractice: day,
-      stars: {...stars, skill.id: earnedStars > best ? earnedStars : best},
+      stars: {...stars, lesson.id: earnedStars > best ? earnedStars : best},
     );
   }
 }

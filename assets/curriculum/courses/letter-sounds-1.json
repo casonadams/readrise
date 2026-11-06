@@ -1,0 +1,12 @@
+{
+  "id": "letter-sounds-1",
+  "title": "Letter Sounds 1",
+  "grade": "preK",
+  "requires": [],
+  "lessons": [
+    {"id": "ls1-s", "type": "letter", "char": "s", "sound": "sss", "word": "sun", "emoji": "\u2600\ufe0f"},
+    {"id": "ls1-a", "type": "letter", "char": "a", "sound": "aah", "word": "apple", "emoji": "\ud83c\udf4e"},
+    {"id": "ls1-t", "type": "letter", "char": "t", "sound": "tuh", "word": "tiger", "emoji": "\ud83d\udc2f"},
+    {"id": "ls1-p", "type": "letter", "char": "p", "sound": "puh", "word": "pig", "emoji": "\ud83d\udc37"}
+  ]
+}

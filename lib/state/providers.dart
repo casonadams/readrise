@@ -6,6 +6,10 @@ import '../data/speaker.dart';
 import '../domain/curriculum.dart';
 import '../domain/progress.dart';
 
+final curriculumProvider = Provider<Curriculum>(
+  (ref) => throw UnimplementedError('override in main'),
+);
+
 final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('override in main'),
 );
@@ -27,12 +31,12 @@ class ProgressNotifier extends Notifier<Progress> {
   Progress build() => _store.load();
 
   Future<void> recordLesson({
-    required Skill skill,
+    required Lesson lesson,
     required int stars,
     required int xp,
   }) {
     state = state.recordLesson(
-      skill: skill,
+      lesson: lesson,
       earnedStars: stars,
       earnedXp: xp,
       today: ref.read(clockProvider)(),

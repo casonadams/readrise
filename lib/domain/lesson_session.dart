@@ -19,20 +19,26 @@ class Exercise {
 
 class LessonSession {
   LessonSession({
-    required Skill skill,
-    required List<Letter> pool,
+    required LetterLesson lesson,
+    this.learned = const [],
+    this.unseen = const [],
     Random? random,
     this.maxOptions = 3,
   }) : _random = random ?? Random() {
-    final targets = <Letter>[
-      for (var round = 0; round < 2; round++) ...skill.letters,
-    ]..shuffle(_random);
-    var i = 0;
-    for (final target in targets) {
-      _queue.add(_build(ExerciseKind.values[i++ % 2], target, pool));
+    final letter = lesson.letter;
+    final targets = [letter, letter, ...learned.reversed.take(2), letter];
+    for (var i = 0; i < targets.length; i++) {
+      _queue.add(
+        _build(ExerciseKind.values[i % 2], targets[i], [...learned, letter]),
+      );
     }
   }
 
+  /// Letters from earlier lessons: review targets and preferred distractors.
+  final List<Letter> learned;
+
+  /// Letters not taught yet; distractors only when too few learned exist.
+  final List<Letter> unseen;
   final int maxOptions;
   final Random _random;
   final Queue<Exercise> _queue = Queue();
@@ -82,13 +88,15 @@ class LessonSession {
     return false;
   }
 
-  Exercise _build(ExerciseKind kind, Letter target, List<Letter> pool) {
-    final distractors = pool.where((l) => l != target).toList()
-      ..shuffle(_random);
-    final options = [
-      target,
-      ...distractors.take(min(maxOptions, pool.length) - 1),
-    ]..shuffle(_random);
+  Exercise _build(ExerciseKind kind, Letter target, List<Letter> known) {
+    final wanted = maxOptions - 1;
+    final distractors = [
+      ...known.where((l) => l != target).toList()..shuffle(_random),
+    ];
+    if (distractors.length < wanted) {
+      distractors.addAll([...unseen]..shuffle(_random));
+    }
+    final options = [target, ...distractors.take(wanted)]..shuffle(_random);
     return Exercise(kind: kind, target: target, options: options);
   }
 }
