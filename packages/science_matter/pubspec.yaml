@@ -1,0 +1,17 @@
+name: science_matter
+description: Readrise course plugin on the states of matter, for grades 5-8.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  activity_kit:
+  flutter:
+    sdk: flutter
+  readrise_plugin_api:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

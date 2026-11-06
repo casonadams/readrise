@@ -1,6 +1,21 @@
 import 'package:flutter/widgets.dart';
 
-enum Grade { preK, kindergarten, grade1 }
+enum Grade {
+  preK,
+  kindergarten,
+  grade1,
+  grade2,
+  grade3,
+  grade4,
+  grade5,
+  grade6,
+  grade7,
+  grade8,
+  grade9,
+  grade10,
+  grade11,
+  grade12,
+}
 
 /// A course: an ordered set of lessons the engine shows as one learning path.
 abstract interface class CoursePlugin {

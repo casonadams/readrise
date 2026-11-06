@@ -1,0 +1,16 @@
+name: activity_kit
+description: Reusable Readrise activities (info card, choice quiz, sort) and a basic lesson.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  readrise_plugin_api:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

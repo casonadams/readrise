@@ -11,7 +11,9 @@ words or grammar.
 | Piece | Role |
 | --- | --- |
 | `packages/readrise_plugin_api` | Interfaces: `CoursePlugin` > `LessonPlugin` > `ActivityPlugin`, plus `ActivityHost` and `Speaker` |
-| `packages/phonics_alphabet` | Course plugin: letter shapes and sounds (Alphabet 1 and 2) |
+| `packages/activity_kit` | Reusable activities: info card, choice quiz, drag-to-sort; `BasicLesson` |
+| `packages/phonics_alphabet` | Course plugin: letter shapes and sounds (Alphabet 1 and 2), ages 3-6 |
+| `packages/science_matter` | Course plugin: states of matter with an interactive particle model, grades 5-8 (NGSS MS-PS1) |
 | `lib/engine` | Plugin registry, progress, unlock rules, scoring (XP, stars, streaks) |
 | `lib/ui`, `lib/state`, `lib/data` | Screens, Riverpod providers, local storage and text-to-speech |
 | `lib/plugins.dart` | The list of installed courses |
@@ -32,7 +34,7 @@ Toolchain is pinned in `mise.toml` (Flutter, which bundles Dart); CI uses the sa
     mise install
     flutter pub get
     flutter test                                   # app
-    (cd packages/phonics_alphabet && flutter test) # a plugin
+    (cd packages/science_matter && flutter test)   # a plugin
     flutter run -d chrome
 
 Pushes to `main` run analyze and tests, then deploy the web build to GitHub Pages.

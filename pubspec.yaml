@@ -24,6 +24,8 @@ environment:
 workspace:
   - packages/readrise_plugin_api
   - packages/phonics_alphabet
+  - packages/activity_kit
+  - packages/science_matter
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -35,13 +37,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   flutter_riverpod: ^3.3.2
   go_router: ^18.1.3
   shared_preferences: ^2.5.6
   flutter_tts: ^4.2.5
   phonics_alphabet:
+  science_matter:
   readrise_plugin_api:
 
 dev_dependencies:
