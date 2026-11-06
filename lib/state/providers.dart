@@ -15,7 +15,7 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('override in main'),
 );
 
-final speakerProvider = Provider<Speaker>((ref) => TtsSpeaker());
+final speakerProvider = Provider<Speaker>((ref) => createSpeaker());
 
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 

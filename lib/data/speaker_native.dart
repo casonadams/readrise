@@ -1,0 +1,22 @@
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
+
+Speaker createSpeaker() => _TtsSpeaker();
+
+class _TtsSpeaker implements Speaker {
+  _TtsSpeaker() {
+    _tts.setSpeechRate(0.4);
+    _tts.setPitch(1.1);
+    _tts.awaitSpeakCompletion(true);
+  }
+
+  final FlutterTts _tts = FlutterTts();
+
+  @override
+  Future<void> speak(String text) async {
+    await _tts.stop();
+    await _tts
+        .speak(text)
+        .timeout(const Duration(seconds: 10), onTimeout: () {});
+  }
+}
