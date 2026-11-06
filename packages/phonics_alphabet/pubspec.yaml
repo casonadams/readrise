@@ -1,0 +1,16 @@
+name: phonics_alphabet
+description: Readrise course plugin teaching the alphabet, letter shapes and their sounds.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  readrise_plugin_api:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

@@ -32,6 +32,10 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      - run: |
+          for pkg in packages/*/; do
+            if [ -d "$pkg/test" ]; then (cd "$pkg" && flutter test); fi
+          done
       - run: flutter build web --release --base-href /${{ github.event.repository.name }}/
 
       - name: Prepare artifact

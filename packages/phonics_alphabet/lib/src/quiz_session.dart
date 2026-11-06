@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'dart:math';
 
-import 'curriculum.dart';
+import 'letter.dart';
 
 enum ExerciseKind { soundToLetter, pictureToLetter }
 
@@ -17,15 +17,14 @@ class Exercise {
   final List<Letter> options;
 }
 
-class LessonSession {
-  LessonSession({
-    required LetterLesson lesson,
+class QuizSession {
+  QuizSession({
+    required Letter letter,
     this.learned = const [],
     this.unseen = const [],
     Random? random,
     this.maxOptions = 3,
   }) : _random = random ?? Random() {
-    final letter = lesson.letter;
     final targets = [letter, letter, ...learned.reversed.take(2), letter];
     for (var i = 0; i < targets.length; i++) {
       _queue.add(
@@ -60,12 +59,6 @@ class LessonSession {
     for (final o in current.options)
       if (!_eliminated.contains(o)) o,
   ];
-
-  int get stars => switch (mistakes) {
-    0 => 3,
-    <= 2 => 2,
-    _ => 1,
-  };
 
   /// Returns true when [choice] is correct and the lesson advanced.
   bool answer(Letter choice) {

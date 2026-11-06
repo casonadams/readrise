@@ -1,8 +1,5 @@
 import 'package:flutter_tts/flutter_tts.dart';
-
-abstract interface class Speaker {
-  Future<void> speak(String text);
-}
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 class TtsSpeaker implements Speaker {
   TtsSpeaker() {

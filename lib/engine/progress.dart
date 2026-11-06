@@ -1,6 +1,25 @@
-import 'curriculum.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
+
+import 'registry.dart';
 
 DateTime dateOnly(DateTime t) => DateTime.utc(t.year, t.month, t.day);
+
+String lessonKey(CoursePlugin course, LessonPlugin lesson) =>
+    '${course.id}/${lesson.id}';
+
+/// Engine-owned scoring: plugins report mistakes and XP, never stars.
+class LessonOutcome {
+  const LessonOutcome({required this.xp, required this.mistakes});
+
+  final int xp;
+  final int mistakes;
+
+  int get stars => switch (mistakes) {
+    0 => 3,
+    <= 2 => 2,
+    _ => 1,
+  };
+}
 
 class Progress {
   const Progress({
@@ -27,7 +46,7 @@ class Progress {
   final int streak;
   final DateTime? lastPractice;
 
-  /// Best stars per lesson id.
+  /// Best stars per [lessonKey].
   final Map<String, int> stars;
 
   Map<String, dynamic> toJson() => {
@@ -37,19 +56,24 @@ class Progress {
     'stars': stars,
   };
 
-  int starsFor(Lesson lesson) => stars[lesson.id] ?? 0;
+  int starsFor(CoursePlugin course, LessonPlugin lesson) =>
+      stars[lessonKey(course, lesson)] ?? 0;
 
-  bool isCourseComplete(Course course) =>
-      course.lessons.every((l) => starsFor(l) > 0);
+  bool isCourseComplete(CoursePlugin course) =>
+      course.lessons.every((l) => starsFor(course, l) > 0);
 
-  bool isCourseUnlocked(Curriculum c, Course course) =>
-      course.requires.every((id) => isCourseComplete(c.courseById(id)));
+  bool isCourseUnlocked(PluginRegistry registry, CoursePlugin course) =>
+      course.requires.every((id) => isCourseComplete(registry.courseById(id)));
 
   /// Open when the course is open and the previous lesson has a star.
-  bool isLessonUnlocked(Curriculum c, Course course, Lesson lesson) {
-    if (!isCourseUnlocked(c, course)) return false;
+  bool isLessonUnlocked(
+    PluginRegistry registry,
+    CoursePlugin course,
+    LessonPlugin lesson,
+  ) {
+    if (!isCourseUnlocked(registry, course)) return false;
     final i = course.lessons.indexOf(lesson);
-    return i == 0 || starsFor(course.lessons[i - 1]) > 0;
+    return i == 0 || starsFor(course, course.lessons[i - 1]) > 0;
   }
 
   /// Streak as shown on [today]: lapses to 0 after a missed day.
@@ -61,9 +85,9 @@ class Progress {
   }
 
   Progress recordLesson({
-    required Lesson lesson,
-    required int earnedStars,
-    required int earnedXp,
+    required CoursePlugin course,
+    required LessonPlugin lesson,
+    required LessonOutcome outcome,
     required DateTime today,
   }) {
     final day = dateOnly(today);
@@ -74,12 +98,15 @@ class Progress {
       1 => streak + 1,
       _ => 1,
     };
-    final best = starsFor(lesson);
+    final best = starsFor(course, lesson);
     return Progress(
-      xp: xp + earnedXp,
+      xp: xp + outcome.xp,
       streak: nextStreak,
       lastPractice: day,
-      stars: {...stars, lesson.id: earnedStars > best ? earnedStars : best},
+      stars: {
+        ...stars,
+        lessonKey(course, lesson): outcome.stars > best ? outcome.stars : best,
+      },
     );
   }
 }

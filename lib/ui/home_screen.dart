@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../domain/curriculum.dart';
-import '../domain/progress.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
+
+import '../engine/progress.dart';
+import '../engine/registry.dart';
 import '../state/providers.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -11,12 +13,12 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final curriculum = ref.watch(curriculumProvider);
+    final registry = ref.watch(registryProvider);
     final progress = ref.watch(progressProvider);
     final streak = progress.streakOn(ref.watch(clockProvider)());
     return Scaffold(
       appBar: AppBar(
-        title: Text(curriculum.title),
+        title: const Text('Readrise'),
         actions: [
           _Badge(emoji: '\u{1F525}', value: streak),
           _Badge(emoji: '\u2B50', value: progress.xp),
@@ -26,9 +28,9 @@ class HomeScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-          for (final course in curriculum.courses)
+          for (final course in registry.courses)
             _CourseSection(
-              curriculum: curriculum,
+              registry: registry,
               course: course,
               progress: progress,
             ),
@@ -40,19 +42,19 @@ class HomeScreen extends ConsumerWidget {
 
 class _CourseSection extends StatelessWidget {
   const _CourseSection({
-    required this.curriculum,
+    required this.registry,
     required this.course,
     required this.progress,
   });
 
-  final Curriculum curriculum;
-  final Course course;
+  final PluginRegistry registry;
+  final CoursePlugin course;
   final Progress progress;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final open = progress.isCourseUnlocked(curriculum, course);
+    final open = progress.isCourseUnlocked(registry, course);
     return Column(
       children: [
         Container(
@@ -72,10 +74,11 @@ class _CourseSection extends StatelessWidget {
           Align(
             alignment: Alignment(((i % 4) - 1.5) * 0.35, 0),
             child: _LessonNode(
+              courseId: course.id,
               lesson: course.lessons[i],
-              stars: progress.starsFor(course.lessons[i]),
+              stars: progress.starsFor(course, course.lessons[i]),
               unlocked: progress.isLessonUnlocked(
-                curriculum,
+                registry,
                 course,
                 course.lessons[i],
               ),
@@ -101,12 +104,14 @@ class _Badge extends StatelessWidget {
 
 class _LessonNode extends StatelessWidget {
   const _LessonNode({
+    required this.courseId,
     required this.lesson,
     required this.stars,
     required this.unlocked,
   });
 
-  final Lesson lesson;
+  final LessonPlugin lesson;
+  final String courseId;
   final int stars;
   final bool unlocked;
 
@@ -129,7 +134,7 @@ class _LessonNode extends StatelessWidget {
               child: InkWell(
                 customBorder: const CircleBorder(),
                 onTap: unlocked
-                    ? () => context.push('/lesson/${lesson.id}')
+                    ? () => context.push('/lesson/$courseId/${lesson.id}')
                     : null,
                 child: SizedBox(
                   width: 112,

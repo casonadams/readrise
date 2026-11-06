@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../domain/progress.dart';
+import '../engine/progress.dart';
 
 class ProgressStore {
   const ProgressStore(this._prefs);

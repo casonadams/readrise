@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/progress_store.dart';
 import '../data/speaker.dart';
-import '../domain/curriculum.dart';
-import '../domain/progress.dart';
+import '../engine/progress.dart';
+import '../engine/registry.dart';
 
-final curriculumProvider = Provider<Curriculum>(
+final registryProvider = Provider<PluginRegistry>(
   (ref) => throw UnimplementedError('override in main'),
 );
 
@@ -31,14 +32,14 @@ class ProgressNotifier extends Notifier<Progress> {
   Progress build() => _store.load();
 
   Future<void> recordLesson({
-    required Lesson lesson,
-    required int stars,
-    required int xp,
+    required CoursePlugin course,
+    required LessonPlugin lesson,
+    required LessonOutcome outcome,
   }) {
     state = state.recordLesson(
+      course: course,
       lesson: lesson,
-      earnedStars: stars,
-      earnedXp: xp,
+      outcome: outcome,
       today: ref.read(clockProvider)(),
     );
     return _store.save(state);

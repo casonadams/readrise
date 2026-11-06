@@ -1,0 +1,11 @@
+name: readrise_plugin_api
+description: Interfaces between the Readrise engine and course, lesson and activity plugins.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
