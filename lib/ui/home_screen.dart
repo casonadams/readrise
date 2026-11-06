@@ -154,9 +154,8 @@ class _LessonNode extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            [
-              for (var s = 1; s <= 3; s++) s <= stars ? '\u2B50' : '\u2606',
-            ].join(),
+            [for (var s = 1; s <= 3; s++) s <= stars ? '\u2B50' : '\u2606']
+                .join(),
             style: const TextStyle(fontSize: 24),
           ),
         ],

@@ -3,7 +3,7 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'letter.dart';
 
-/// "Meet the letter": shows the letter and key word and speaks the sound.
+/// "Meet the letter": shows the letter and key word and speaks the letter and word.
 class LetterIntroActivity implements ActivityPlugin {
   const LetterIntroActivity(this.letter);
 
@@ -31,9 +31,8 @@ class _IntroViewState extends State<_IntroView> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _speak());
   }
 
-  void _speak() => widget.host.speaker.speak(
-    '${widget.letter.sound}. ${widget.letter.word}',
-  );
+  void _speak() =>
+      widget.host.speaker.speak('${widget.letter.char}. ${widget.letter.word}');
 
   @override
   Widget build(BuildContext context) {

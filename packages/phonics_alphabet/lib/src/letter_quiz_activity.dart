@@ -48,7 +48,7 @@ class _QuizViewState extends State<_QuizView> {
   void _speakPrompt() {
     final e = _session.current;
     widget.host.speaker.speak(
-      e.kind == ExerciseKind.soundToLetter ? e.target.sound : e.target.word,
+      e.kind == ExerciseKind.soundToLetter ? e.target.char : e.target.word,
     );
   }
 

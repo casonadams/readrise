@@ -1,13 +1,7 @@
 class Letter {
-  const Letter({
-    required this.char,
-    required this.sound,
-    required this.word,
-    required this.emoji,
-  });
+  const Letter({required this.char, required this.word, required this.emoji});
 
   final String char;
-  final String sound;
   final String word;
   final String emoji;
 

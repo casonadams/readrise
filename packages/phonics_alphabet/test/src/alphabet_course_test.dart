@@ -33,11 +33,10 @@ void main() {
     }
   });
 
-  test('letters are real letters with a sound and key word', () {
+  test('letters are real letters with a key word starting with them', () {
     for (final lesson in [...one.lessons, ...two.lessons]) {
       final letter = (lesson as LetterLesson).letter;
       expect(letter.char, hasLength(1));
-      expect(letter.sound, isNotEmpty);
       expect(letter.word, startsWith(letter.char));
     }
   });

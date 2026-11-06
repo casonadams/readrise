@@ -38,11 +38,8 @@ void main() {
       await tester.pumpAndSettle();
 
       while (find.text('Continue').evaluate().isEmpty) {
-        final spoken = speaker.spoken.last;
-        final target = spoken == 'sss' || spoken == 'sun'
-            ? 'Ss'
-            : fail('unexpected prompt $spoken');
-        await tester.tap(find.text(target));
+        expect(speaker.spoken.last, anyOf('s', 'sun'));
+        await tester.tap(find.text('Ss'));
         await tester.pump(const Duration(seconds: 1));
       }
 
