@@ -1,17 +1,22 @@
-# readrise
+# Readrise
 
-Gamified, scaffolded K-12 English reading app
+Gamified, scaffolded English reading app for pre-K to 1st grade (Flutter).
+Live web build: https://casonadams.github.io/readrise/
 
-## Getting Started
+## Structure
 
-This project is a starting point for a Flutter application.
+- `lib/domain` - curriculum, lesson engine, progress rules (pure Dart)
+- `lib/data` - local persistence, text-to-speech
+- `lib/state` - Riverpod providers
+- `lib/ui` - screens
 
-A few resources to get you started if this is your first Flutter project:
+## Develop
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+    flutter pub get
+    flutter test
+    flutter run -d chrome
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Pushes to `main` run analyze, test, and deploy the web build to GitHub Pages.
+
+Letter sounds currently use platform text-to-speech; recorded phoneme audio
+is the planned replacement.
