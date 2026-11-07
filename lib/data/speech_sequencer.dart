@@ -15,6 +15,11 @@ abstract interface class SpeechEngine {
   void cancel();
 }
 
+/// How long to wait for [text] to finish before giving up on its 'end' event:
+/// long enough to speak it, short enough that a lost event costs little.
+Duration defaultSpeechTimeout(String text) =>
+    Duration(milliseconds: 2000 + 120 * text.length);
+
 /// Turns a speech engine into a [Speaker] that never leaves a caller waiting:
 /// a new line interrupts the old one, and every line finishes on its end, on
 /// an error, or after [timeout]. A short [startDelay] after cancelling avoids
@@ -23,12 +28,12 @@ class SpeechSequencer implements Speaker {
   SpeechSequencer(
     this._engine, {
     this.startDelay = const Duration(milliseconds: 60),
-    this.timeout = const Duration(seconds: 10),
+    this.timeout = defaultSpeechTimeout,
   });
 
   final SpeechEngine _engine;
   final Duration startDelay;
-  final Duration timeout;
+  final Duration Function(String text) timeout;
 
   int _id = 0;
   Completer<void>? _current;
@@ -43,7 +48,7 @@ class SpeechSequencer implements Speaker {
     _current = done;
     _engine.cancel();
     _startTimer = Timer(startDelay, () {
-      _watchdog = Timer(timeout, () => _finish(id));
+      _watchdog = Timer(timeout(text), () => _finish(id));
       _engine.start(
         text,
         onDone: () => _finish(id),

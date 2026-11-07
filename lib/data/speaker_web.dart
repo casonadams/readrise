@@ -8,9 +8,12 @@ import 'speech_sequencer.dart';
 
 Speaker createSpeaker() => SpeechSequencer(WebSpeechEngine());
 
-/// Browser speech through the Web Speech API. Speech is blocked until the
-/// first tap, so the first tap speaks a silent line to unlock it (iOS Safari
-/// needs this); until then lines finish silently.
+/// Browser speech through the Web Speech API.
+///
+/// iOS Safari refuses speech until a line has been started inside a tap, and
+/// an empty line is enough. Every tap tries until a line is seen to start, so
+/// an event that Safari does not count as a tap cannot lock speech out for
+/// good. Until then lines finish silently.
 class WebSpeechEngine implements SpeechEngine {
   WebSpeechEngine() {
     if (!_supported) return;
@@ -19,22 +22,37 @@ class WebSpeechEngine implements SpeechEngine {
     }
   }
 
-  static const _unlockEvents = ['click', 'touchend', 'pointerup', 'keydown'];
+  static const _unlockEvents = ['click', 'touchend', 'keydown'];
 
   static bool get _supported => globalContext.has('speechSynthesis');
 
-  bool _unlocked = false;
+  bool _confirmed = false;
+
+  /// Held so the browser cannot garbage-collect a line before it ends, which
+  /// silently drops its 'end' event.
+  final List<web.SpeechSynthesisUtterance> _alive = [];
 
   late final JSExportedDartFunction _unlockJs = _unlock.toJS;
 
   void _unlock(web.Event _) {
-    if (_unlocked) return;
-    _unlocked = true;
+    if (_confirmed) return;
+    final empty = web.SpeechSynthesisUtterance('');
+    empty.onstart = ((web.Event _) => _confirm()).toJS;
+    _keep(empty);
+    web.window.speechSynthesis.speak(empty);
+  }
+
+  void _confirm() {
+    if (_confirmed) return;
+    _confirmed = true;
     for (final type in _unlockEvents) {
       web.window.removeEventListener(type, _unlockJs, true.toJS);
     }
-    final silent = web.SpeechSynthesisUtterance(' ')..volume = 0;
-    web.window.speechSynthesis.speak(silent);
+  }
+
+  void _keep(web.SpeechSynthesisUtterance utterance) {
+    _alive.add(utterance);
+    if (_alive.length > 6) _alive.removeAt(0);
   }
 
   @override
@@ -54,8 +72,10 @@ class WebSpeechEngine implements SpeechEngine {
       ..pitch = 1.1;
     final voice = _englishVoice(synth);
     if (voice != null) utterance.voice = voice;
+    utterance.onstart = ((web.Event _) => _confirm()).toJS;
     utterance.onend = ((web.Event _) => onDone()).toJS;
     utterance.onerror = ((web.Event _) => onError()).toJS;
+    _keep(utterance);
     synth.resume();
     synth.speak(utterance);
   }

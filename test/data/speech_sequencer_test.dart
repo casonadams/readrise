@@ -77,13 +77,15 @@ void main() {
     expect(done, isTrue);
   });
 
-  speakerTest('a line the engine never reports on times out', (tester) async {
+  speakerTest('a line the engine never reports on times out quickly', (
+    tester,
+  ) async {
     var done = false;
     speaker.speak('a').then((_) => done = true);
     await start(tester);
-    await tester.pump(const Duration(seconds: 9));
+    await tester.pump(const Duration(milliseconds: 2000));
     expect(done, isFalse);
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 200));
     expect(done, isTrue);
   });
 
@@ -138,14 +140,26 @@ void main() {
   speakerTest('the timeout restarts for each line', (tester) async {
     speaker.speak('a');
     await start(tester);
-    await tester.pump(const Duration(seconds: 8));
+    await tester.pump(const Duration(seconds: 2));
     speaker.speak('b');
     await start(tester);
     var done = false;
     speaker.speak('c').then((_) => done = true);
     await start(tester);
-    await tester.pump(const Duration(seconds: 9));
+    await tester.pump(const Duration(milliseconds: 2000));
     expect(done, isFalse);
+  });
+
+  test('a longer line is given longer to finish', () {
+    expect(
+      defaultSpeechTimeout('Feed me things that start with s'),
+      greaterThan(defaultSpeechTimeout('a')),
+    );
+    expect(defaultSpeechTimeout('a'), lessThan(const Duration(seconds: 3)));
+    expect(
+      defaultSpeechTimeout('Feed me things that start with s'),
+      lessThan(const Duration(seconds: 8)),
+    );
   });
 
   speakerTest('speaking works again after a line finished', (tester) async {
