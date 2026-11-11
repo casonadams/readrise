@@ -15,6 +15,9 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('override in main'),
 );
 
+/// Subject ids shown as "coming soon": listed but not openable.
+final closedSubjectsProvider = Provider<Set<String>>((ref) => const {});
+
 final speakerProvider = Provider<Speaker>((ref) => createSpeaker());
 
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);

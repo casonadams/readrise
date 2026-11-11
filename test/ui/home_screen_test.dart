@@ -89,4 +89,18 @@ void main() {
     expect(find.bySemanticsLabel('0 day streak'), findsOneWidget);
     handle.dispose();
   });
+
+  testWidgets('a coming-soon subject is shown but cannot be opened', (
+    tester,
+  ) async {
+    await pumpApp(tester, registry, closedSubjects: {'reading'});
+
+    expect(find.text('Reading'), findsOneWidget);
+    expect(find.text('Coming soon'), findsOneWidget);
+    expect(find.text('Lx'), findsOneWidget);
+
+    await tester.tap(find.text('Reading'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pick a subject'), findsOneWidget);
+  });
 }

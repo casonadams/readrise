@@ -19,6 +19,7 @@ Future<ProviderContainer> pumpApp(
   PluginRegistry registry, {
   Progress progress = const Progress(),
   FakeSpeaker? speaker,
+  Set<String> closedSubjects = const {},
 }) async {
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       const FakeAccessibilityFeatures(disableAnimations: true);
@@ -38,6 +39,7 @@ Future<ProviderContainer> pumpApp(
         registryProvider.overrideWithValue(registry),
         speakerProvider.overrideWithValue(speaker ?? FakeSpeaker()),
         clockProvider.overrideWithValue(() => today),
+        closedSubjectsProvider.overrideWithValue(closedSubjects),
       ],
       child: const ReadriseApp(),
     ),

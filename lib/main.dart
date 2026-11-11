@@ -15,6 +15,7 @@ Future<void> main() async {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         registryProvider.overrideWithValue(PluginRegistry(installedCourses())),
+        closedSubjectsProvider.overrideWithValue(comingSoonSubjects),
       ],
       child: const ReadriseApp(),
     ),

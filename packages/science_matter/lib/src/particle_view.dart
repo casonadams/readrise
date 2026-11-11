@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -45,24 +47,32 @@ class _ParticleViewState extends State<ParticleView>
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
       label: 'Particles in a ${widget.state.name}',
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerLowest,
-          border: Border.all(color: scheme.outline, width: 2),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: CustomPaint(
-            size: Size.infinite,
-            painter: _ParticlePainter(
-              sim: _sim,
-              color: switch (widget.state) {
-                MatterState.solid => Colors.indigo,
-                MatterState.liquid => Colors.blue,
-                MatterState.gas => Colors.lightBlue,
+      child: TweenAnimationBuilder<Color?>(
+        tween: ColorTween(end: particleColor(widget.state)),
+        duration: const Duration(milliseconds: 500),
+        builder: (context, color, _) => DecoratedBox(
+          decoration: BoxDecoration(
+            color: Color.alphaBlend(
+              color!.withValues(alpha: 0.06),
+              scheme.surfaceContainerLowest,
+            ),
+            border: Border.all(color: scheme.outlineVariant, width: 2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: LayoutBuilder(
+              builder: (context, box) {
+                _sim.height = box.maxHeight / box.maxWidth;
+                return CustomPaint(
+                  size: Size.infinite,
+                  painter: _ParticlePainter(
+                    sim: _sim,
+                    color: color,
+                    repaint: _frame,
+                  ),
+                );
               },
-              repaint: _frame,
             ),
           ),
         ),
@@ -70,6 +80,13 @@ class _ParticleViewState extends State<ParticleView>
     );
   }
 }
+
+/// The colour particles are drawn in for [state].
+Color particleColor(MatterState state) => switch (state) {
+  MatterState.solid => Colors.indigo,
+  MatterState.liquid => Colors.blue,
+  MatterState.gas => Colors.lightBlue,
+};
 
 class _ParticlePainter extends CustomPainter {
   _ParticlePainter({
@@ -83,10 +100,18 @@ class _ParticlePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    final r = ParticleSim.radius * size.shortestSide;
+    final body = Paint()..color = color;
+    final shine = Paint()..color = Colors.white.withValues(alpha: 0.45);
+    final scale = min(size.width, size.height / sim.height);
+    final origin = Offset(
+      (size.width - scale) / 2,
+      size.height - sim.height * scale,
+    );
+    final r = ParticleSim.radius * scale;
     for (final p in sim.particles) {
-      canvas.drawCircle(Offset(p.x * size.width, p.y * size.height), r, paint);
+      final at = origin + Offset(p.x, p.y) * scale;
+      canvas.drawCircle(at, r, body);
+      canvas.drawCircle(at + Offset(-r * 0.35, -r * 0.35), r * 0.32, shine);
     }
   }
 

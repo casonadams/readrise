@@ -106,13 +106,14 @@ void main() {
         final target = Uri.encodeFull('/lesson/${course.id}/${lesson.id}');
         final router = GoRouter.of(tester.element(find.byType(Scaffold).first));
         router.push(target);
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
         expect(
           tester.takeException(),
           isNull,
           reason: '${course.id}/${lesson.id}',
         );
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+        await tester.pump(const Duration(seconds: 2));
       }
     }
   });

@@ -17,6 +17,7 @@ class SubjectSummary {
     required this.lessonsDone,
     required this.lessonsTotal,
     required this.next,
+    this.open = true,
   });
 
   final Subject subject;
@@ -27,16 +28,21 @@ class SubjectSummary {
   /// First open lesson without a star, or null when finished or all locked.
   final LessonRef? next;
 
+  /// False for a subject that is listed but not available yet.
+  final bool open;
+
   double get fraction => lessonsTotal == 0 ? 0 : lessonsDone / lessonsTotal;
   bool get started => lessonsDone > 0;
   bool get finished => lessonsDone == lessonsTotal;
 }
 
 /// One summary per subject, in the order subjects first appear in [registry].
+/// Subjects in [closed] are listed but marked not open.
 List<SubjectSummary> summarizeSubjects(
   PluginRegistry registry,
-  Progress progress,
-) {
+  Progress progress, {
+  Set<String> closed = const {},
+}) {
   final byId = <String, List<CoursePlugin>>{};
   for (final course in registry.courses) {
     byId.putIfAbsent(course.subject.id, () => []).add(course);
@@ -53,6 +59,7 @@ List<SubjectSummary> summarizeSubjects(
         ].length,
         lessonsTotal: courses.fold(0, (n, c) => n + c.lessons.length),
         next: _firstOpen(registry, progress, courses),
+        open: !closed.contains(courses.first.subject.id),
       ),
   ];
 }
@@ -68,19 +75,27 @@ LessonRef? nextUp(
 ]);
 
 /// Where "Continue" should lead: the next lesson in the subject the learner
-/// last practiced, else the next open lesson anywhere.
-LessonRef? continueTarget(PluginRegistry registry, Progress progress) {
+/// last practiced, else the next open lesson anywhere. Never leads into a
+/// subject in [closed].
+LessonRef? continueTarget(
+  PluginRegistry registry,
+  Progress progress, {
+  Set<String> closed = const {},
+}) {
   final last = progress.lastLesson;
   if (last != null) {
     final courseId = last.split('/').first;
     for (final c in registry.courses) {
-      if (c.id == courseId) {
+      if (c.id == courseId && !closed.contains(c.subject.id)) {
         final inSubject = nextUp(registry, progress, subjectId: c.subject.id);
         if (inSubject != null) return inSubject;
       }
     }
   }
-  return nextUp(registry, progress);
+  return _firstOpen(registry, progress, [
+    for (final c in registry.courses)
+      if (!closed.contains(c.subject.id)) c,
+  ]);
 }
 
 LessonRef? _firstOpen(

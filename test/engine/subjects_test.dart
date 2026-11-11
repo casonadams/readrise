@@ -84,5 +84,26 @@ void main() {
       }
       expect(continueTarget(registry, p), isNull);
     });
+
+    test('never leads into a closed subject', () {
+      expect(
+        idOf(continueTarget(registry, const Progress(), closed: {'reading'})),
+        's1/x',
+      );
+      final p = finish(const Progress(), r1, 0);
+      expect(idOf(continueTarget(registry, p, closed: {'reading'})), 's1/x');
+    });
+  });
+
+  test('a closed subject is listed but not open', () {
+    final summaries = summarizeSubjects(
+      registry,
+      const Progress(),
+      closed: {'reading'},
+    );
+    expect(summaries.map((s) => (s.subject.id, s.open)), [
+      ('reading', false),
+      ('science', true),
+    ]);
   });
 }

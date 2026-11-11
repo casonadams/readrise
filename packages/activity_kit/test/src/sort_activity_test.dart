@@ -98,4 +98,56 @@ void main() {
     expect(lines.length, greaterThan(1));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('placing an item says why it belongs there', (tester) async {
+    await pumpActivity(
+      tester,
+      const SortActivity(
+        prompt: 'Sort',
+        bins: ['Hot', 'Cold'],
+        items: [SortItem('Fire', bin: 0, why: 'Fire gives off heat.')],
+      ),
+    );
+    await tester.tap(find.text('Hot'));
+    await tester.pump();
+    expect(find.text('Fire gives off heat.'), findsOneWidget);
+  });
+
+  const hinted = SortActivity(
+    prompt: 'Sort',
+    bins: ['Hot', 'Cold'],
+    hint: 'Hot things warm you up.',
+    items: [SortItem('Fire', bin: 0), SortItem('Ice', bin: 1)],
+  );
+
+  testWidgets('a wrong bin answers with the hint', (tester) async {
+    await pumpActivity(tester, hinted);
+    await tester.tap(find.text('Cold'));
+    await tester.pump();
+    expect(find.text('Hot things warm you up.'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 600));
+  });
+
+  testWidgets('asking for the hint halves that item only', (tester) async {
+    final host = await pumpActivity(tester, hinted);
+    await tester.tap(find.text('Need a hint?'));
+    await tester.pump();
+    expect(find.text('Hot things warm you up.'), findsOneWidget);
+
+    await tester.tap(find.text('Hot'));
+    await tester.pump();
+    await tester.tap(find.text('Cold'));
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
+    expect(host.results.single.xp, 15);
+    expect(host.results.single.mistakes, 0);
+  });
+
+  testWidgets('a bin announces its name and what is in it', (tester) async {
+    await pumpActivity(tester, activity);
+    expect(find.bySemanticsLabel('Hot'), findsOneWidget);
+    await tester.tap(find.text('Hot'));
+    await tester.pump();
+    expect(find.bySemanticsLabel('Hot, 1 item: Fire'), findsOneWidget);
+  });
 }

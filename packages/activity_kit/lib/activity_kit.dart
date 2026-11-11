@@ -1,5 +1,10 @@
+export 'src/activity_header.dart' show ActivityKind;
 export 'src/basic_lesson.dart';
 export 'src/choice_quiz_activity.dart';
+export 'src/explainer_activity.dart';
 export 'src/info_card_activity.dart';
+export 'src/kid_avatar.dart' show Kid;
+export 'src/predict_activity.dart';
 export 'src/shake.dart';
 export 'src/sort_activity.dart';
+export 'src/who_is_right_activity.dart';

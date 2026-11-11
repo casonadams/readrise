@@ -16,8 +16,9 @@ class HomeScreen extends ConsumerWidget {
     final registry = ref.watch(registryProvider);
     final progress = ref.watch(progressProvider);
     final streak = progress.streakOn(ref.watch(clockProvider)());
-    final target = continueTarget(registry, progress);
-    final summaries = summarizeSubjects(registry, progress);
+    final closed = ref.watch(closedSubjectsProvider);
+    final target = continueTarget(registry, progress, closed: closed);
+    final summaries = summarizeSubjects(registry, progress, closed: closed);
     final text = Theme.of(context).textTheme;
     return Scaffold(
       body: SafeArea(
@@ -197,7 +198,9 @@ class _SubjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final subject = summary.subject;
     final text = Theme.of(context).textTheme;
-    final status = summary.finished
+    final status = !summary.open
+        ? 'Coming soon'
+        : summary.finished
         ? 'All ${summary.lessonsTotal} lessons done'
         : summary.started
         ? '${summary.lessonsDone} of ${summary.lessonsTotal} lessons'
@@ -205,55 +208,67 @@ class _SubjectCard extends StatelessWidget {
     return Semantics(
       container: true,
       button: true,
+      enabled: summary.open,
       label: '${subject.title}, $status',
       excludeSemantics: true,
       child: Card(
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => context.push('/subject/${subject.id}'),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Row(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: subject.color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
+        child: Opacity(
+          opacity: summary.open ? 1 : 0.5,
+          child: InkWell(
+            onTap: summary.open
+                ? () => context.push('/subject/${subject.id}')
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: subject.color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      subject.emoji,
+                      style: const TextStyle(fontSize: 34),
+                    ),
                   ),
-                  child: Text(
-                    subject.emoji,
-                    style: const TextStyle(fontSize: 34),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(subject.title, style: text.titleLarge),
-                      const SizedBox(height: 2),
-                      Text(status, style: text.bodyMedium),
-                      const SizedBox(height: 10),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: summary.fraction,
-                          minHeight: 10,
-                          color: subject.color,
-                          backgroundColor: subject.color.withValues(
-                            alpha: 0.15,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(subject.title, style: text.titleLarge),
+                        const SizedBox(height: 2),
+                        Text(status, style: text.bodyMedium),
+                        if (summary.open) ...[
+                          const SizedBox(height: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: summary.fraction,
+                              minHeight: 10,
+                              color: subject.color,
+                              backgroundColor: subject.color.withValues(
+                                alpha: 0.15,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(Icons.chevron_right_rounded),
-              ],
+                  const SizedBox(width: 8),
+                  Icon(
+                    summary.open
+                        ? Icons.chevron_right_rounded
+                        : Icons.lock_rounded,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
