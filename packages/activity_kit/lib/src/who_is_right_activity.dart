@@ -58,24 +58,11 @@ class _WhoIsRightView extends StatefulWidget {
 }
 
 class _WhoIsRightViewState extends State<_WhoIsRightView> {
-  late final Speaker _speaker;
   final List<int> _wrong = [];
   final Map<int, int> _shakes = {};
   bool _solved = false;
 
   WhoIsRightActivity get _a => widget.activity;
-
-  @override
-  void initState() {
-    super.initState();
-    _speaker = widget.host.speaker;
-  }
-
-  @override
-  void dispose() {
-    _speaker.speak('');
-    super.dispose();
-  }
 
   void _pick(int i) {
     if (_solved || _wrong.contains(i)) return;
@@ -109,13 +96,6 @@ class _WhoIsRightViewState extends State<_WhoIsRightView> {
     return _solved ? OptionState.dimmed : OptionState.open;
   }
 
-  void _readAloud() => _speaker.speak(
-    [
-      _a.situation,
-      for (final c in _a.claims) '${c.kid.name} says: ${c.says}',
-    ].join(' '),
-  );
-
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -127,14 +107,7 @@ class _WhoIsRightViewState extends State<_WhoIsRightView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ActivityHeader(
-            kind: ActivityKind.whoIsRight,
-            trailing: IconButton.filledTonal(
-              tooltip: 'Read aloud',
-              onPressed: _readAloud,
-              icon: const Icon(Icons.volume_up_rounded),
-            ),
-          ),
+          const ActivityHeader(kind: ActivityKind.whoIsRight),
           const SizedBox(height: 12),
           Text(_a.situation, style: text.titleLarge?.copyWith(height: 1.3)),
           const SizedBox(height: 4),
@@ -181,7 +154,6 @@ class _WhoIsRightViewState extends State<_WhoIsRightView> {
                 ? AnswerPanel(
                     title: 'Yes! $winner is right.',
                     explanation: _a.explanation,
-                    onListen: () => _speaker.speak(_a.explanation),
                     onContinue: _finish,
                   )
                 : const SizedBox(width: double.infinity),

@@ -104,13 +104,14 @@ this arc; copy it for new courses.
 
 ## Narration
 
-- Explainers narrate each step automatically. Other activities offer a
-  read-aloud button; they do not speak on their own.
-- Read `host.speaker` in `initState` and keep it. Reading it lazily can
-  happen first in `dispose`, which throws once the widget is deactivated.
-- Start narration after the first frame, not in `initState`: the card being
-  replaced stops speech when it is disposed, which happens after the new card
-  builds.
+- Science activities are silent for now: no narration and no read-aloud
+  buttons. Text-to-speech is being redesigned; do not add speech to
+  `activity_kit` activities until that design exists.
+- When speech returns, avoid two bugs already hit here: read `host.speaker`
+  in `initState`, never lazily (a first read in `dispose` throws once the
+  widget is deactivated); and start speaking after the first frame, because
+  the card being replaced stops speech in its `dispose`, which runs after
+  the new card builds.
 
 ## Tests
 

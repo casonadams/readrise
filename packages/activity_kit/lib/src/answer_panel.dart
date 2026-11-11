@@ -7,7 +7,6 @@ class AnswerPanel extends StatelessWidget {
     required this.title,
     required this.explanation,
     required this.onContinue,
-    required this.onListen,
     this.color = correctGreen,
     this.icon = Icons.check_circle_rounded,
     this.lead,
@@ -16,7 +15,6 @@ class AnswerPanel extends StatelessWidget {
   final String title;
   final String explanation;
   final VoidCallback onContinue;
-  final VoidCallback onListen;
   final Color color;
   final IconData icon;
 
@@ -60,11 +58,6 @@ class AnswerPanel extends StatelessWidget {
                     title,
                     style: text.titleLarge?.copyWith(color: color),
                   ),
-                ),
-                IconButton(
-                  tooltip: 'Read aloud',
-                  onPressed: onListen,
-                  icon: const Icon(Icons.volume_up_rounded),
                 ),
               ],
             ),

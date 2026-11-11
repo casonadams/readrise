@@ -99,7 +99,6 @@ class _QuizView extends StatefulWidget {
 }
 
 class _QuizViewState extends State<_QuizView> {
-  late final Speaker _speaker;
   int _index = 0;
   final List<int> _wrong = [];
   final List<int> _wrongReasons = [];
@@ -114,28 +113,6 @@ class _QuizViewState extends State<_QuizView> {
   List<ChoiceQuestion> get _questions => widget.activity.questions;
   ChoiceQuestion get _question => _questions[_index];
   bool get _settled => _answered && (_question.reason == null || _reasoned);
-
-  @override
-  void initState() {
-    super.initState();
-    _speaker = widget.host.speaker;
-  }
-
-  @override
-  void dispose() {
-    _speaker.speak('');
-    super.dispose();
-  }
-
-  void _readAloud() {
-    final q = _question;
-    final reason = q.reason;
-    _speaker.speak(
-      _answered && reason != null
-          ? [reason.prompt, ...reason.options].join('. ')
-          : [q.prompt, ...q.options].join('. '),
-    );
-  }
 
   void _showHint() => setState(() => _hintShown = true);
 
@@ -182,7 +159,6 @@ class _QuizViewState extends State<_QuizView> {
   }
 
   void _next() {
-    _speaker.speak('');
     if (_index + 1 == _questions.length) {
       widget.host.complete(
         ActivityResult(
@@ -281,12 +257,6 @@ class _QuizViewState extends State<_QuizView> {
                             style: text.titleLarge?.copyWith(height: 1.3),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        IconButton.filledTonal(
-                          tooltip: 'Read aloud',
-                          onPressed: _readAloud,
-                          icon: const Icon(Icons.volume_up_rounded),
-                        ),
                       ],
                     ),
                     if (q.visual != null) ...[
@@ -366,7 +336,6 @@ class _QuizViewState extends State<_QuizView> {
                         : 'You got it!',
                     explanation: q.explanation,
                     onContinue: _next,
-                    onListen: () => _speaker.speak(q.explanation),
                   )
                 : const SizedBox(width: double.infinity),
           ),

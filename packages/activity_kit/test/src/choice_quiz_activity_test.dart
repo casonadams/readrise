@@ -161,12 +161,6 @@ void main() {
     expect(find.text('Think about d.'), findsOneWidget);
   });
 
-  testWidgets('read aloud speaks the prompt and the options', (tester) async {
-    final host = await pumpActivity(tester, hinted);
-    await tester.tap(find.byTooltip('Read aloud'));
-    expect(host.recordingSpeaker.spoken.last, 'Q. a. b. c. d');
-  });
-
   testWidgets('options announce whether they were wrong or correct', (
     tester,
   ) async {

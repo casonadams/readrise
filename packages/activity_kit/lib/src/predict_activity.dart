@@ -87,7 +87,6 @@ class _PredictView extends StatefulWidget {
 }
 
 class _PredictViewState extends State<_PredictView> {
-  late final Speaker _speaker;
   int? _prediction;
   Confidence? _confidence;
   bool _observed = false;
@@ -95,18 +94,6 @@ class _PredictViewState extends State<_PredictView> {
   PredictActivity get _a => widget.activity;
   bool get _testing => _confidence != null && !_observed;
   bool get _right => _prediction == _a.answer;
-
-  @override
-  void initState() {
-    super.initState();
-    _speaker = widget.host.speaker;
-  }
-
-  @override
-  void dispose() {
-    _speaker.speak('');
-    super.dispose();
-  }
 
   void _predict(int option) {
     if (_confidence != null) return;
@@ -126,10 +113,7 @@ class _PredictViewState extends State<_PredictView> {
     });
   }
 
-  String get _resultText => [
-    ?_a.reactions[_prediction],
-    _a.outcome,
-  ].join(' ');
+  String get _resultText => [?_a.reactions[_prediction], _a.outcome].join(' ');
 
   OptionState _stateOf(int i) =>
       i == _prediction ? OptionState.picked : OptionState.open;
@@ -143,19 +127,7 @@ class _PredictViewState extends State<_PredictView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ActivityHeader(
-            kind: ActivityKind.predict,
-            trailing: IconButton.filledTonal(
-              tooltip: 'Read aloud',
-              onPressed: () => _speaker.speak(
-                [
-                  _a.question,
-                  if (_prediction == null) ..._a.options,
-                ].join('. '),
-              ),
-              icon: const Icon(Icons.volume_up_rounded),
-            ),
-          ),
+          const ActivityHeader(kind: ActivityKind.predict),
           const SizedBox(height: 12),
           Text(_a.question, style: text.titleLarge?.copyWith(height: 1.3)),
           const SizedBox(height: 12),
@@ -198,7 +170,6 @@ class _PredictViewState extends State<_PredictView> {
                     icon: _right
                         ? Icons.check_circle_rounded
                         : Icons.auto_awesome_rounded,
-                    onListen: () => _speaker.speak(_resultText),
                     onContinue: () =>
                         widget.host.complete(ActivityResult(xp: _a.xp)),
                   )
@@ -359,9 +330,8 @@ class _AnswerLine extends StatelessWidget {
       Expanded(
         child: Text(
           answer,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: AnswerPanel.correctGreen,
-          ),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(color: AnswerPanel.correctGreen),
         ),
       ),
     ],
