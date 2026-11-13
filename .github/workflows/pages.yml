@@ -27,6 +27,7 @@ jobs:
 
       - run: flutter pub get
       - run: flutter analyze
+      - run: npx -y jscpd@5.4.3
       - run: flutter test
       - run: |
           for pkg in packages/*/; do

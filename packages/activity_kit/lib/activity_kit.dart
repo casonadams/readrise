@@ -1,4 +1,5 @@
 export 'src/activity_header.dart' show ActivityKind;
+export 'src/answer_panel.dart' show AnswerPanel;
 export 'src/basic_lesson.dart';
 export 'src/choice_quiz_activity.dart';
 export 'src/experiment/control.dart';
@@ -7,8 +8,10 @@ export 'src/experiment/experiment.dart';
 export 'src/experiment_slider.dart';
 export 'src/explainer_activity.dart';
 export 'src/fact_pill.dart';
+export 'src/feedback_banner.dart' show FeedbackBanner, FeedbackKind;
 export 'src/info_card_activity.dart';
 export 'src/kid_avatar.dart' show Kid;
+export 'src/option_tile.dart' show OptionState, OptionTile;
 export 'src/pop.dart';
 export 'src/predict_activity.dart';
 export 'src/shake.dart';

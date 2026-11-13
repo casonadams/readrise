@@ -11,8 +11,8 @@ otherwise.
   `BasicLesson`), e.g. `packages/science_matter/lib/src/lessons/heat_lesson.dart`.
   The course file only lists lessons, so adding, removing or reordering a lesson
   is a one-line change there.
-- Lessons in one course share code (scenes, simulations, classmates) inside the
-  course package. Do not split a lesson into its own package.
+- Lessons in one course share content (scenes, experiments, classmates) inside
+  the course package. Do not split a lesson into its own package.
 - Course and lesson ids are stored in learners' saved progress. Never rename
   or remove one; add a new lesson instead. `ids.lock` lists every shipped id
   and a test fails if one disappears; add new ids to it.
@@ -20,6 +20,28 @@ otherwise.
   lessons, re-check every warm-up.
 - Keep course content files small and cohesive: a lesson file holds content,
   not widget code. Scenes and experiments live in their own files.
+
+## Reuse and boundaries
+
+- Before writing a widget, read the kit's catalog
+  (`packages/activity_kit/CATALOG.md`).
+- Reuse in this order: use a component as is; compose components; implement
+  an interface a kit offers (`Control`, `Experiment`); extract an interface
+  from an existing class and add your implementation; only then add a new
+  component, in a kit if any subject could use it. Never copy a component
+  into a course.
+- Vary behaviour with a new class, looks by composing widgets, and use
+  parameters only for data (counts, colours, labels). Never add a flag that
+  switches behaviour.
+- Packages import only lower layers: `readrise_plugin_api`, then
+  `activity_kit`, then subject kits, then courses. The app imports courses
+  only in `lib/plugins.dart`. Never import another package's `src/`.
+- Physics (`Ticker`) and drawing (`CustomPainter`) live in kits. A course may
+  keep a one-off stateful widget only with an entry, and a reason, in the
+  allowlist in `test/architecture_test.dart`.
+- Randomness comes from a seeded `Random` passed in, never `Random()`.
+- `test/architecture_test.dart` and the duplication check (`.jscpd.json`)
+  enforce these rules.
 
 ## The lesson arc
 
@@ -77,7 +99,8 @@ this arc; copy it for new courses.
   (`TweenAnimationBuilder`, `AnimatedOpacity`, `Pop`).
 - An `Experiment` gets `active` and `onObserved`. Its controls do nothing
   until `active`. It calls `onObserved` exactly once, after the result is
-  visible. One control per experiment (a button or an `ExperimentSlider`).
+  visible. One control per experiment: build it as a `ControlledExperiment`
+  with a `SliderControl`, a `TapControl` or a new `Control`.
 - Keep the evidence on screen after the reveal; the result panel must not
   hide it.
 - Physical behaviour must look right. `ParticleSim` simulates the real box
@@ -124,4 +147,4 @@ this arc; copy it for new courses.
 - Looping animations never settle: use fixed `pump(duration)` calls, not
   `pumpAndSettle`, for anything showing a particle view.
 - Run `flutter analyze` and `flutter test` at the root and in each changed
-  package before finishing.
+  package, and `npx -y jscpd@5.4.3` at the root, before finishing.

@@ -1,0 +1,8 @@
+{
+  "format": ["dart"],
+  "minTokens": 50,
+  "threshold": 0.5,
+  "reporters": ["console"],
+  "path": ["lib", "packages"],
+  "ignore": ["**/test/**", "**/build/**"]
+}

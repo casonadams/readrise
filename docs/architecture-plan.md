@@ -99,19 +99,23 @@ the template is 194 lines, shared by every future experiment.
 
 `ItemId` arrives with the content model (step 4), where questions get ids.
 
-### 3. Guardrails
+### 3. Guardrails - done
 
-- Root `test/architecture_test.dart` using `package:analyzer` (not regex):
-  import boundaries, no `Ticker`/`CustomPainter` in courses, stateful widgets
-  in courses only via the allowlist, no unseeded `Random()` in `lib/`, no
-  Flutter imports in pure-Dart folders.
-- jscpd duplication check in CI, with Node pinned in `mise.toml`.
-- `CATALOG.md` per kit; `public_member_api_docs` lint in kits.
-- AGENTS.md: reuse order (use, compose, implement an interface, extract an
-  interface, then add to a kit); drop manual rules once types or tests
-  enforce them.
+- `test/architecture_test.dart` parses `lib/` code with `package:analyzer`:
+  import layers, no imports of another package's `src/`, no `Ticker`,
+  `CustomPainter` or `StatefulWidget` in courses, no unseeded `Random()`.
+  Existing violations sit in an allowlist with a reason or the plan step that
+  removes them; a second test fails when an entry is fixed but not deleted.
+- jscpd duplication check in CI (`.jscpd.json`, threshold 0.5%; baseline
+  0.23%), with Node 26 pinned in `mise.toml`.
+- `packages/activity_kit/CATALOG.md`; `OptionTile`, `FeedbackBanner` and
+  `AnswerPanel` are now exported so courses can reuse them.
+- AGENTS.md: "Reuse and boundaries" section.
 
-Accept: each guardrail fails CI on a deliberate violation.
+Not done: the `public_member_api_docs` lint. It demands a doc comment on
+every public member, which conflicts with the comment policy; the catalog
+covers discoverability. The "no Flutter in pure-Dart folders" check is added
+with the first such folder (`content/` in step 4).
 
 ### 4. Content model
 
