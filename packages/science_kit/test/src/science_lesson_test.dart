@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'package:readrise_testing/readrise_testing.dart';
-import 'package:science_matter/src/lessons/science_lesson.dart';
+import 'package:science_kit/science_kit.dart';
 
 final _fake = ContentFaker();
 

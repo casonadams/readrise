@@ -5,9 +5,7 @@ import 'package:science_kit/science_kit.dart';
 import '../experiments/heat.dart';
 import '../heat_lab_activity.dart';
 import '../heat_scenes.dart';
-import 'classmates.dart';
 import 'states_lesson.dart';
-import 'science_lesson.dart';
 
 final _heatMotion = heatScene(const [
   HeatStage(20, 20),

@@ -5,9 +5,7 @@ import 'package:science_kit/science_kit.dart';
 
 import '../states_scenes.dart';
 import '../experiments/zoom.dart';
-import 'classmates.dart';
 import 'matter_lesson.dart';
-import 'science_lesson.dart';
 
 WidgetBuilder _particles(MatterState state, double energy) =>
     (_) => ParticleView(state: state, energy: energy);

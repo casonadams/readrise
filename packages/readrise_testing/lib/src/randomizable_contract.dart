@@ -28,10 +28,9 @@ void randomizableContract<A extends ActivityPlugin>(
 
     test('arranges differently across attempts', () {
       final first = attempt(0);
-      expect(
-        [for (var seed = 1; seed < 20; seed++) attempt(seed)],
-        anyElement(isNot(equals(first))),
-      );
+      expect([
+        for (var seed = 1; seed < 20; seed++) attempt(seed),
+      ], anyElement(isNot(equals(first))));
     });
   });
 }

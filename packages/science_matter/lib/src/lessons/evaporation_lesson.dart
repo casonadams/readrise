@@ -1,12 +1,11 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
+import 'package:science_kit/science_kit.dart';
 
 import '../evaporation_scene.dart';
 import '../experiments/evaporation.dart';
 import 'changes_lesson.dart';
-import 'classmates.dart';
 import 'heat_lesson.dart';
-import 'science_lesson.dart';
 
 const _faster = SortBin('Dries faster');
 const _slower = SortBin('Dries slower');

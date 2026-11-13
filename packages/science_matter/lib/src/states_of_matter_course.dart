@@ -5,7 +5,6 @@ import 'lessons/changes_lesson.dart';
 import 'lessons/evaporation_lesson.dart';
 import 'lessons/heat_lesson.dart';
 import 'lessons/matter_lesson.dart';
-import 'lessons/science_lesson.dart';
 import 'lessons/states_lesson.dart';
 
 /// Matter, particles, states, heat and changes of state (NGSS MS-PS1-1, -4, -5).

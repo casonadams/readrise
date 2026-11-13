@@ -1,12 +1,11 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
+import 'package:science_kit/science_kit.dart';
 
 import '../experiments/heat.dart';
 import '../heat_scenes.dart';
-import 'classmates.dart';
 import 'heat_lesson.dart';
 import 'matter_lesson.dart';
-import 'science_lesson.dart';
 
 final _changesScene = heatScene(const [
   HeatStage(20, 20),
