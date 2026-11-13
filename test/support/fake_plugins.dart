@@ -46,6 +46,26 @@ class FakeShufflingActivity extends FakeActivity implements Randomizable {
       FakeActivity('$label ${random.nextInt(1000)}', result);
 }
 
+/// A [FakeActivity] that reviews [reviewable] items, [reviewSize] at a
+/// time; when the engine picks items it shows "reviewing" and their ids.
+class FakeReview extends FakeActivity implements Review {
+  const FakeReview(
+    super.label, {
+    required this.reviewable,
+    this.reviewSize = 1,
+  });
+
+  @override
+  final List<ItemId> reviewable;
+
+  @override
+  final int reviewSize;
+
+  @override
+  ActivityPlugin reviewing(List<ItemId> items) =>
+      FakeActivity('reviewing ${items.map((i) => i.value).join(' ')}');
+}
+
 class FakeLesson implements LessonPlugin {
   FakeLesson(String id, {List<ActivityPlugin>? activities})
     : id = LessonId(id),

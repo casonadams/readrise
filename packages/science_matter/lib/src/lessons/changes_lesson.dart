@@ -4,6 +4,8 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import '../experiments/heat.dart';
 import '../heat_scenes.dart';
 import 'classmates.dart';
+import 'heat_lesson.dart';
+import 'matter_lesson.dart';
 import 'science_lesson.dart';
 
 final _changesScene = heatScene(const [
@@ -24,7 +26,7 @@ final changesLesson = ScienceLesson(
   id: LessonId('changes'),
   title: 'Changes',
   warmUp: WarmUp(
-    recalls: [LessonId('matter'), LessonId('heat')],
+    recalls: [matterLesson, heatLesson],
     questions: const [
       ChoiceQuestion(
         id: ItemId('changes-warm-gas-heated'),

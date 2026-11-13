@@ -112,6 +112,20 @@ abstract interface class HasItems {
   Iterable<ItemId> get items;
 }
 
+/// An activity that reviews items from earlier lessons. For each attempt
+/// the engine picks which from the learner's answers, or keeps the
+/// activity as it is while too few have been answered.
+abstract interface class Review {
+  /// The items it may review.
+  Iterable<ItemId> get reviewable;
+
+  /// How many items one attempt reviews.
+  int get reviewSize;
+
+  /// This activity reviewing [items], chosen from [reviewable].
+  ActivityPlugin reviewing(List<ItemId> items);
+}
+
 /// An activity whose questions, choices or items can come in a different
 /// order. The engine calls [shuffled] with a newly seeded [Random] for every
 /// attempt, so a retake is arranged differently.

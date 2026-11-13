@@ -7,6 +7,7 @@ import '../particle_view.dart';
 import '../states_scenes.dart';
 import '../experiments/zoom.dart';
 import 'classmates.dart';
+import 'matter_lesson.dart';
 import 'science_lesson.dart';
 
 WidgetBuilder _particles(MatterState state, double energy) =>
@@ -22,7 +23,7 @@ final statesLesson = ScienceLesson(
   id: LessonId('states'),
   title: 'States',
   warmUp: WarmUp(
-    recalls: [LessonId('matter')],
+    recalls: [matterLesson],
     questions: [
       ChoiceQuestion(
         id: ItemId('states-warm-matter'),

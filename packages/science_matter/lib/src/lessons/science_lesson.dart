@@ -1,12 +1,14 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
-/// Questions on earlier lessons that open a lesson. [recalls] names the
-/// lessons they draw on, which must come earlier in the course.
+/// Questions on earlier lessons that open a lesson. [recalls] are the
+/// lessons they draw on, which must come earlier in the course. Once the
+/// learner has answered enough of those lessons' check questions, the
+/// warm-up asks the ones they find hardest instead of [questions].
 class WarmUp {
   const WarmUp({required this.recalls, required this.questions});
 
-  final List<LessonId> recalls;
+  final List<ScienceLesson> recalls;
   final List<ChoiceQuestion> questions;
 }
 
@@ -19,14 +21,14 @@ class ScienceLesson implements LessonPlugin {
     required PredictActivity predict,
     required List<ExplainerActivity> explain,
     required List<ActivityPlugin> practise,
-    required List<ChoiceQuestion> check,
+    required this.check,
     required WhoIsRightActivity debate,
     this.warmUp,
   }) : activities = [
          if (warmUp != null)
-           ChoiceQuizActivity(
-             kind: ActivityKind.warmUp,
+           WarmUpQuiz(
              questions: warmUp.questions,
+             pool: [for (final l in warmUp.recalls) ...l.check],
            ),
          predict,
          ...explain,
@@ -47,6 +49,9 @@ class ScienceLesson implements LessonPlugin {
 
   final WarmUp? warmUp;
 
+  /// The check questions, which later lessons' warm-ups review.
+  final List<ChoiceQuestion> check;
+
   @override
   final List<ActivityPlugin> activities;
 }
@@ -64,10 +69,11 @@ void checkWarmUps(List<ScienceLesson> lessons) {
       );
     }
     final earlier = {for (final l in lessons.take(i)) l.id};
-    for (final recalled in warmUp?.recalls ?? const <LessonId>[]) {
-      if (!earlier.contains(recalled)) {
+    for (final recalled in warmUp?.recalls ?? const <ScienceLesson>[]) {
+      if (!earlier.contains(recalled.id)) {
         throw ArgumentError(
-          'lesson ${lesson.id} warms up on $recalled, which is not earlier',
+          'lesson ${lesson.id} warms up on ${recalled.id}, which is not '
+          'earlier',
         );
       }
     }

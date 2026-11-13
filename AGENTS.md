@@ -22,7 +22,9 @@ otherwise.
   question keeps its id; a question that asks something new gets a new id.
 - A warm-up may only recall lessons that come before it. Each `WarmUp` lists
   the lessons it `recalls`, and the app refuses to start if one is not
-  earlier in the course.
+  earlier in the course. Its own questions are for learners new to the
+  course; once a learner has answered enough of the recalled lessons' check
+  questions, the warm-up asks the ones they find hardest instead.
 - Keep course content files small and cohesive: a lesson file holds content,
   not widget code. Scenes and experiments live in their own files.
 
@@ -54,7 +56,7 @@ Every lesson after the first follows this order. Each step has a reason.
 
 | Step | Activity | Why |
 | --- | --- | --- |
-| 1. Warm-up | `ChoiceQuizActivity(kind: ActivityKind.warmUp)`, 2 questions on earlier lessons | Retrieval, spacing and interleaving improve long-term learning ([Agarwal et al.](https://link.springer.com/article/10.1007/s10648-012-9210-2)) |
+| 1. Warm-up | `WarmUp` (a `WarmUpQuiz`), 2 questions on earlier lessons, chosen from what the learner missed once they have answered enough | Retrieval, spacing and interleaving improve long-term learning ([Agarwal et al.](https://link.springer.com/article/10.1007/s10648-012-9210-2)) |
 | 2. Predict | `PredictActivity` with a hands-on `Experiment` | Predict-Observe-Explain makes learners commit to an idea, then confront it ([POE review](https://www.mdpi.com/2673-8392/6/11/242)) |
 | 3. Explain | `ExplainerActivity`: short narrated steps over an animated scene | Names what they just saw; one idea per step |
 | 4. Practise | `SortActivity`, a lab, or similar | Applies the idea to many cases |

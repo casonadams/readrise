@@ -19,4 +19,5 @@ export 'src/pop.dart';
 export 'src/predict_activity.dart';
 export 'src/shake.dart';
 export 'src/sort_activity.dart';
+export 'src/warm_up_quiz.dart';
 export 'src/who_is_right_activity.dart';

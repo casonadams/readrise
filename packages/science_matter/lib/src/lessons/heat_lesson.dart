@@ -6,6 +6,7 @@ import '../heat_lab_activity.dart';
 import '../heat_scenes.dart';
 import '../matter_state.dart';
 import 'classmates.dart';
+import 'states_lesson.dart';
 import 'science_lesson.dart';
 
 final _heatMotion = heatScene(const [
@@ -20,7 +21,7 @@ final heatLesson = ScienceLesson(
   id: LessonId('heat'),
   title: 'Heat',
   warmUp: WarmUp(
-    recalls: [LessonId('states')],
+    recalls: [statesLesson],
     questions: const [
       ChoiceQuestion(
         id: ItemId('heat-warm-slide'),

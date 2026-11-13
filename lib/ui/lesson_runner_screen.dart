@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,7 +40,8 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
   late LessonSession _session = _resumeOrStart();
   late final List<ActivityPlugin> _activities = attemptActivities(
     _lesson,
-    Random(_session.seed),
+    seed: _session.seed,
+    stats: ref.read(progressProvider).itemsIn(_course.id),
   );
   LessonOutcome? _outcome;
 

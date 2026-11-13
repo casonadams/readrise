@@ -215,9 +215,8 @@ Done:
   removed.
 
 Deferred, with the reason:
-- Scoring by events (`ActivityHost.record`, `ScoringPolicy`): moves to
-  step 8, where questions get ids and per-question stats need the events.
-  Today quiz, sort and "Who's right?" already share `scoreXp`.
+- Scoring by events (`ActivityHost.record`, `ScoringPolicy`): see step 8
+  (answers are recorded; the policy is not needed yet).
 - `LearningEngine` facade, `ProgressRepository` interface, `CourseOutline`
   and `LinearUnlock`: screens make about six calls to plain engine
   functions, storage has one implementation (tests fake SharedPreferences),
@@ -229,21 +228,35 @@ Deferred, with the reason:
 - Resume restarts the current activity; progress inside an activity (two
   of three questions done) is not kept.
 
-### 8. Per-question stats (`progress.v2`)
+### 8. Per-question stats and adaptive warm-ups - done
 
-- `ItemId` extension type on questions, added to `ids.lock`.
-- Activities report each answer (`Answered(item, firstTry, hintUsed,
-  confidence)`) through `ActivityHost.record`; a `ScoringPolicy` with
-  per-activity weights turns them into XP, replacing `scoreXp` in activities
-  and the two phonics formulas. The same events feed the stats below.
-- Add per-question stats (`seen`, `correct`, `lastSeen`, Leitner box) keyed
-  by `ItemId`; migrate `v1` stars once.
-- `LeitnerScheduler` (the first `ReviewScheduler`) picks warm-up questions
-  from finished lessons, weighted by misses and time since last seen;
-  hand-picked warm-ups remain the fallback.
+- `ItemId` on every `ChoiceQuestion` (23 in science), unique within a
+  course; `HasItems` lets the registry reject empty, "/" and duplicate ids;
+  `items.lock` guards them like `ids.lock`.
+- `ActivityHost.record(Answer(item, firstTry:))`; the quiz records each
+  question when it is settled. The runner saves an activity's answers when
+  it completes.
+- `ItemStats` per course/item (seen, first tries, last seen, Leitner box
+  0-4) in `Progress.items`. It is an additive field in `progress.v1`: older
+  saves load with no stats, so there is no `v2` key and no migration.
+- `Review` role interface and `pickForReview` (lowest box first, then
+  longest unseen, ties at random; null until enough are answered).
+  `WarmUpQuiz` reviews the recalled lessons' check questions; its own
+  questions remain the fallback. `WarmUp.recalls` now names lesson objects.
+- `attemptActivities` gives each activity its own seeded random, so a
+  review's pick never reshuffles later activities (needed when a lesson
+  resumes after new answers were saved).
+- Tests: the Leitner table, the picker, attempts with reviews, the kit
+  warm-up, and an app test where the next lesson's warm-up reviews the
+  question missed in the previous one; it fails if the runner ignores stats.
 
-Accept: a `v1` save loads into `v2` with stars intact; warm-ups favour
-questions the learner missed.
+Not done, with the reason:
+- `ScoringPolicy`: XP already comes from one kit function (`scoreXp`), the
+  phonics weights differ on purpose, and the engine only sums XP. Answers
+  now flow to the engine, so a policy can be added when scoring needs to
+  change across activities.
+- Phonics and the non-quiz activities (predictions, sorts, debates) record
+  no answers: none of them is reviewed yet.
 
 ### 9. Particle world (`science_kit`)
 

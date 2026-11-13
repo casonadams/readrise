@@ -32,6 +32,7 @@ implement `Randomizable`: the engine shuffles a copy for every attempt.
 | Name | Use |
 | --- | --- |
 | `ChoiceQuizActivity` | `ChoiceQuestion`s with a hint after misses and an optional `Reason`. `kind: ActivityKind.warmUp` or `.check`. |
+| `WarmUpQuiz` | A warm-up: its own `questions`, or, once the learner has answered enough of the `pool`, the engine's pick of the pool questions they find hardest (`Review`). |
 | `PredictActivity` | Predict from `choices`, say how sure (`Confidence`), run an `Experiment`, see the outcome. |
 | `ExplainerActivity` | Captioned steps (`ExplainerStep`) over an `ExplainerScene(context, step)`. |
 | `SortActivity` | Drag or tap `SortItem`s into `SortBin`s, with a hint and a "why" per item. |

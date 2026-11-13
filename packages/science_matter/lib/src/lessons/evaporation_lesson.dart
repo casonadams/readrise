@@ -3,7 +3,9 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import '../evaporation_scene.dart';
 import '../experiments/evaporation.dart';
+import 'changes_lesson.dart';
 import 'classmates.dart';
+import 'heat_lesson.dart';
 import 'science_lesson.dart';
 
 const _faster = SortBin('Dries faster');
@@ -16,7 +18,7 @@ final evaporationLesson = ScienceLesson(
   id: LessonId('evaporation'),
   title: 'Evaporation',
   warmUp: WarmUp(
-    recalls: [LessonId('heat'), LessonId('changes')],
+    recalls: [heatLesson, changesLesson],
     questions: const [
       ChoiceQuestion(
         id: ItemId('evaporation-warm-bubbles'),

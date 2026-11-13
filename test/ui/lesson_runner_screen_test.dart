@@ -149,6 +149,44 @@ void main() {
     expect(container.read(progressProvider).stars, isEmpty);
   });
 
+  testWidgets("the next warm-up reviews the question you missed", (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      PluginRegistry([
+        FakeCourse.of('a', [
+          FakeLesson(
+            '1',
+            activities: const [
+              FakeActivity('check', ActivityResult(), [
+                Answer(ItemId('q1'), firstTry: true),
+                Answer(ItemId('q2'), firstTry: false),
+                Answer(ItemId('q3'), firstTry: true),
+              ]),
+            ],
+          ),
+          FakeLesson(
+            '2',
+            activities: const [
+              FakeReview(
+                'warm-up',
+                reviewable: [ItemId('q1'), ItemId('q2'), ItemId('q3')],
+              ),
+            ],
+          ),
+        ]),
+      ]),
+    );
+    await openFirstLesson(tester);
+    await tester.tap(find.text('check'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Next: L2'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('reviewing q2'), findsOneWidget);
+  });
+
   group('leaving mid-lesson', () {
     testWidgets('on the first step leaves without asking', (tester) async {
       await pumpApp(tester, twoStepRegistry());
