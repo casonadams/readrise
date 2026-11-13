@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'package:readrise_testing/readrise_testing.dart';
 
 void main() {
@@ -45,6 +46,7 @@ void main() {
 
   test('ordered choices and sort bins never move', () {
     final ordered = ChoiceQuestion(
+      id: const ItemId('ordered'),
       prompt: fake.sentence(),
       choices: fake.choices(wrongs: 3),
       explanation: fake.sentence(),

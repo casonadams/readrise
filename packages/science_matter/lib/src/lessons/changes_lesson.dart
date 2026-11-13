@@ -27,6 +27,7 @@ final changesLesson = ScienceLesson(
     recalls: [LessonId('matter'), LessonId('heat')],
     questions: const [
       ChoiceQuestion(
+        id: ItemId('changes-warm-gas-heated'),
         prompt: 'When you heat a gas, its particles...',
         choices: [
           Wrong('Get bigger', 'Particles stay the same size when heated.'),
@@ -37,6 +38,7 @@ final changesLesson = ScienceLesson(
         explanation: 'Heat speeds particles up. Their size stays the same.',
       ),
       ChoiceQuestion(
+        id: ItemId('changes-warm-not-matter'),
         prompt: 'Which of these is NOT matter?',
         choices: [
           Wrong('Steam', 'Steam is water as a gas, so it is matter.'),
@@ -119,6 +121,7 @@ final changesLesson = ScienceLesson(
   ],
   check: [
     ChoiceQuestion(
+      id: ItemId('changes-ice-mass'),
       ordered: true,
       prompt:
           'A 20 g ice cube melts completely. What is the mass of the water?',
@@ -146,6 +149,7 @@ final changesLesson = ScienceLesson(
           'same particles are still there, so the mass stays 20 g.',
     ),
     ChoiceQuestion(
+      id: ItemId('changes-cold-glass'),
       prompt:
           'Drops of water form on a cold glass on a hot day. Where do they '
           'come from?',
@@ -179,6 +183,7 @@ final changesLesson = ScienceLesson(
           'and condenses into liquid drops.',
     ),
     ChoiceQuestion(
+      id: ItemId('changes-adds-energy'),
       prompt: 'Which change needs thermal energy to be added?',
       choices: [
         Wrong(

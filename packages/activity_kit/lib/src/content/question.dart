@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'choice.dart';
 
@@ -22,6 +23,7 @@ class Reason {
 
 class ChoiceQuestion {
   const ChoiceQuestion({
+    required this.id,
     required this.prompt,
     required this.choices,
     required this.explanation,
@@ -31,6 +33,7 @@ class ChoiceQuestion {
     this.ordered = false,
   });
 
+  final ItemId id;
   final String prompt;
   final List<Choice> choices;
 
@@ -52,6 +55,7 @@ class ChoiceQuestion {
   final bool ordered;
 
   ChoiceQuestion shuffled(Random random) => ChoiceQuestion(
+    id: id,
     prompt: prompt,
     choices: ordered ? choices : ([...choices]..shuffle(random)),
     explanation: explanation,

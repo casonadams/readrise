@@ -19,6 +19,7 @@ final evaporationLesson = ScienceLesson(
     recalls: [LessonId('heat'), LessonId('changes')],
     questions: const [
       ChoiceQuestion(
+        id: ItemId('evaporation-warm-bubbles'),
         prompt: 'What are the big bubbles in boiling water made of?',
         choices: [
           Right('Water vapor'),
@@ -29,6 +30,7 @@ final evaporationLesson = ScienceLesson(
         explanation: 'The bubbles are water vapor: water as a gas.',
       ),
       ChoiceQuestion(
+        id: ItemId('evaporation-warm-heating'),
         prompt: 'What does heating do to particles?',
         choices: [
           Wrong('Makes them bigger', 'Particles stay the same size.'),
@@ -120,6 +122,7 @@ final evaporationLesson = ScienceLesson(
   ],
   check: const [
     ChoiceQuestion(
+      id: ItemId('evaporation-boil'),
       prompt: 'Does water have to boil to evaporate?',
       choices: [
         Wrong(
@@ -151,6 +154,7 @@ final evaporationLesson = ScienceLesson(
           'free. Boiling is just very fast evaporation.',
     ),
     ChoiceQuestion(
+      id: ItemId('evaporation-which-leave'),
       prompt: 'Which particles leave the water first?',
       choices: [
         Right('Fast ones at the surface'),
@@ -171,6 +175,7 @@ final evaporationLesson = ScienceLesson(
           'into the air.',
     ),
     ChoiceQuestion(
+      id: ItemId('evaporation-towel'),
       prompt: 'Which wet towel dries fastest?',
       choices: [
         Wrong('Folded in a pile', 'Folded, few particles are at the surface.'),

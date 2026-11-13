@@ -16,6 +16,10 @@ otherwise.
 - Course and lesson ids are stored in learners' saved progress. Never rename
   or remove one; add a new lesson instead. `ids.lock` lists every shipped id
   and a test fails if one disappears; add new ids to it.
+- Every question has an `ItemId`, unique within its course
+  (`<lesson>-<what it asks>`, `<lesson>-warm-...` for warm-ups). Answers are
+  stored under it, so the same rules apply, with `items.lock`. Rewording a
+  question keeps its id; a question that asks something new gets a new id.
 - A warm-up may only recall lessons that come before it. Each `WarmUp` lists
   the lessons it `recalls`, and the app refuses to start if one is not
   earlier in the course.

@@ -19,7 +19,8 @@ import 'step_dots.dart';
 /// counted as a mistake, and explained; the learner keeps trying. A question
 /// with a [Reason] asks why once the answer is right. Settling a question
 /// without a miss or a hint earns full credit, otherwise half.
-class ChoiceQuizActivity implements ActivityPlugin, Validated, Randomizable {
+class ChoiceQuizActivity
+    implements ActivityPlugin, Validated, Randomizable, HasItems {
   const ChoiceQuizActivity({
     required this.questions,
     this.kind = ActivityKind.check,
@@ -43,6 +44,9 @@ class ChoiceQuizActivity implements ActivityPlugin, Validated, Randomizable {
     kind: kind,
     maxXp: maxXp,
   );
+
+  @override
+  Iterable<ItemId> get items => questions.map((q) => q.id);
 
   @override
   void validate() {

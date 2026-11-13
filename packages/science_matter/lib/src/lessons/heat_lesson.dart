@@ -23,6 +23,7 @@ final heatLesson = ScienceLesson(
     recalls: [LessonId('states')],
     questions: const [
       ChoiceQuestion(
+        id: ItemId('heat-warm-slide'),
         ordered: true,
         prompt: 'In which state do particles slide past each other?',
         choices: [
@@ -37,6 +38,7 @@ final heatLesson = ScienceLesson(
         explanation: 'Liquid particles touch but slide past each other.',
       ),
       ChoiceQuestion(
+        id: ItemId('heat-warm-between'),
         prompt: 'What is between the particles of a gas?',
         choices: [
           Wrong(
@@ -100,6 +102,7 @@ final heatLesson = ScienceLesson(
   ],
   check: const [
     ChoiceQuestion(
+      id: ItemId('heat-steam-ice'),
       prompt: 'Steam is much hotter than ice. How do their particles compare?',
       choices: [
         Right('Steam particles move faster'),
@@ -132,6 +135,7 @@ final heatLesson = ScienceLesson(
           'particles move faster.',
     ),
     ChoiceQuestion(
+      id: ItemId('heat-balloon-sun'),
       prompt: 'A balloon left in the hot sun gets bigger. Why?',
       choices: [
         Right('The air particles move faster and push harder'),
@@ -150,6 +154,7 @@ final heatLesson = ScienceLesson(
           'harder and more often, pushing it outward.',
     ),
     ChoiceQuestion(
+      id: ItemId('heat-freezing-point'),
       ordered: true,
       prompt: 'At what temperature does water freeze?',
       choices: [

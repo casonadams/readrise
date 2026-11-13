@@ -1,6 +1,7 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:faker/faker.dart' hide Color;
 import 'package:flutter/painting.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 /// Made-up lesson content for tests where the words do not matter. Seeded,
 /// so a failing test fails the same way every run.
@@ -9,6 +10,7 @@ class ContentFaker {
 
   final Faker _faker;
   final Set<String> _used = {};
+  var _items = 0;
 
   /// A few words this faker has not returned before, so a finder for it
   /// matches one widget.
@@ -32,6 +34,7 @@ class ContentFaker {
 
   ChoiceQuestion question({List<Choice>? choices, Reason? reason}) =>
       ChoiceQuestion(
+        id: ItemId('item-${_items++}'),
         prompt: sentence(),
         choices: choices ?? this.choices(),
         explanation: sentence(),

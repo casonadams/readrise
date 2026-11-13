@@ -25,6 +25,7 @@ final statesLesson = ScienceLesson(
     recalls: [LessonId('matter')],
     questions: [
       ChoiceQuestion(
+        id: ItemId('states-warm-matter'),
         prompt: 'Which of these is matter?',
         choices: [
           Wrong('Sound', 'Sound is energy moving through matter.'),
@@ -35,6 +36,7 @@ final statesLesson = ScienceLesson(
         explanation: 'Air has mass and takes up space, so it is matter.',
       ),
       ChoiceQuestion(
+        id: ItemId('states-warm-made-of'),
         prompt: 'What is all matter made of?',
         choices: [
           Right('Tiny particles called atoms'),
@@ -139,6 +141,7 @@ final statesLesson = ScienceLesson(
   ],
   check: [
     ChoiceQuestion(
+      id: ItemId('states-picture-gas'),
       ordered: true,
       prompt: 'Which state of matter is this?',
       choices: [
@@ -167,6 +170,7 @@ final statesLesson = ScienceLesson(
           'That is a gas.',
     ),
     ChoiceQuestion(
+      id: ItemId('states-picture-solid'),
       ordered: true,
       prompt: 'Which state of matter is this?',
       choices: [
@@ -199,6 +203,7 @@ final statesLesson = ScienceLesson(
           'That is a solid.',
     ),
     ChoiceQuestion(
+      id: ItemId('states-pour'),
       prompt: 'Why can you pour juice but not a wooden block?',
       choices: [
         Right('Juice particles slide past each other'),

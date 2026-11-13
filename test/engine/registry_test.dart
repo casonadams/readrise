@@ -16,6 +16,13 @@ class _InvalidActivity extends FakeActivity implements Validated {
   void validate() => throw ArgumentError('broken content');
 }
 
+class _WithItems extends FakeActivity implements HasItems {
+  const _WithItems(this.items) : super('items');
+
+  @override
+  final List<ItemId> items;
+}
+
 class _InvalidCourse extends FakeCourse implements Validated {
   _InvalidCourse() : super('a', ['1']);
 
@@ -118,6 +125,32 @@ void main() {
       ]),
     ],
     'a course that fails its own check': () => [_InvalidCourse()],
+    'an item id used twice in one course': () => [
+      FakeCourse.of('a', [
+        FakeLesson(
+          '1',
+          activities: const [
+            _WithItems([ItemId('x')]),
+          ],
+        ),
+        FakeLesson(
+          '2',
+          activities: const [
+            _WithItems([ItemId('x')]),
+          ],
+        ),
+      ]),
+    ],
+    'an item id containing "/"': () => [
+      FakeCourse.of('a', [
+        FakeLesson(
+          '1',
+          activities: const [
+            _WithItems([ItemId('x/y')]),
+          ],
+        ),
+      ]),
+    ],
   };
   invalid.forEach((name, build) {
     test('rejects $name', () {

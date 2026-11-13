@@ -1,16 +1,19 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'package:readrise_testing/readrise_testing.dart';
 
 const questions = [
   ChoiceQuestion(
+    id: ItemId('q1'),
     prompt: 'First?',
     choices: [Wrong('no', 'Not no.'), Right('yes'), Wrong('nope', 'Not nope.')],
     explanation: 'Because one.',
   ),
   ChoiceQuestion(
+    id: ItemId('q2'),
     prompt: 'Second?',
     choices: [Right('right'), Wrong('wrong', 'Not wrong.')],
     explanation: 'Because two.',
@@ -80,6 +83,7 @@ void main() {
       ChoiceQuizActivity(
         questions: [
           ChoiceQuestion(
+            id: ItemId('q3'),
             prompt: 'Look',
             choices: const [Right('a'), Wrong('b', 'Not b.')],
             explanation: 'x',
@@ -97,6 +101,7 @@ void main() {
       const ChoiceQuizActivity(
         questions: [
           ChoiceQuestion(
+            id: ItemId('q4'),
             prompt: 'Q',
             choices: [
               Wrong('a', 'a is a trap.'),
@@ -122,6 +127,7 @@ void main() {
   const hinted = ChoiceQuizActivity(
     questions: [
       ChoiceQuestion(
+        id: ItemId('q5'),
         prompt: 'Q',
         choices: [
           Wrong('a', 'Not a.'),
@@ -179,6 +185,7 @@ void main() {
   const twoTier = ChoiceQuizActivity(
     questions: [
       ChoiceQuestion(
+        id: ItemId('q6'),
         prompt: 'Q',
         choices: [Wrong('wrong', 'Not that one.'), Right('right')],
         explanation: 'Because.',

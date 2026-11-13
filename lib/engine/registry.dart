@@ -31,6 +31,7 @@ class PluginRegistry {
         throw ArgumentError('course ${course.id} has no lessons');
       }
       final lessonIds = <LessonId>{};
+      final itemIds = <ItemId>{};
       for (final lesson in course.lessons) {
         _checkId(lesson.id.value, 'lesson ${course.id}/${lesson.id}');
         if (!lessonIds.add(lesson.id)) {
@@ -43,13 +44,22 @@ class PluginRegistry {
         }
         for (final node in [lesson, ...lesson.activities]) {
           if (node is Validated) node.validate();
+          if (node case final HasItems answered) {
+            for (final item in answered.items) {
+              _checkId(item.value, 'item ${course.id}/$item');
+              if (!itemIds.add(item)) {
+                throw ArgumentError('duplicate item ${course.id}/$item');
+              }
+            }
+          }
         }
       }
       if (course case final Validated content) content.validate();
     }
   }
 
-  /// Ids are stored as "course/lesson" and used as route segments.
+  /// Ids are stored as "course/lesson" or "course/item" and lesson ids are
+  /// route segments.
   static void _checkId(String id, String what) {
     if (id.isEmpty || id.contains('/')) {
       throw ArgumentError('$what: an id must be non-empty and contain no "/"');

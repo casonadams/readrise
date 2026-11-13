@@ -102,6 +102,7 @@ final matterLesson = ScienceLesson(
   ],
   check: [
     ChoiceQuestion(
+      id: ItemId('matter-air'),
       ordered: true,
       prompt: 'Is air matter?',
       choices: [
@@ -128,6 +129,7 @@ final matterLesson = ScienceLesson(
           'filled the balloon). That makes it matter.',
     ),
     ChoiceQuestion(
+      id: ItemId('matter-atoms'),
       prompt: 'What are atoms?',
       choices: [
         Right('The tiny particles all matter is made of'),
@@ -145,6 +147,7 @@ final matterLesson = ScienceLesson(
           'Every kind of matter, solid, liquid, or gas, is made of atoms.',
     ),
     ChoiceQuestion(
+      id: ItemId('matter-h2o-atoms'),
       ordered: true,
       prompt: 'How many atoms are in one water molecule (H2O)?',
       choices: [

@@ -64,6 +64,11 @@ extension type const CourseId(String value) {}
 /// so it never changes once shipped, and it may not contain "/".
 extension type const LessonId(String value) {}
 
+/// Names a question or other item a learner answers, unique within its
+/// course. Learners' answers are stored under it, so it never changes once
+/// shipped, and it may not contain "/".
+extension type const ItemId(String value) {}
+
 /// A course: an ordered set of lessons the engine shows as one learning path.
 abstract interface class CoursePlugin {
   /// Unique across all registered courses.
@@ -100,6 +105,11 @@ abstract interface class ActivityPlugin {
 abstract interface class Validated {
   /// Throws an [ArgumentError] naming the first problem found.
   void validate();
+}
+
+/// An activity whose items' answers the engine keeps, to review them later.
+abstract interface class HasItems {
+  Iterable<ItemId> get items;
 }
 
 /// An activity whose questions, choices or items can come in a different
