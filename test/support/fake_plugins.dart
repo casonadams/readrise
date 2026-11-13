@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:readrise/engine/registry.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
@@ -23,6 +25,16 @@ class FakeActivity implements ActivityPlugin {
       child: Text(label),
     ),
   );
+}
+
+/// A [FakeActivity] whose label, once shuffled, ends with the first number
+/// the attempt's random gave it, so tests can see which arrangement ran.
+class FakeShufflingActivity extends FakeActivity implements Randomizable {
+  const FakeShufflingActivity(super.label, [super.result]);
+
+  @override
+  ActivityPlugin shuffled(Random random) =>
+      FakeActivity('$label ${random.nextInt(1000)}', result);
 }
 
 class FakeLesson implements LessonPlugin {

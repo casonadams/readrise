@@ -3,6 +3,7 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/progress_store.dart';
+import '../data/session_store.dart';
 import '../data/speaker.dart';
 import '../engine/progress.dart';
 import '../engine/registry.dart';
@@ -17,6 +18,10 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
 
 /// Subject ids shown as "coming soon": listed but not openable.
 final closedSubjectsProvider = Provider<Set<String>>((ref) => const {});
+
+final sessionStoreProvider = Provider<SessionStore>(
+  (ref) => SessionStore(ref.read(sharedPreferencesProvider)),
+);
 
 final speakerProvider = Provider<Speaker>((ref) => createSpeaker());
 

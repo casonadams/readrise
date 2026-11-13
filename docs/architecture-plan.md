@@ -199,29 +199,43 @@ Changed from the plan:
 - No ordered question lists: no quiz needs one yet.
 - `Scene`/`KeyframeScene` deferred (see step 5).
 
-### 7. Engine core
+### 7. Engine core - resume done; the rest deferred
 
-- `CourseOutline` (ids, lesson ids, `requires`) built from plugins by the
-  registry; engine rules use outlines, not widget-building plugins.
-- `Progress` keeps state only; unlock rules move to `LinearUnlock` (the
-  first `UnlockPolicy`).
-- `LessonSession` reducer: `Running(index)`, `Finished(outcome)`,
-  `Recorded`; effects as data (`SaveSnapshot`, `RecordOutcome`).
-- Resume snapshot (activity index, seed) under its own storage key, so
-  leaving and reopening a lesson resumes at the same activity and order.
-- Activities report outcomes (`Answered(item, firstTry, hintUsed,
-  confidence)`) through `ActivityHost.record`; `ScoringPolicy` turns them into
-  XP using per-activity weights, replacing `scoreXp` in activities and the
-  two phonics formulas.
-- `ProgressRepository` (SharedPreferences adapter, in-memory fake) behind a
-  single writer that serializes saves; `LearningEngine` facade for screens.
+Done:
+- `LessonSession` (`lib/engine/lesson_session.dart`): a pure value with
+  `advance(result)` returning `NextActivity(session)` or
+  `LessonFinished(outcome)`; tested with plain Dart values.
+- `SessionStore` saves it under `session.v1` after every activity, apart
+  from `progress.v1` (whose format is unchanged). Reopening the lesson
+  resumes at the same activity with the same seed, so the same shuffle;
+  finishing clears it (only if it is that lesson's). Leaving asks first and
+  says where the learner will restart.
+- Tests prove resume keeps the step and the order after the clock moves on,
+  and that a finished lesson starts over; each fails with its behaviour
+  removed.
 
-Accept: reducer, scoring and unlocking are tested with plain Dart values; no
-activity computes XP; the stored progress format is unchanged.
+Deferred, with the reason:
+- Scoring by events (`ActivityHost.record`, `ScoringPolicy`): moves to
+  step 8, where questions get ids and per-question stats need the events.
+  Today quiz, sort and "Who's right?" already share `scoreXp`.
+- `LearningEngine` facade, `ProgressRepository` interface, `CourseOutline`
+  and `LinearUnlock`: screens make about six calls to plain engine
+  functions, storage has one implementation (tests fake SharedPreferences),
+  and there is one unlock rule. Add each when a second consumer,
+  implementation or rule arrives.
+- A single writer for saves: progress and session use separate keys and
+  each save writes the whole value, so overlapping saves cannot corrupt
+  either.
+- Resume restarts the current activity; progress inside an activity (two
+  of three questions done) is not kept.
 
 ### 8. Per-question stats (`progress.v2`)
 
 - `ItemId` extension type on questions, added to `ids.lock`.
+- Activities report each answer (`Answered(item, firstTry, hintUsed,
+  confidence)`) through `ActivityHost.record`; a `ScoringPolicy` with
+  per-activity weights turns them into XP, replacing `scoreXp` in activities
+  and the two phonics formulas. The same events feed the stats below.
 - Add per-question stats (`seen`, `correct`, `lastSeen`, Leitner box) keyed
   by `ItemId`; migrate `v1` stars once.
 - `LeitnerScheduler` (the first `ReviewScheduler`) picks warm-up questions

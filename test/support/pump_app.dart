@@ -21,6 +21,7 @@ Future<ProviderContainer> pumpApp(
   Progress progress = const Progress(),
   FakeSpeaker? speaker,
   Set<String> closedSubjects = const {},
+  DateTime Function()? clock,
 }) async {
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       const FakeAccessibilityFeatures(disableAnimations: true);
@@ -39,7 +40,7 @@ Future<ProviderContainer> pumpApp(
         sharedPreferencesProvider.overrideWithValue(prefs),
         registryProvider.overrideWithValue(registry),
         speakerProvider.overrideWithValue(speaker ?? FakeSpeaker()),
-        clockProvider.overrideWithValue(() => today),
+        clockProvider.overrideWithValue(clock ?? () => today),
         closedSubjectsProvider.overrideWithValue(closedSubjects),
       ],
       child: const ReadriseApp(),

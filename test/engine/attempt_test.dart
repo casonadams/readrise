@@ -2,24 +2,18 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readrise/engine/attempt.dart';
-import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import '../support/fake_plugins.dart';
-
-/// Reports, as its label, the first number the attempt's random gave it.
-class _Shuffles extends FakeActivity implements Randomizable {
-  const _Shuffles(super.label);
-
-  @override
-  ActivityPlugin shuffled(Random random) =>
-      FakeActivity('$label ${random.nextInt(1000)}');
-}
 
 void main() {
   final fixed = const FakeActivity('fixed');
   final lesson = FakeLesson(
     '1',
-    activities: [const _Shuffles('a'), fixed, const _Shuffles('b')],
+    activities: [
+      const FakeShufflingActivity('a'),
+      fixed,
+      const FakeShufflingActivity('b'),
+    ],
   );
   List<String> labels(int seed) => [
     for (final a in attemptActivities(lesson, Random(seed)))

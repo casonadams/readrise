@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:readrise/engine/registry.dart';
+import 'package:readrise/state/providers.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import '../support/fake_plugins.dart';
@@ -145,22 +148,60 @@ void main() {
       expect(find.text('second'), findsOneWidget);
     });
 
-    testWidgets('later on, Leave discards the lesson and saves nothing', (
+    testWidgets('Leave keeps your place: reopening carries on, same order', (
       tester,
     ) async {
-      final registry = twoStepRegistry();
-      await pumpApp(tester, registry);
+      var now = today;
+      final container = await pumpApp(
+        tester,
+        PluginRegistry([
+          FakeCourse.of('a', [
+            FakeLesson(
+              '1',
+              activities: const [
+                FakeShufflingActivity('first', ActivityResult(xp: 10)),
+                FakeShufflingActivity('second', ActivityResult(xp: 5)),
+              ],
+            ),
+          ]),
+        ]),
+        clock: () => now,
+      );
       await openFirstLesson(tester);
-      await tester.tap(find.text('first'));
+      await tester.tap(find.textContaining('first'));
       await tester.pumpAndSettle();
+      final second = tester.widget<Text>(find.textContaining('second')).data;
 
       await tester.tap(find.byTooltip('Leave lesson'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Leave'));
       await tester.pumpAndSettle();
+      expect(container.read(progressProvider).stars, isEmpty);
 
-      expect(find.text('second'), findsNothing);
-      expect(find.text('L1'), findsOneWidget);
+      now = now.add(const Duration(hours: 1));
+      await openFirstLesson(tester);
+      expect(find.text(second!), findsOneWidget);
+      await tester.tap(find.text(second));
+      await tester.pumpAndSettle();
+      expect(find.text('+15 XP'), findsOneWidget);
+    });
+
+    testWidgets('a finished lesson starts again from the first step', (
+      tester,
+    ) async {
+      await pumpApp(tester, twoStepRegistry());
+      await openFirstLesson(tester);
+      await tester.tap(find.text('first'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('second'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Back to the path'));
+      await tester.pumpAndSettle();
+
+      GoRouter.of(tester.element(find.byType(Scaffold).first))
+          .push('/lesson/a/1');
+      await tester.pumpAndSettle();
+      expect(find.text('first'), findsOneWidget);
     });
   });
 }

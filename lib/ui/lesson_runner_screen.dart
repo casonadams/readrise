@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import '../engine/attempt.dart';
+import '../engine/lesson_session.dart';
 import '../engine/progress.dart';
 import '../engine/subjects.dart';
 import '../state/providers.dart';
@@ -37,33 +38,47 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
       .read(registryProvider)
       .lessonById(widget.courseId, widget.lessonId);
 
-  /// Seeded from the clock, so each attempt is arranged differently.
+  late final LessonKey _key = lessonKey(_course, _lesson);
+  late LessonSession _session = _resumeOrStart();
   late final List<ActivityPlugin> _activities = attemptActivities(
     _lesson,
-    Random(ref.read(clockProvider)().microsecondsSinceEpoch),
+    Random(_session.seed),
   );
-  int _index = 0;
-  int _xp = 0;
-  int _mistakes = 0;
   LessonOutcome? _outcome;
 
-  Future<void> _onActivityDone(ActivityResult result) async {
-    _xp += result.xp;
-    _mistakes += result.mistakes;
-    if (_index + 1 < _activities.length) {
-      setState(() => _index++);
-      return;
+  /// Carries on a saved session for this lesson, or starts an attempt seeded
+  /// from the clock so each new attempt is arranged differently.
+  LessonSession _resumeOrStart() {
+    final saved = ref.read(sessionStoreProvider).load();
+    if (saved != null &&
+        saved.lesson == _key &&
+        saved.index < _lesson.activities.length) {
+      return saved;
     }
-    final outcome = LessonOutcome(xp: _xp, mistakes: _mistakes);
-    setState(() => _outcome = outcome);
-    HapticFeedback.mediumImpact();
-    await ref
-        .read(progressProvider.notifier)
-        .recordLesson(course: _course, lesson: _lesson, outcome: outcome);
+    return LessonSession(
+      lesson: _key,
+      seed: ref.read(clockProvider)().microsecondsSinceEpoch,
+    );
+  }
+
+  Future<void> _onActivityDone(ActivityResult result) async {
+    final store = ref.read(sessionStoreProvider);
+    switch (_session.advance(result, activityCount: _activities.length)) {
+      case NextActivity(:final session):
+        setState(() => _session = session);
+        await store.save(session);
+      case LessonFinished(:final outcome):
+        setState(() => _outcome = outcome);
+        HapticFeedback.mediumImpact();
+        await store.clear(_key);
+        await ref
+            .read(progressProvider.notifier)
+            .recordLesson(course: _course, lesson: _lesson, outcome: outcome);
+    }
   }
 
   Future<void> _confirmLeave() async {
-    if (_index == 0) {
+    if (_session.index == 0) {
       context.pop();
       return;
     }
@@ -71,7 +86,7 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Leave this lesson?'),
-        content: const Text('Your progress in this lesson will be lost.'),
+        content: const Text('Next time, you will start again at this step.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -112,7 +127,7 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
                           Expanded(
                             child: _Segments(
                               total: _activities.length,
-                              done: _index,
+                              done: _session.index,
                             ),
                           ),
                         ],
@@ -120,8 +135,8 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
                     ),
                     Expanded(
                       child: _ActivityHost(
-                        key: ValueKey(_index),
-                        activity: _activities[_index],
+                        key: ValueKey(_session.index),
+                        activity: _activities[_session.index],
                         onDone: _onActivityDone,
                       ),
                     ),

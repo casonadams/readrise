@@ -10,9 +10,10 @@ typedef LessonKey = ({CourseId course, LessonId lesson});
 LessonKey lessonKey(CoursePlugin course, LessonPlugin lesson) =>
     (course: course.id, lesson: lesson.id);
 
-String _encodeKey(LessonKey key) => '${key.course.value}/${key.lesson.value}';
+String encodeLessonKey(LessonKey key) =>
+    '${key.course.value}/${key.lesson.value}';
 
-LessonKey _decodeKey(String text) => switch (text.split('/')) {
+LessonKey decodeLessonKey(String text) => switch (text.split('/')) {
   [final course, final lesson] => (
     course: CourseId(course),
     lesson: LessonId(lesson),
@@ -51,12 +52,12 @@ class Progress {
       _ => null,
     },
     lastLesson: switch (json['lastLesson']) {
-      final String s => _decodeKey(s),
+      final String s => decodeLessonKey(s),
       _ => null,
     },
     stars: {
       for (final e in (json['stars'] as Map? ?? {}).entries)
-        _decodeKey(e.key as String): e.value as int,
+        decodeLessonKey(e.key as String): e.value as int,
     },
   );
 
@@ -75,10 +76,10 @@ class Progress {
     'streak': streak,
     'lastPractice': lastPractice?.toIso8601String(),
     'lastLesson': switch (lastLesson) {
-      final LessonKey key => _encodeKey(key),
+      final LessonKey key => encodeLessonKey(key),
       null => null,
     },
-    'stars': {for (final e in stars.entries) _encodeKey(e.key): e.value},
+    'stars': {for (final e in stars.entries) encodeLessonKey(e.key): e.value},
   };
 
   int starsFor(CoursePlugin course, LessonPlugin lesson) =>
