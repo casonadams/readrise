@@ -111,7 +111,7 @@ void main() {
 
   test('x cannot be fed, because no word starts with it', () {
     expect(
-      () => MonsterSession(letter: letterOf('x')),
+      () => MonsterSession(letter: letterOf('x'), random: Random(1)),
       throwsA(isA<AssertionError>()),
     );
   });

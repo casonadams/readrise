@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 
 import 'choice.dart';
@@ -13,6 +15,9 @@ class Reason {
 
   final String prompt;
   final List<Choice> choices;
+
+  Reason shuffled(Random random) =>
+      Reason(prompt: prompt, choices: [...choices]..shuffle(random));
 }
 
 class ChoiceQuestion {
@@ -23,6 +28,7 @@ class ChoiceQuestion {
     this.hint,
     this.reason,
     this.visual,
+    this.ordered = false,
   });
 
   final String prompt;
@@ -40,11 +46,29 @@ class ChoiceQuestion {
 
   final WidgetBuilder? visual;
 
-  /// Throws unless the question and its reason each have one right choice.
+  /// The choices are in an order that means something (numbers, a scale,
+  /// yes then no), so they never move. Other choices come in a new order
+  /// on every attempt.
+  final bool ordered;
+
+  ChoiceQuestion shuffled(Random random) => ChoiceQuestion(
+    prompt: prompt,
+    choices: ordered ? choices : ([...choices]..shuffle(random)),
+    explanation: explanation,
+    hint: hint,
+    reason: reason?.shuffled(random),
+    visual: visual,
+    ordered: ordered,
+  );
+
+  /// Throws unless the question and its reason each have one right choice
+  /// and no shuffled choice points at the others by position.
   void validate() {
     checkOneRight(choices, prompt);
+    if (!ordered) checkNoPositionalText(choices, prompt);
     if (reason case final reason?) {
       checkOneRight(reason.choices, '$prompt (reason)');
+      checkNoPositionalText(reason.choices, '$prompt (reason)');
     }
   }
 }

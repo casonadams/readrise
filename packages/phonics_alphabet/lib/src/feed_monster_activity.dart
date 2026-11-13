@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,16 +12,28 @@ import 'monster_session.dart';
 /// Feed the Monster: drag pictures that start with the monster's letter into
 /// its mouth and the rest into the bin. Tapping the monster or the bin works
 /// too.
-class FeedMonsterActivity implements ActivityPlugin {
+class FeedMonsterActivity implements ActivityPlugin, Randomizable {
   const FeedMonsterActivity({
     required this.letter,
     required this.learned,
     required this.unseen,
+    this.seed = 0,
   });
 
   final Letter letter;
   final List<Letter> learned;
   final List<Letter> unseen;
+
+  /// Seeds which pictures are offered and in what order.
+  final int seed;
+
+  @override
+  FeedMonsterActivity shuffled(Random random) => FeedMonsterActivity(
+    letter: letter,
+    learned: learned,
+    unseen: unseen,
+    seed: random.nextInt(1 << 32),
+  );
 
   @override
   Widget build(BuildContext context, ActivityHost host) =>
@@ -43,6 +57,7 @@ class _MonsterViewState extends State<_MonsterView> {
     letter: widget.activity.letter,
     learned: widget.activity.learned,
     unseen: widget.activity.unseen,
+    random: Random(widget.activity.seed),
   );
   _Mood _mood = _Mood.waiting;
   bool _busy = false;

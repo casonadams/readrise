@@ -20,30 +20,29 @@ class MonsterSession {
     List<Letter> learned = const [],
     List<Letter> unseen = const [],
     this.total = 6,
-    Random? random,
+    required Random random,
   }) {
     assert(letter.startsWord, 'only letters that start their word can be fed');
-    final r = random ?? Random();
-    final edible = ([...letter.pictures]..shuffle(r)).take(3).toList();
+    final edible = ([...letter.pictures]..shuffle(random)).take(3).toList();
     final blocked = {letter.char, letter.mirrorChar, ...letter.soundTwins};
     final candidates = [
       for (final pool in [learned, unseen])
         ([
           for (final l in pool)
             if (!blocked.contains(l.char) && l.startsWord) l,
-        ]..shuffle(r)),
+        ]..shuffle(random)),
     ];
     final others = <PictureWord>[];
     for (final pool in candidates) {
       for (final l in pool) {
         if (others.length >= total - edible.length) break;
-        others.add(([...l.pictures]..shuffle(r)).first);
+        others.add(([...l.pictures]..shuffle(random)).first);
       }
     }
     final foods = [
       for (final p in edible) Food(p, edible: true),
       for (final p in others) Food(p, edible: false),
-    ]..shuffle(r);
+    ]..shuffle(random);
     _queue.addAll(foods);
   }
 

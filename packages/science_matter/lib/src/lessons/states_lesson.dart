@@ -139,6 +139,7 @@ final statesLesson = ScienceLesson(
   ],
   check: [
     ChoiceQuestion(
+      ordered: true,
       prompt: 'Which state of matter is this?',
       choices: [
         Wrong('Solid', 'Solid particles sit packed in rows. These fly around.'),
@@ -166,6 +167,7 @@ final statesLesson = ScienceLesson(
           'That is a gas.',
     ),
     ChoiceQuestion(
+      ordered: true,
       prompt: 'Which state of matter is this?',
       choices: [
         Right('Solid'),

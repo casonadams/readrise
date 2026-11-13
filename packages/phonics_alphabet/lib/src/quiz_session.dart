@@ -33,21 +33,23 @@ class QuizSession {
     required Letter letter,
     List<Letter> learned = const [],
     List<Letter> unseen = const [],
-    Random? random,
+    required Random random,
   }) {
-    final r = random ?? Random();
     final known = [...learned, letter];
     final targets = [letter, letter, ...learned.reversed.take(2), letter];
-    return QuizSession._(r, Queue(), maxOptions: _optionCount(known.length))
-      .._fill(
-        [
-          for (var i = 0; i < targets.length; i++)
-            (targets[i], ExerciseKind.values[i % 2]),
-        ],
-        known: known,
-        unseen: unseen,
-        avoid: {letter.mirrorChar},
-      );
+    return QuizSession._(
+      random,
+      Queue(),
+      maxOptions: _optionCount(known.length),
+    ).._fill(
+      [
+        for (var i = 0; i < targets.length; i++)
+          (targets[i], ExerciseKind.values[i % 2]),
+      ],
+      known: known,
+      unseen: unseen,
+      avoid: {letter.mirrorChar},
+    );
   }
 
   /// A review quiz over [letters]: each is heard once and seen once, in random
@@ -55,15 +57,17 @@ class QuizSession {
   factory QuizSession.review({
     required List<Letter> letters,
     required List<Letter> known,
-    Random? random,
+    required Random random,
   }) {
-    final r = random ?? Random();
     final plan = [
       for (final l in letters)
         for (final k in ExerciseKind.values) (l, k),
-    ]..shuffle(r);
-    return QuizSession._(r, Queue(), maxOptions: _optionCount(known.length))
-      .._fill(plan, known: known, unseen: const [], avoid: const {});
+    ]..shuffle(random);
+    return QuizSession._(
+      random,
+      Queue(),
+      maxOptions: _optionCount(known.length),
+    ).._fill(plan, known: known, unseen: const [], avoid: const {});
   }
 
   /// Three choices at first, four once enough letters are known.

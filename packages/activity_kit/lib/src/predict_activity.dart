@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
@@ -25,7 +27,7 @@ enum Confidence {
 /// Predict, then find out: the learner commits to an answer and says how
 /// sure they are, runs the [experiment], and sees what really happens.
 /// Predictions are never marked as mistakes; making one earns [xp].
-class PredictActivity implements ActivityPlugin, Validated {
+class PredictActivity implements ActivityPlugin, Validated, Randomizable {
   const PredictActivity({
     required this.question,
     required this.choices,
@@ -50,7 +52,20 @@ class PredictActivity implements ActivityPlugin, Validated {
   final int xp;
 
   @override
-  void validate() => checkOneRight(choices, question);
+  void validate() {
+    checkOneRight(choices, question);
+    checkNoPositionalText(choices, question);
+  }
+
+  @override
+  PredictActivity shuffled(Random random) => PredictActivity(
+    question: question,
+    choices: [...choices]..shuffle(random),
+    tryIt: tryIt,
+    experiment: experiment,
+    outcome: outcome,
+    xp: xp,
+  );
 
   @override
   Widget build(BuildContext context, ActivityHost host) =>

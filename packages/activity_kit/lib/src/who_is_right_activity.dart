@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
@@ -23,7 +25,7 @@ class Claim {
 /// Classmates disagree; the learner decides who is right. Each wrong claim is
 /// a common misconception, so picking it earns an explanation of the flaw.
 /// Right first time earns full credit, otherwise half.
-class WhoIsRightActivity implements ActivityPlugin, Validated {
+class WhoIsRightActivity implements ActivityPlugin, Validated, Randomizable {
   const WhoIsRightActivity({
     required this.situation,
     required this.claims,
@@ -35,6 +37,14 @@ class WhoIsRightActivity implements ActivityPlugin, Validated {
   final List<Claim> claims;
   final String explanation;
   final int maxXp;
+
+  @override
+  WhoIsRightActivity shuffled(Random random) => WhoIsRightActivity(
+    situation: situation,
+    claims: [...claims]..shuffle(random),
+    explanation: explanation,
+    maxXp: maxXp,
+  );
 
   @override
   void validate() =>

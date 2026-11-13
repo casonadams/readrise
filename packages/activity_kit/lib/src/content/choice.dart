@@ -28,3 +28,21 @@ void checkOneRight(List<Choice> choices, String where) {
     throw ArgumentError('$where: needs exactly one Right choice, has $rights');
   }
 }
+
+final _positional = RegExp(
+  r'\b(all|both|none|neither) of (the|these)\b',
+  caseSensitive: false,
+);
+
+/// Throws if a choice in [choices] points at the others by position ("all
+/// of the above"), which shuffling would break; [where] names them.
+void checkNoPositionalText(List<Choice> choices, String where) {
+  for (final c in choices) {
+    if (_positional.hasMatch(c.text)) {
+      throw ArgumentError(
+        '$where: "${c.text}" points at other choices, but choices are '
+        'shuffled; mark the question ordered or reword it',
+      );
+    }
+  }
+}

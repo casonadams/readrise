@@ -23,6 +23,7 @@ final heatLesson = ScienceLesson(
     recalls: [LessonId('states')],
     questions: const [
       ChoiceQuestion(
+        ordered: true,
         prompt: 'In which state do particles slide past each other?',
         choices: [
           Wrong(
@@ -149,6 +150,7 @@ final heatLesson = ScienceLesson(
           'harder and more often, pushing it outward.',
     ),
     ChoiceQuestion(
+      ordered: true,
       prompt: 'At what temperature does water freeze?',
       choices: [
         Wrong(

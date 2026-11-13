@@ -119,6 +119,7 @@ final changesLesson = ScienceLesson(
   ],
   check: [
     ChoiceQuestion(
+      ordered: true,
       prompt:
           'A 20 g ice cube melts completely. What is the mass of the water?',
       choices: [

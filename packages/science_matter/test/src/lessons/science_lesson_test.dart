@@ -5,17 +5,6 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'package:readrise_testing/readrise_testing.dart';
 import 'package:science_matter/src/lessons/science_lesson.dart';
 
-class _StandIn implements Experiment {
-  const _StandIn();
-
-  @override
-  Widget build(
-    BuildContext context, {
-    required bool active,
-    required VoidCallback onObserved,
-  }) => const SizedBox();
-}
-
 final _fake = ContentFaker();
 
 ExplainerActivity _explainer(String title) => ExplainerActivity(
@@ -37,7 +26,7 @@ ScienceLesson _lesson(
           recalls: [for (final r in recalls) LessonId(r)],
           questions: [_fake.question()],
         ),
-  predict: _fake.prediction(const _StandIn()),
+  predict: _fake.prediction(const StandInExperiment()),
   explain: explain ?? [_explainer('one'), _explainer('two')],
   practise: [_fake.sort()],
   check: [_fake.question()],

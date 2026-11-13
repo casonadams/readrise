@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/widgets.dart';
 
 enum Grade {
@@ -98,6 +100,14 @@ abstract interface class ActivityPlugin {
 abstract interface class Validated {
   /// Throws an [ArgumentError] naming the first problem found.
   void validate();
+}
+
+/// An activity whose questions, choices or items can come in a different
+/// order. The engine calls [shuffled] with a newly seeded [Random] for every
+/// attempt, so a retake is arranged differently.
+abstract interface class Randomizable {
+  /// A copy arranged by [random]; the activity itself never changes.
+  ActivityPlugin shuffled(Random random);
 }
 
 /// What the engine offers to the running activity.

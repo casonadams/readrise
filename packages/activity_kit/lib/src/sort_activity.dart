@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
@@ -35,7 +37,7 @@ class SortItem {
 /// Drag each item into the right bin, or tap a bin to place it there.
 /// A wrong bin is counted as a mistake and answered with the [hint]; using
 /// the hint or missing first makes that item worth half.
-class SortActivity implements ActivityPlugin, Validated {
+class SortActivity implements ActivityPlugin, Validated, Randomizable {
   const SortActivity({
     required this.prompt,
     required this.bins,
@@ -51,6 +53,16 @@ class SortActivity implements ActivityPlugin, Validated {
   /// The rule that decides the bins, offered on request and after a miss.
   final String? hint;
   final int maxXp;
+
+  /// The same bins, with the items to sort in a new order.
+  @override
+  SortActivity shuffled(Random random) => SortActivity(
+    prompt: prompt,
+    bins: bins,
+    items: [...items]..shuffle(random),
+    hint: hint,
+    maxXp: maxXp,
+  );
 
   @override
   void validate() {

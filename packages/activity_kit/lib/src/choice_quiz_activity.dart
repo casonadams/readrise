@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
@@ -17,7 +19,7 @@ import 'step_dots.dart';
 /// counted as a mistake, and explained; the learner keeps trying. A question
 /// with a [Reason] asks why once the answer is right. Settling a question
 /// without a miss or a hint earns full credit, otherwise half.
-class ChoiceQuizActivity implements ActivityPlugin, Validated {
+class ChoiceQuizActivity implements ActivityPlugin, Validated, Randomizable {
   const ChoiceQuizActivity({
     required this.questions,
     this.kind = ActivityKind.check,
@@ -31,6 +33,16 @@ class ChoiceQuizActivity implements ActivityPlugin, Validated {
   @override
   Widget build(BuildContext context, ActivityHost host) =>
       _QuizView(activity: this, host: host);
+
+  /// The questions in a new order, each with its choices shuffled.
+  @override
+  ChoiceQuizActivity shuffled(Random random) => ChoiceQuizActivity(
+    questions: [
+      for (final q in [...questions]..shuffle(random)) q.shuffled(random),
+    ],
+    kind: kind,
+    maxXp: maxXp,
+  );
 
   @override
   void validate() {

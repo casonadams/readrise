@@ -2,6 +2,19 @@ import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+/// An experiment that shows an empty box and never reports, for tests of
+/// activities that hold one.
+class StandInExperiment implements Experiment {
+  const StandInExperiment();
+
+  @override
+  Widget build(
+    BuildContext context, {
+    required bool active,
+    required VoidCallback onObserved,
+  }) => const SizedBox.expand();
+}
+
 /// What a learner does to an experiment until its result shows.
 typedef Observe = Future<void> Function(WidgetTester tester);
 

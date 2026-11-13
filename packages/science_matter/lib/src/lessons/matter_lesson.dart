@@ -102,6 +102,7 @@ final matterLesson = ScienceLesson(
   ],
   check: [
     ChoiceQuestion(
+      ordered: true,
       prompt: 'Is air matter?',
       choices: [
         Right('Yes'),
@@ -144,6 +145,7 @@ final matterLesson = ScienceLesson(
           'Every kind of matter, solid, liquid, or gas, is made of atoms.',
     ),
     ChoiceQuestion(
+      ordered: true,
       prompt: 'How many atoms are in one water molecule (H2O)?',
       choices: [
         Wrong('1', 'H2O names more than one atom: H, H, and O.'),

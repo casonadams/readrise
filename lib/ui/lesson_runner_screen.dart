@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
+import '../engine/attempt.dart';
 import '../engine/progress.dart';
 import '../engine/subjects.dart';
 import '../state/providers.dart';
@@ -33,6 +36,12 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
   late final LessonPlugin _lesson = ref
       .read(registryProvider)
       .lessonById(widget.courseId, widget.lessonId);
+
+  /// Seeded from the clock, so each attempt is arranged differently.
+  late final List<ActivityPlugin> _activities = attemptActivities(
+    _lesson,
+    Random(ref.read(clockProvider)().microsecondsSinceEpoch),
+  );
   int _index = 0;
   int _xp = 0;
   int _mistakes = 0;
@@ -41,7 +50,7 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
   Future<void> _onActivityDone(ActivityResult result) async {
     _xp += result.xp;
     _mistakes += result.mistakes;
-    if (_index + 1 < _lesson.activities.length) {
+    if (_index + 1 < _activities.length) {
       setState(() => _index++);
       return;
     }
@@ -102,7 +111,7 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
                           ),
                           Expanded(
                             child: _Segments(
-                              total: _lesson.activities.length,
+                              total: _activities.length,
                               done: _index,
                             ),
                           ),
@@ -112,7 +121,7 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
                     Expanded(
                       child: _ActivityHost(
                         key: ValueKey(_index),
-                        activity: _lesson.activities[_index],
+                        activity: _activities[_index],
                         onDone: _onActivityDone,
                       ),
                     ),

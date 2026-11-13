@@ -12,25 +12,36 @@ import 'quiz_session.dart';
 /// Hear a letter, or see a picture and hear its word, then pick the letter.
 /// Wrong picks are crossed out in place and the question stays until it is
 /// right.
-class LetterQuizActivity implements ActivityPlugin {
-  const LetterQuizActivity(this.newSession);
+class LetterQuizActivity implements ActivityPlugin, Randomizable {
+  const LetterQuizActivity(this.newSession, {this.seed = 0});
 
   LetterQuizActivity.lesson({
     required Letter letter,
     required List<Letter> learned,
     required List<Letter> unseen,
-  }) : newSession = (() => QuizSession.lesson(
+  }) : seed = 0,
+       newSession = ((random) => QuizSession.lesson(
          letter: letter,
          learned: learned,
          unseen: unseen,
+         random: random,
        ));
 
   LetterQuizActivity.review({
     required List<Letter> letters,
     required List<Letter> known,
-  }) : newSession = (() => QuizSession.review(letters: letters, known: known));
+  }) : seed = 0,
+       newSession = ((random) =>
+           QuizSession.review(letters: letters, known: known, random: random));
 
-  final QuizSession Function() newSession;
+  final QuizSession Function(Random random) newSession;
+
+  /// Seeds the order of the questions and choices.
+  final int seed;
+
+  @override
+  LetterQuizActivity shuffled(Random random) =>
+      LetterQuizActivity(newSession, seed: random.nextInt(1 << 32));
 
   @override
   Widget build(BuildContext context, ActivityHost host) =>
@@ -49,7 +60,9 @@ class _QuizView extends StatefulWidget {
 
 class _QuizViewState extends State<_QuizView>
     with SingleTickerProviderStateMixin {
-  late final QuizSession _session = widget.activity.newSession();
+  late final QuizSession _session = widget.activity.newSession(
+    Random(widget.activity.seed),
+  );
   late final AnimationController _float = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2400),

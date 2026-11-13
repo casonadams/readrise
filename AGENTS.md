@@ -81,6 +81,11 @@ order; `checkWarmUps` (run at startup) checks the warm-up rules.
   compile.
 - Hints nudge without giving the answer away. Quiz hints appear on request
   and on their own after two misses; using one makes the question worth half.
+- Every attempt shuffles questions, choices, claims and sort items, so a
+  retake looks different. Never write a choice that points at the others
+  ("all of the above"); the app refuses to start. When the order of choices
+  means something (numbers, a scale, yes then no, solid-liquid-gas), mark
+  the question `ordered: true`.
 
 ## Writing for young readers
 

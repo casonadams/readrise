@@ -26,10 +26,6 @@ const _allowed = {
       'one-off reading activity',
   'packages/phonics_alphabet/lib/src/letter_trace_activity.dart: _TracePainter draws with CustomPainter':
       'reading has one course; moves to a reading kit with the second',
-  'packages/phonics_alphabet/lib/src/monster_session.dart: unseeded Random()':
-      'step 6: engine-provided Random',
-  'packages/phonics_alphabet/lib/src/quiz_session.dart: unseeded Random()':
-      'step 6: engine-provided Random',
   'packages/science_matter/lib/src/experiments/balloon.dart: _BalancePainter draws with CustomPainter':
       'step 9: moves to science_kit',
   'packages/science_matter/lib/src/heat_lab_activity.dart: _HeatLabView is a StatefulWidget':

@@ -22,7 +22,10 @@ then add something new (to this kit if any subject could use it).
 | `SortBin` / `SortItem` | Bins and the items that belong in them; an item names its bin. |
 
 Activities with content implement `Validated`; the app checks them at startup
-(exactly one `Right`, items only in listed bins).
+(exactly one `Right`, items only in listed bins, no "all of the above" in
+choices that shuffle). Quiz, prediction, "Who's right?" and sort also
+implement `Randomizable`: the engine shuffles a copy for every attempt.
+`ChoiceQuestion(ordered: true)` keeps choices whose order means something.
 
 ## Activities
 

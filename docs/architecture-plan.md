@@ -174,23 +174,30 @@ What it says about the remaining steps:
 - Step 7 (engine) is unaffected by lesson cost; it is about resume, scoring
   and data, and stands on its own merits.
 
-### 6. Scene template and randomization
+### 6. Randomization - done; scene template deferred
 
-- `Scene` interface (`steps`, `build`); `KeyframeScene<F>` (frames per step,
-  tweening, reduced motion). Port the five explainer scenes.
-- `Randomizable.shuffled(Random)` on content: options, question order,
-  prediction options, "Who's right?" claims, sort items. Never shuffled:
-  activity order, explainer steps, sequential lab goals, anything declared
-  ordered (`Choices.ordered`, ordered question lists).
-- Startup check rejects option text that points at other options by
-  position ("both of the above").
-- The engine seeds each attempt and re-rolls once if the arrangement equals
-  the previous attempt's.
-- Phonics and the particle sim take the engine-provided `Random`.
+- `Randomizable.shuffled(Random)` role interface in `readrise_plugin_api`.
+  Quiz (question order and choices), reasons, prediction choices, "Who's
+  right?" claims and sort items shuffle. Never shuffled: activity order,
+  explainer steps, lab goals, sort bins, `ChoiceQuestion(ordered: true)`
+  (7 science questions: numbers, yes/no, solid-liquid-gas, less-same-more).
+- Startup check rejects choices that point at others by position ("all of
+  the above") unless the question is ordered.
+- `attemptActivities(lesson, random)` in `lib/engine/attempt.dart`; the
+  lesson runner seeds a new `Random` from the clock for each attempt.
+- Phonics activities carry a `seed` and their sessions take a required
+  `Random`; their unseeded `Random()` calls and allowlist entries are gone.
+- `randomizableContract` in `readrise_testing`: every part kept (so choices
+  keep their feedback), same seed same order, different seeds differ. Proven
+  to fail on a shuffle that does nothing and on one that drops an item.
 
-Accept: a contract test over every randomizable content type and many seeds
-shows items, correct answers and attached feedback preserved and orders
-varying; scene step counts match explainer steps.
+Changed from the plan:
+- No re-roll when an attempt matches the previous one: that needs the
+  previous arrangement stored, which belongs with resume snapshots (step 7).
+  Until then a repeat is possible but unlikely (a 3-question quiz with 3
+  choices each has 6 x 6^3 = 1296 arrangements).
+- No ordered question lists: no quiz needs one yet.
+- `Scene`/`KeyframeScene` deferred (see step 5).
 
 ### 7. Engine core
 
