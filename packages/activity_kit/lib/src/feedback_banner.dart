@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'feedback_layout.dart';
+
 enum FeedbackKind { correct, wrong, hint }
 
 /// A short coloured note to the learner: what went right, what went wrong,
@@ -38,6 +40,7 @@ class FeedbackBanner extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: color.withValues(alpha: 0.4), width: 2),
+        boxShadow: overlayShadow,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -6,6 +6,7 @@ import 'activity_header.dart';
 import 'answer_panel.dart';
 import 'content/choice.dart';
 import 'experiment/experiment.dart';
+import 'feedback_layout.dart';
 import 'option_tile.dart';
 
 /// How sure the learner is of a prediction. Asked before the reveal: errors
@@ -93,6 +94,7 @@ class _PredictViewState extends State<_PredictView> {
   }
 
   void _commit(Confidence confidence) {
+    if (_confidence != null) return;
     HapticFeedback.selectionClick();
     setState(() => _confidence = confidence);
   }
@@ -113,77 +115,81 @@ class _PredictViewState extends State<_PredictView> {
       i == _prediction ? OptionState.picked : OptionState.open;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+    child: FeedbackLayout(
+      feedback: _observed
+          ? _result()
+          : _confidence == null
+          ? null
+          : _TryIt(
+              key: const ValueKey('try'),
+              instruction: _a.tryIt,
+              prediction: _a.choices[_prediction!].text,
+            ),
+      page: (context, _) => _page(context),
+    ),
+  );
+
+  Widget _result() => AnswerPanel(
+    title: predictionTitle(right: _right, confidence: _confidence!),
+    explanation: _resultText,
+    lead: _right
+        ? null
+        : _AnswerLine(answer: _a.choices[rightIndex(_a.choices)].text),
+    color: _right ? AnswerPanel.correctGreen : ActivityKind.predict.color,
+    icon: _right ? Icons.check_circle_rounded : Icons.auto_awesome_rounded,
+    onContinue: () => widget.host.complete(ActivityResult(xp: _a.xp)),
+  );
+
+  /// The choices stay in place throughout, so the experiment never changes
+  /// size; instructions and the result slide up over them.
+  Widget _page(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const ActivityHeader(kind: ActivityKind.predict),
-          const SizedBox(height: 12),
-          Text(_a.question, style: text.titleLarge?.copyWith(height: 1.3)),
-          const SizedBox(height: 12),
-          Expanded(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: _testing
-                      ? ActivityKind.predict.color
-                      : scheme.outlineVariant,
-                  width: _testing ? 3 : 2,
-                ),
-              ),
-              clipBehavior: Clip.antiAlias,
-              padding: const EdgeInsets.all(12),
-              child: _a.experiment.build(
-                context,
-                active: _testing,
-                onObserved: _onObserved,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const ActivityHeader(kind: ActivityKind.predict),
+        const SizedBox(height: 12),
+        Text(_a.question, style: text.titleLarge?.copyWith(height: 1.3)),
+        const SizedBox(height: 12),
+        Expanded(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: _testing
+                    ? ActivityKind.predict.color
+                    : scheme.outlineVariant,
+                width: _testing ? 3 : 2,
               ),
             ),
+            clipBehavior: Clip.antiAlias,
+            padding: const EdgeInsets.all(12),
+            child: _a.experiment.build(
+              context,
+              active: _testing,
+              onObserved: _onObserved,
+            ),
           ),
-          const SizedBox(height: 12),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.bottomCenter,
-            child: _observed
-                ? AnswerPanel(
-                    title: predictionTitle(
-                      right: _right,
-                      confidence: _confidence!,
-                    ),
-                    explanation: _resultText,
-                    lead: _right
-                        ? null
-                        : _AnswerLine(
-                            answer: _a.choices[rightIndex(_a.choices)].text,
-                          ),
-                    color: _right
-                        ? AnswerPanel.correctGreen
-                        : ActivityKind.predict.color,
-                    icon: _right
-                        ? Icons.check_circle_rounded
-                        : Icons.auto_awesome_rounded,
-                    onContinue: () =>
-                        widget.host.complete(ActivityResult(xp: _a.xp)),
-                  )
-                : _testing
-                ? _TryIt(
-                    instruction: _a.tryIt,
-                    prediction: _a.choices[_prediction!].text,
-                  )
-                : _choices(text),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 12),
+        _choices(text),
+      ],
     );
   }
+
+  /// Hidden but still taking up its space.
+  Widget _kept({required bool visible, required Widget child}) => Visibility(
+    visible: visible,
+    maintainSize: true,
+    maintainAnimation: true,
+    maintainState: true,
+    child: child,
+  );
 
   Widget _choices(TextTheme text) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -198,21 +204,27 @@ class _PredictViewState extends State<_PredictView> {
             onTap: () => _predict(i),
           ),
         ),
-      if (_prediction != null) ...[
-        const SizedBox(height: 4),
-        Text('How sure are you?', style: text.titleMedium),
-        const SizedBox(height: 8),
-        Row(
+      _kept(
+        visible: _prediction != null && _confidence == null,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (final (i, c) in Confidence.values.indexed) ...[
-              if (i > 0) const SizedBox(width: 8),
-              Expanded(
-                child: _ConfidenceButton(confidence: c, onTap: _commit),
-              ),
-            ],
+            const SizedBox(height: 4),
+            Text('How sure are you?', style: text.titleMedium),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                for (final (i, c) in Confidence.values.indexed) ...[
+                  if (i > 0) const SizedBox(width: 8),
+                  Expanded(
+                    child: _ConfidenceButton(confidence: c, onTap: _commit),
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
-      ],
+      ),
     ],
   );
 }
@@ -267,7 +279,11 @@ class _ConfidenceButton extends StatelessWidget {
 
 /// While the experiment runs: what to do, and the prediction being tested.
 class _TryIt extends StatelessWidget {
-  const _TryIt({required this.instruction, required this.prediction});
+  const _TryIt({
+    required this.instruction,
+    required this.prediction,
+    super.key,
+  });
 
   final String instruction;
   final String prediction;
@@ -285,6 +301,7 @@ class _TryIt extends StatelessWidget {
           scheme.surfaceContainerLowest,
         ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: overlayShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

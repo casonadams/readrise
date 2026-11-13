@@ -104,13 +104,15 @@ order; `checkWarmUps` (run at startup) checks the warm-up rules.
   until `active`. It calls `onObserved` exactly once, after the result is
   visible. One control per experiment: build it as a `ControlledExperiment`
   with a `SliderControl`, a `TapControl` or a new `Control`.
-- Keep the evidence on screen after the reveal; the result panel must not
-  hide it.
-- Physical behaviour must look right. `ParticleSim` simulates the real box
-  shape (`height` is the box's height over its width) and is drawn at one
-  scale on both axes: never stretch a simulation to fit a box. Liquids pool
-  and level out, gases fill the box and bounce off each other, solids rest on
-  the floor.
+- Keep the evidence on screen after the reveal. The result panel may cover
+  controls (choices, sliders), never the experiment: a prediction keeps its
+  choices below the experiment for this, and the course test checks every
+  prediction's result panel on a phone-sized screen.
+- Physical behaviour must look right. `ParticleSim` takes the real box shape
+  (`fit` with the view's height over width; a flat box grows wider) and is
+  drawn at one scale on both axes: never stretch a simulation to fit a box.
+  Liquids pool and level out, gases fill the whole box and bounce off each
+  other, solids rest on the floor.
 - Use the standard colours already in use: oxygen red, hydrogen white,
   negative charge red, positive charge blue, heat red, cold blue.
 
@@ -121,10 +123,16 @@ order; `checkWarmUps` (run at startup) checks the warm-up rules.
   practising or proving it.
 - Reuse `OptionTile`, `AnswerPanel` and `FeedbackBanner`; do not create
   look-alikes.
+- Feedback and Continue never push the page around: wrap the page in
+  `FeedbackLayout` and pass the banner or panel as its `feedback`, so it
+  slides up over the bottom. Nothing on the page may change size when it
+  appears; keep the space of anything that hides (`Visibility` with
+  `maintainSize`).
 - Verify on a phone-sized screen (390x844) in the real web build, not only in
   widget tests: build with `flutter build web --release`, serve `build/web`,
   enable semantics, and walk every step you changed. Widget-test fonts render
-  text as blocks, so they cannot show text layout problems.
+  text as blocks, so they cannot show text layout problems; a test that
+  measures text must load the app's font (`test/support/real_fonts.dart`).
 - Accessibility: every tappable answer has a semantics label that includes
   its state ("..., wrong", "..., correct"), and hidden duplicates (like step
   dots next to "1 of 3") are excluded from semantics.

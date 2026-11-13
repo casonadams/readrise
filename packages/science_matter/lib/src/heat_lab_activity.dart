@@ -1,3 +1,4 @@
+import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
@@ -55,57 +56,60 @@ class _HeatLabViewState extends State<_HeatLabView> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(24),
+    child: FeedbackLayout(
+      feedback: _reached
+          ? AnswerPanel(
+              key: ValueKey(_goal),
+              title: 'Goal reached!',
+              explanation:
+                  'At ${_celsius.round()}\u00B0C the water is a '
+                  '${_state.name}.',
+              onContinue: _advance,
+            )
+          : null,
+      page: (context, _) => _page(context),
+    ),
+  );
+
+  Widget _page(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final state = _state;
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Goal ${_goal + 1} of ${_goals.length}', style: text.labelLarge),
-          const SizedBox(height: 4),
-          Text(_goals[_goal].prompt, style: text.titleLarge),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ParticleView(state: state, energy: energyAt(_celsius)),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '${_celsius.round()}\u00B0C  \u2022  '
-            '${state.name[0].toUpperCase()}${state.name.substring(1)}',
-            textAlign: TextAlign.center,
-            style: text.headlineSmall,
-          ),
-          Slider(
-            min: HeatLabActivity.minCelsius,
-            max: HeatLabActivity.maxCelsius,
-            divisions: 140,
-            value: _celsius,
-            label: '${_celsius.round()}\u00B0C',
-            semanticFormatterCallback: (v) => '${v.round()} degrees Celsius',
-            onChanged: (v) => setState(() => _celsius = v),
-          ),
-          Text(
-            'Water freezes below 0\u00B0C and boils at 100\u00B0C.',
-            textAlign: TextAlign.center,
-            style: text.bodyMedium,
-          ),
-          const SizedBox(height: 12),
-          if (_reached)
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.green.shade600,
-                foregroundColor: scheme.onPrimary,
-              ),
-              onPressed: _advance,
-              child: Text(_last ? 'Finish' : 'Goal reached! Next goal'),
-            )
-          else
-            const SizedBox(height: 40),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Goal ${_goal + 1} of ${_goals.length}', style: text.labelLarge),
+        const SizedBox(height: 4),
+        Text(_goals[_goal].prompt, style: text.titleLarge),
+        const SizedBox(height: 16),
+        Expanded(
+          child: ParticleView(state: state, energy: energyAt(_celsius)),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          '${_celsius.round()}\u00B0C  \u2022  '
+          '${state.name[0].toUpperCase()}${state.name.substring(1)}',
+          textAlign: TextAlign.center,
+          style: text.headlineSmall,
+        ),
+        Slider(
+          min: HeatLabActivity.minCelsius,
+          max: HeatLabActivity.maxCelsius,
+          divisions: 140,
+          value: _celsius,
+          label: '${_celsius.round()}\u00B0C',
+          semanticFormatterCallback: (v) => '${v.round()} degrees Celsius',
+          onChanged: (v) => setState(() => _celsius = v),
+        ),
+        Text(
+          'Water freezes below 0\u00B0C and boils at 100\u00B0C.',
+          textAlign: TextAlign.center,
+          style: text.bodyMedium,
+        ),
+        // Room for the goal panel, so it covers the controls, not the water.
+        const SizedBox(height: 48),
+      ],
     );
   }
 }

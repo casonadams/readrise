@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'activity_header.dart';
+import 'answer_panel.dart';
 import 'feedback_banner.dart';
+import 'feedback_layout.dart';
 import 'score.dart';
 import 'shake.dart';
 
@@ -152,176 +154,177 @@ class _SortViewState extends State<_SortView> {
   );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+    child: FeedbackLayout(
+      feedback: _overlay(),
+      page: (context, _) => _page(context),
+    ),
+  );
+
+  Widget? _overlay() {
+    final feedback = _feedback;
+    if (feedback == null) return null;
+    final (kind, title, message) = feedback;
+    if (_done) {
+      return AnswerPanel(
+        key: const ValueKey('done'),
+        title: title,
+        explanation: message,
+        onContinue: _finish,
+      );
+    }
+    return FeedbackBanner(
+      key: ValueKey(feedback),
+      kind: kind,
+      title: title,
+      message: message,
+    );
+  }
+
+  Widget _page(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final feedback = _feedback;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ActivityHeader(
-            kind: ActivityKind.sort,
-            trailing: Row(
-              children: [
-                Text(
-                  '$_next of ${_a.items.length}',
-                  style: text.labelLarge?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: 90,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(end: _next / _a.items.length),
-                      duration: const Duration(milliseconds: 300),
-                      builder: (context, value, _) => LinearProgressIndicator(
-                        value: value,
-                        minHeight: 8,
-                        color: ActivityKind.sort.color,
-                        backgroundColor: scheme.outlineVariant,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(_a.prompt, style: text.titleLarge),
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 108),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(
-                  scale: Tween(begin: 0.8, end: 1.0).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutBack,
-                    ),
-                  ),
-                  child: child,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ActivityHeader(
+          kind: ActivityKind.sort,
+          trailing: Row(
+            children: [
+              Text(
+                '$_next of ${_a.items.length}',
+                style: text.labelLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
                 ),
               ),
-              child: _done
-                  ? Column(
-                      key: const ValueKey('done'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.celebration_rounded,
-                          size: 40,
-                          color: Color(0xFFEF6C00),
-                        ),
-                        Text('All sorted!', style: text.headlineSmall),
-                      ],
-                    )
-                  : Column(
-                      key: ValueKey(_next),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Draggable<SortItem>(
-                          data: _a.items[_next],
-                          feedback: Material(
-                            color: Colors.transparent,
-                            child: Transform.rotate(
-                              angle: -0.05,
-                              child: _ItemCard(
-                                _a.items[_next].label,
-                                lifted: true,
-                              ),
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 90,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(end: _next / _a.items.length),
+                    duration: const Duration(milliseconds: 300),
+                    builder: (context, value, _) => LinearProgressIndicator(
+                      value: value,
+                      minHeight: 8,
+                      color: ActivityKind.sort.color,
+                      backgroundColor: scheme.outlineVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(_a.prompt, style: text.titleLarge),
+        const SizedBox(height: 12),
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 108),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween(begin: 0.8, end: 1.0).animate(
+                  CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+                ),
+                child: child,
+              ),
+            ),
+            child: _done
+                ? Column(
+                    key: const ValueKey('done'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.celebration_rounded,
+                        size: 40,
+                        color: Color(0xFFEF6C00),
+                      ),
+                      Text('All sorted!', style: text.headlineSmall),
+                    ],
+                  )
+                : Column(
+                    key: ValueKey(_next),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Draggable<SortItem>(
+                        data: _a.items[_next],
+                        feedback: Material(
+                          color: Colors.transparent,
+                          child: Transform.rotate(
+                            angle: -0.05,
+                            child: _ItemCard(
+                              _a.items[_next].label,
+                              lifted: true,
                             ),
                           ),
-                          childWhenDragging: Opacity(
-                            opacity: 0.3,
-                            child: _ItemCard(_a.items[_next].label),
-                          ),
+                        ),
+                        childWhenDragging: Opacity(
+                          opacity: 0.3,
                           child: _ItemCard(_a.items[_next].label),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Drag it to a box, or tap a box',
-                          style: text.labelMedium?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: Column(
-              children: [
-                if (feedback != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: FeedbackBanner(
-                        key: ValueKey(feedback),
-                        kind: feedback.$1,
-                        title: feedback.$2,
-                        message: feedback.$3,
+                        child: _ItemCard(_a.items[_next].label),
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Drag it to a box, or tap a box',
+                        style: text.labelMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                if (!_done && !_hintShown && _a.hint != null)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: _showHint,
-                      icon: const Icon(Icons.lightbulb_outline),
-                      label: const Text('Need a hint?'),
-                    ),
-                  ),
-              ],
+          ),
+        ),
+        if (_a.hint != null)
+          Visibility(
+            visible: !_done && !_hintShown,
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _showHint,
+                icon: const Icon(Icons.lightbulb_outline),
+                label: const Text('Need a hint?'),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var i = 0; i < _a.bins.length; i++)
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(left: i == 0 ? 0 : 10),
-                      child: Shake(
-                        trigger: _shakes[i] ?? 0,
-                        child: DragTarget<SortItem>(
-                          onWillAcceptWithDetails: (_) => true,
-                          onAcceptWithDetails: (_) => _drop(i),
-                          builder: (context, candidates, _) => _Bin(
-                            title: _a.bins[i].label,
-                            color: _binColor(i),
-                            items: _placed[i],
-                            hovered: candidates.isNotEmpty,
-                            flashing: _flashBin == i,
-                            onTap: () => _drop(i),
-                          ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var i = 0; i < _a.bins.length; i++)
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: i == 0 ? 0 : 10),
+                    child: Shake(
+                      trigger: _shakes[i] ?? 0,
+                      child: DragTarget<SortItem>(
+                        onWillAcceptWithDetails: (_) => true,
+                        onAcceptWithDetails: (_) => _drop(i),
+                        builder: (context, candidates, _) => _Bin(
+                          title: _a.bins[i].label,
+                          color: _binColor(i),
+                          items: _placed[i],
+                          hovered: candidates.isNotEmpty,
+                          flashing: _flashBin == i,
+                          onTap: () => _drop(i),
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-          if (_done) ...[
-            const SizedBox(height: 16),
-            FilledButton(onPressed: _finish, child: const Text('Continue')),
-          ],
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

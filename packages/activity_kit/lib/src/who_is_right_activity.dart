@@ -6,6 +6,7 @@ import 'activity_header.dart';
 import 'answer_panel.dart';
 import 'content/choice.dart';
 import 'feedback_banner.dart';
+import 'feedback_layout.dart';
 import 'kid_avatar.dart';
 import 'option_tile.dart';
 import 'score.dart';
@@ -94,67 +95,71 @@ class _WhoIsRightViewState extends State<_WhoIsRightView> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+    child: FeedbackLayout(feedback: _feedback(), page: _page),
+  );
+
+  Widget? _feedback() {
+    if (_solved) {
+      final winner = _a.claims.firstWhere((c) => c.choice is Right).kid;
+      return AnswerPanel(
+        key: const ValueKey('solved'),
+        title: 'Yes! ${winner.name} is right.',
+        explanation: _a.explanation,
+        onContinue: _finish,
+      );
+    }
+    final lastWrong = _wrong.lastOrNull;
+    if (lastWrong == null) return null;
+    final claim = _a.claims[lastWrong];
+    return FeedbackBanner(
+      key: ValueKey(lastWrong),
+      kind: FeedbackKind.wrong,
+      title: 'Not ${claim.kid.name}',
+      message: (claim.choice as Wrong).feedback,
+    );
+  }
+
+  Widget _page(BuildContext context, double covered) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final lastWrong = _wrong.isEmpty ? null : _wrong.last;
-    final winner = _a.claims.firstWhere((c) => c.choice is Right).kid.name;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const ActivityHeader(kind: ActivityKind.whoIsRight),
-          const SizedBox(height: 12),
-          Text(_a.situation, style: text.titleLarge?.copyWith(height: 1.3)),
-          const SizedBox(height: 4),
-          Text(
-            'Tap the one who is right.',
-            style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var i = 0; i < _a.claims.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: Shake(
-                        trigger: _shakes[i] ?? 0,
-                        child: _ClaimCard(
-                          claim: _a.claims[i],
-                          state: _stateOf(i),
-                          avatarOnRight: i.isOdd,
-                          onTap: () => _pick(i),
-                        ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const ActivityHeader(kind: ActivityKind.whoIsRight),
+        const SizedBox(height: 12),
+        Text(_a.situation, style: text.titleLarge?.copyWith(height: 1.3)),
+        const SizedBox(height: 4),
+        Text(
+          'Tap the one who is right.',
+          style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < _a.claims.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Shake(
+                      trigger: _shakes[i] ?? 0,
+                      child: _ClaimCard(
+                        claim: _a.claims[i],
+                        state: _stateOf(i),
+                        avatarOnRight: i.isOdd,
+                        onTap: () => _pick(i),
                       ),
                     ),
-                  if (!_solved && lastWrong != null)
-                    FeedbackBanner(
-                      key: ValueKey(lastWrong),
-                      kind: FeedbackKind.wrong,
-                      title: 'Not ${_a.claims[lastWrong].kid.name}',
-                      message: (_a.claims[lastWrong].choice as Wrong).feedback,
-                    ),
-                ],
-              ),
+                  ),
+                SizedBox(height: covered),
+              ],
             ),
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            child: _solved
-                ? AnswerPanel(
-                    title: 'Yes! $winner is right.',
-                    explanation: _a.explanation,
-                    onContinue: _finish,
-                  )
-                : const SizedBox(width: double.infinity),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

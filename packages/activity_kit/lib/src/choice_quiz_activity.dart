@@ -7,6 +7,7 @@ import 'answer_panel.dart';
 import 'content/choice.dart';
 import 'content/question.dart';
 import 'feedback_banner.dart';
+import 'feedback_layout.dart';
 import 'option_tile.dart';
 import 'score.dart';
 import 'shake.dart';
@@ -151,150 +152,148 @@ class _QuizViewState extends State<_QuizView> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+    child: FeedbackLayout(feedback: _feedback(), page: _page),
+  );
+
+  Widget? _feedback() {
+    final q = _question;
+    if (_settled) {
+      return AnswerPanel(
+        key: ValueKey('settled:$_index'),
+        title: _wrong.isEmpty && _wrongReasons.isEmpty && !_hintShown
+            ? 'Correct!'
+            : 'You got it!',
+        explanation: q.explanation,
+        onContinue: _next,
+      );
+    }
+    final reason = q.reason;
+    final lastWrong = _wrong.lastOrNull;
+    final lastWrongReason = _wrongReasons.lastOrNull;
+    final banners = [
+      if (!_answered && lastWrong != null)
+        FeedbackBanner(
+          kind: FeedbackKind.wrong,
+          message: (q.choices[lastWrong] as Wrong).feedback,
+        ),
+      if (!_answered && _hintShown && q.hint != null)
+        FeedbackBanner(
+          kind: FeedbackKind.hint,
+          title: 'Hint',
+          message: q.hint!,
+        ),
+      if (_answered && reason != null && lastWrongReason != null)
+        FeedbackBanner(
+          kind: FeedbackKind.wrong,
+          message: (reason.choices[lastWrongReason] as Wrong).feedback,
+        ),
+    ];
+    if (banners.isEmpty) return null;
+    return Column(
+      key: ValueKey('$_index:$lastWrong:$_hintShown:$lastWrongReason'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final (i, banner) in banners.indexed) ...[
+          if (i > 0) const SizedBox(height: 8),
+          banner,
+        ],
+      ],
+    );
+  }
+
+  Widget _page(BuildContext context, double covered) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     final q = _question;
     final reason = q.reason;
-    final lastWrong = _wrong.isEmpty ? null : _wrong.last;
-    final lastWrongReason = _wrongReasons.isEmpty ? null : _wrongReasons.last;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ActivityHeader(
-            kind: widget.activity.kind,
-            trailing: Row(
-              children: [
-                Text(
-                  '${_index + 1} of ${_questions.length}',
-                  style: text.labelLarge?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ActivityHeader(
+          kind: widget.activity.kind,
+          trailing: Row(
+            children: [
+              Text(
+                '${_index + 1} of ${_questions.length}',
+                style: text.labelLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
                 ),
-                const SizedBox(width: 10),
-                ExcludeSemantics(
-                  child: StepDots(count: _questions.length, current: _index),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 10),
+              ExcludeSemantics(
+                child: StepDots(count: _questions.length, current: _index),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              layoutBuilder: (current, previous) => Stack(
-                alignment: Alignment.topCenter,
-                children: [...previous, ?current],
-              ),
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: Tween(
-                    begin: const Offset(0.08, 0),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: child,
-                ),
-              ),
-              child: SingleChildScrollView(
-                key: ValueKey(_index),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            q.prompt,
-                            style: text.titleLarge?.copyWith(height: 1.3),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (q.visual != null) ...[
-                      const SizedBox(height: 16),
-                      SizedBox(height: 180, child: q.visual!(context)),
-                    ],
-                    const SizedBox(height: 20),
-                    for (var i = 0; i < q.choices.length; i++)
-                      _tile(
-                        key: 'a$i',
-                        letter: String.fromCharCode(65 + i),
-                        label: q.choices[i].text,
-                        state: _answerState(i),
-                        onTap: () => _pick(i),
-                      ),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOutCubic,
-                      alignment: Alignment.topCenter,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (!_answered && lastWrong != null)
-                            _banner(
-                              FeedbackKind.wrong,
-                              (q.choices[lastWrong] as Wrong).feedback,
-                              key: 'wrong:$lastWrong',
-                            ),
-                          if (!_answered && _hintShown && q.hint != null)
-                            _banner(FeedbackKind.hint, q.hint!, title: 'Hint'),
-                          if (!_answered && !_hintShown && q.hint != null)
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed: _showHint,
-                                icon: const Icon(Icons.lightbulb_outline),
-                                label: const Text('Need a hint?'),
-                              ),
-                            ),
-                          if (_answered && reason != null) ...[
-                            const SizedBox(height: 8),
-                            _ReasonHeading(prompt: reason.prompt),
-                            const SizedBox(height: 12),
-                            for (var i = 0; i < reason.choices.length; i++)
-                              _tile(
-                                key: 'r$i',
-                                letter: '${i + 1}',
-                                label: reason.choices[i].text,
-                                state: _reasonState(i),
-                                onTap: () => _pickReason(i),
-                              ),
-                            if (!_reasoned && lastWrongReason != null)
-                              _banner(
-                                FeedbackKind.wrong,
-                                (reason.choices[lastWrongReason] as Wrong)
-                                    .feedback,
-                                key: 'wrongReason:$lastWrongReason',
-                              ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          AnimatedSize(
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            child: _settled
-                ? AnswerPanel(
-                    title:
-                        _wrong.isEmpty && _wrongReasons.isEmpty && !_hintShown
-                        ? 'Correct!'
-                        : 'You got it!',
-                    explanation: q.explanation,
-                    onContinue: _next,
-                  )
-                : const SizedBox(width: double.infinity),
+            layoutBuilder: (current, previous) => Stack(
+              alignment: Alignment.topCenter,
+              children: [...previous, ?current],
+            ),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween(
+                  begin: const Offset(0.08, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            ),
+            child: SingleChildScrollView(
+              key: ValueKey(_index),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(q.prompt, style: text.titleLarge?.copyWith(height: 1.3)),
+                  if (q.visual != null) ...[
+                    const SizedBox(height: 16),
+                    SizedBox(height: 180, child: q.visual!(context)),
+                  ],
+                  const SizedBox(height: 20),
+                  for (var i = 0; i < q.choices.length; i++)
+                    _tile(
+                      key: 'a$i',
+                      letter: String.fromCharCode(65 + i),
+                      label: q.choices[i].text,
+                      state: _answerState(i),
+                      onTap: () => _pick(i),
+                    ),
+                  if (!_answered && !_hintShown && q.hint != null)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: _showHint,
+                        icon: const Icon(Icons.lightbulb_outline),
+                        label: const Text('Need a hint?'),
+                      ),
+                    ),
+                  if (_answered && reason != null) ...[
+                    const SizedBox(height: 8),
+                    _ReasonHeading(prompt: reason.prompt),
+                    const SizedBox(height: 12),
+                    for (var i = 0; i < reason.choices.length; i++)
+                      _tile(
+                        key: 'r$i',
+                        letter: '${i + 1}',
+                        label: reason.choices[i].text,
+                        state: _reasonState(i),
+                        onTap: () => _pickReason(i),
+                      ),
+                  ],
+                  SizedBox(height: covered),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -314,21 +313,6 @@ class _QuizViewState extends State<_QuizView> {
         state: state,
         onTap: onTap,
       ),
-    ),
-  );
-
-  Widget _banner(
-    FeedbackKind kind,
-    String message, {
-    String? title,
-    String? key,
-  }) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: FeedbackBanner(
-      key: key == null ? null : ValueKey(key),
-      kind: kind,
-      title: title,
-      message: message,
     ),
   );
 }

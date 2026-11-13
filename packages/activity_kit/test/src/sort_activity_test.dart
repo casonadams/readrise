@@ -33,6 +33,7 @@ void main() {
     await tester.pump();
     expect(find.text('All sorted!'), findsOneWidget);
 
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
     expect(host.results.single.xp, 20);
     expect(host.results.single.mistakes, 0);
@@ -53,6 +54,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Cold'));
     await tester.pump();
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
 
     expect(host.results.single.mistakes, 1);
@@ -149,6 +151,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Cold'));
     await tester.pump();
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
     expect(host.results.single.xp, 15);
     expect(host.results.single.mistakes, 0);

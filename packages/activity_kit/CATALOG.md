@@ -49,9 +49,10 @@ Activities with content implement `Validated`; the app checks them at startup
 
 | Name | Use |
 | --- | --- |
+| `FeedbackLayout` | Wraps an activity page; its `feedback` (a banner or panel) slides up over the bottom without resizing the page. `page` gets the height covered, for the end of a scrolling page. |
 | `OptionTile` | A lettered answer choice in an `OptionState` (open, picked, wrong, correct, dimmed). Use for every tappable answer. |
-| `FeedbackBanner` | A one-line coloured note of `FeedbackKind` correct, wrong or hint. |
-| `AnswerPanel` | The panel that slides up once an answer is settled: title, explanation, Continue. |
+| `FeedbackBanner` | A one-line coloured note of `FeedbackKind` correct, wrong or hint; show it through `FeedbackLayout`. |
+| `AnswerPanel` | What a settled answer means, then Continue; show it through `FeedbackLayout`. |
 | `FactPill` | A short fact with an optional icon and colour, shown as evidence. |
 | `Pop` | Scales and fades a child in (after an optional delay) when `visible`. |
 | `Shake` | Wiggles a child when `trigger` increases; respects reduced motion. |

@@ -52,7 +52,7 @@ void main() {
   ) async {
     await pumpActivity(tester, _activity);
     expect(find.text('waiting'), findsOneWidget);
-    expect(find.text('How sure are you?'), findsNothing);
+    expect(find.text('How sure are you?').hitTestable(), findsNothing);
 
     await tester.tap(find.text('Sink'));
     await tester.pumpAndSettle();
@@ -84,7 +84,7 @@ void main() {
       find.textContaining('Lots of people think heavy-looking things sink.'),
       findsOneWidget,
     );
-    expect(find.text('Float'), findsNWidgets(1));
+    expect(find.text('Float').hitTestable(), findsOneWidget);
 
     await tester.tap(find.text('Continue'));
     expect(host.results.single.xp, 5);

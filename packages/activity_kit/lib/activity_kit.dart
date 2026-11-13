@@ -11,6 +11,7 @@ export 'src/experiment_slider.dart';
 export 'src/explainer_activity.dart';
 export 'src/fact_pill.dart';
 export 'src/feedback_banner.dart' show FeedbackBanner, FeedbackKind;
+export 'src/feedback_layout.dart' show FeedbackLayout;
 export 'src/info_card_activity.dart';
 export 'src/kid_avatar.dart' show Kid;
 export 'src/option_tile.dart' show OptionState, OptionTile;
