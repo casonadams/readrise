@@ -115,31 +115,42 @@ the template is 194 lines, shared by every future experiment.
 Not done: the `public_member_api_docs` lint. It demands a doc comment on
 every public member, which conflicts with the comment policy; the catalog
 covers discoverability. The "no Flutter in pure-Dart folders" check is added
-with the first such folder (`content/` in step 4).
+with the first such folder (`particles/` in step 9).
 
-### 4. Content model
+### 4. Content model - done
 
-- Move content classes (`ChoiceQuestion`, `Reason`, `Claim`, `SortItem`, the
-  prediction fields) out of widget files into pure-Dart `activity_kit`
-  `content/`; activities become presenters of content.
-- `Right(text)` / `Wrong(text, because:)` choices for questions, predictions
-  (`reaction:`), reasons and claims; no index-keyed answers or feedback maps.
-- `Choices.ordered([...])` and ordered question lists for sequences that
-  carry meaning.
-- `ScienceLesson(warmUp:, predict:, explain:, practise: [...], check:,
-  debate:)` builds the arc; list slots wherever a lesson may need more than
-  one activity, a single slot only where the rules demand one (the
-  prediction). Phonics keeps its own lesson type.
-- Questions carry `ItemId`s (a new extension type, added to `ids.lock`);
-  warm-ups reference earlier lessons' check questions.
-- `validate()` down the tree (exactly one `Right`, warm-ups only from earlier
-  lessons, no positional option text such as "both of the above"), called by
-  `PluginRegistry` at startup.
-- Port the four science lessons.
+- `Right(text)` / `Wrong(text, feedback)` choices for questions, reasons,
+  predictions and claims (`Claim(kid, choice)`); sort items name a `SortBin`.
+  No index-keyed answers or feedback maps remain.
+- `ChoiceQuestion` and `Reason` live in `activity_kit/lib/src/content/`.
+- `ScienceLesson(warmUp:, predict:, explain: [...], practise: [...], check:,
+  debate:)` builds the arc. `WarmUp(recalls: [...], questions: [...])`
+  names the lessons a warm-up draws on.
+- `Validated` role interface in `readrise_plugin_api`; the registry calls it
+  on courses, lessons and activities at startup. Activities check exactly one
+  `Right` and that sort items sit in listed bins; the course runs
+  `checkWarmUps` (only the first lesson skips the warm-up, recalls only point
+  at earlier lessons).
+- The four science lessons are ported. A JSON snapshot of every prompt,
+  choice, feedback and activity before and after the port is identical (93
+  choices).
 
-Accept: a wrong choice without feedback does not compile; content classes
-import no Flutter; the arc test shrinks to "only the first lesson may skip
-the warm-up".
+Result: the course content test went from 131 to 50 lines; the feedback and
+arc checks it held are now types and startup validation. Lesson files grew
+from 746 to 827 lines, because each wrong choice now carries its feedback
+inline.
+
+Changed from the plan:
+- Warm-ups keep their own questions and declare `recalls`, instead of
+  referencing earlier check questions: the authored warm-up questions differ
+  from the check questions, and rewriting them is a content decision.
+- `ItemId` moves to step 8, the first place that stores per-question data.
+- `Choices.ordered`, ordered question lists and the positional-text check
+  ("both of the above") move to step 6; they only matter once options
+  shuffle.
+- Content classes may hold a `WidgetBuilder` picture (`ChoiceQuestion.visual`),
+  so `content/` is not Flutter-free and has no import check. A future decoder
+  would map picture ids to builders.
 
 ### 5. Proof lesson
 
@@ -154,7 +165,9 @@ result to decide how much of steps 6-9 is worth doing, and in what order.
 - `Randomizable.shuffled(Random)` on content: options, question order,
   prediction options, "Who's right?" claims, sort items. Never shuffled:
   activity order, explainer steps, sequential lab goals, anything declared
-  ordered.
+  ordered (`Choices.ordered`, ordered question lists).
+- Startup check rejects option text that points at other options by
+  position ("both of the above").
 - The engine seeds each attempt and re-rolls once if the arrangement equals
   the previous attempt's.
 - Phonics and the particle sim take the engine-provided `Random`.
@@ -185,6 +198,7 @@ activity computes XP; the stored progress format is unchanged.
 
 ### 8. Per-question stats (`progress.v2`)
 
+- `ItemId` extension type on questions, added to `ids.lock`.
 - Add per-question stats (`seen`, `correct`, `lastSeen`, Leitner box) keyed
   by `ItemId`; migrate `v1` stars once.
 - `LeitnerScheduler` (the first `ReviewScheduler`) picks warm-up questions

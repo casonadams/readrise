@@ -4,6 +4,7 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'activity_header.dart';
 import 'answer_panel.dart';
+import 'content/choice.dart';
 import 'experiment/experiment.dart';
 import 'option_tile.dart';
 
@@ -23,23 +24,21 @@ enum Confidence {
 /// Predict, then find out: the learner commits to an answer and says how
 /// sure they are, runs the [experiment], and sees what really happens.
 /// Predictions are never marked as mistakes; making one earns [xp].
-class PredictActivity implements ActivityPlugin {
+class PredictActivity implements ActivityPlugin, Validated {
   const PredictActivity({
     required this.question,
-    required this.options,
-    required this.answer,
+    required this.choices,
     required this.tryIt,
     required this.experiment,
     required this.outcome,
-    this.reactions = const {},
     this.xp = 5,
   });
 
   final String question;
-  final List<String> options;
 
-  /// Index into [options] of what really happens.
-  final int answer;
+  /// What really happens is [Right]; each [Wrong] carries a word to the
+  /// learner who predicted it.
+  final List<Choice> choices;
 
   /// What to do in the experiment, e.g. "Pump air into the balloon".
   final String tryIt;
@@ -47,10 +46,10 @@ class PredictActivity implements ActivityPlugin {
 
   /// What happened and why, shown after the experiment.
   final String outcome;
-
-  /// A word to the learner who predicted an option, keyed by its index.
-  final Map<int, String> reactions;
   final int xp;
+
+  @override
+  void validate() => checkOneRight(choices, question);
 
   @override
   Widget build(BuildContext context, ActivityHost host) =>
@@ -85,7 +84,7 @@ class _PredictViewState extends State<_PredictView> {
 
   PredictActivity get _a => widget.activity;
   bool get _testing => _confidence != null && !_observed;
-  bool get _right => _prediction == _a.answer;
+  bool get _right => _a.choices[_prediction!] is Right;
 
   void _predict(int option) {
     if (_confidence != null) return;
@@ -105,7 +104,10 @@ class _PredictViewState extends State<_PredictView> {
     });
   }
 
-  String get _resultText => [?_a.reactions[_prediction], _a.outcome].join(' ');
+  String get _resultText => switch (_a.choices[_prediction!]) {
+    Wrong(:final feedback) => '$feedback ${_a.outcome}',
+    Right() => _a.outcome,
+  };
 
   OptionState _stateOf(int i) =>
       i == _prediction ? OptionState.picked : OptionState.open;
@@ -159,7 +161,9 @@ class _PredictViewState extends State<_PredictView> {
                     explanation: _resultText,
                     lead: _right
                         ? null
-                        : _AnswerLine(answer: _a.options[_a.answer]),
+                        : _AnswerLine(
+                            answer: _a.choices[rightIndex(_a.choices)].text,
+                          ),
                     color: _right
                         ? AnswerPanel.correctGreen
                         : ActivityKind.predict.color,
@@ -172,7 +176,7 @@ class _PredictViewState extends State<_PredictView> {
                 : _testing
                 ? _TryIt(
                     instruction: _a.tryIt,
-                    prediction: _a.options[_prediction!],
+                    prediction: _a.choices[_prediction!].text,
                   )
                 : _choices(text),
           ),
@@ -184,12 +188,12 @@ class _PredictViewState extends State<_PredictView> {
   Widget _choices(TextTheme text) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      for (var i = 0; i < _a.options.length; i++)
+      for (var i = 0; i < _a.choices.length; i++)
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: OptionTile(
             letter: String.fromCharCode(65 + i),
-            label: _a.options[i],
+            label: _a.choices[i].text,
             state: _stateOf(i),
             onTap: () => _predict(i),
           ),

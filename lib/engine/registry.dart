@@ -41,7 +41,11 @@ class PluginRegistry {
             'lesson ${course.id}/${lesson.id} has no activities',
           );
         }
+        for (final node in [lesson, ...lesson.activities]) {
+          if (node is Validated) node.validate();
+        }
       }
+      if (course case final Validated content) content.validate();
     }
   }
 

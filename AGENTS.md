@@ -16,8 +16,9 @@ otherwise.
 - Course and lesson ids are stored in learners' saved progress. Never rename
   or remove one; add a new lesson instead. `ids.lock` lists every shipped id
   and a test fails if one disappears; add new ids to it.
-- A warm-up may only recall lessons that come before it. When reordering
-  lessons, re-check every warm-up.
+- A warm-up may only recall lessons that come before it. Each `WarmUp` lists
+  the lessons it `recalls`, and the app refuses to start if one is not
+  earlier in the course.
 - Keep course content files small and cohesive: a lesson file holds content,
   not widget code. Scenes and experiments live in their own files.
 
@@ -57,9 +58,9 @@ Every lesson after the first follows this order. Each step has a reason.
 | 6. Who's right? | `WhoIsRightActivity` | Classmates voice the misconception; the learner argues against it |
 
 The first lesson of a course skips the warm-up. Exactly one prediction per
-lesson, placed before the first explainer. The course test in
-`packages/science_matter/test/src/states_of_matter_course_test.dart` enforces
-this arc; copy it for new courses.
+lesson, placed before the first explainer. A science lesson is a
+`ScienceLesson` with one named slot per step, so it cannot be built out of
+order; `checkWarmUps` (run at startup) checks the warm-up rules.
 
 ## Designing around misconceptions
 
@@ -74,8 +75,10 @@ this arc; copy it for new courses.
   ([Butterfield & Metcalfe 2006](https://www.columbia.edu/cu/psychology/metcalfe/PDFs/Butterfield_Metcalfe_2006.pdf)).
 - Every wrong choice gets its own feedback saying why it is wrong, not just
   "try again" ([Shute 2008](https://journals.sagepub.com/doi/abs/10.3102/0034654307313795)).
-  This applies to quiz options, reasons, wrong predictions (`reactions`) and
-  wrong claims.
+  Write choices as `Right(text)` and `Wrong(text, feedback)`: quiz options,
+  reasons, predictions (the feedback is the reaction) and claims
+  (`Claim(kid, Wrong(...))`). A wrong choice without feedback does not
+  compile.
 - Hints nudge without giving the answer away. Quiz hints appear on request
   and on their own after two misses; using one makes the question worth half.
 
@@ -139,9 +142,9 @@ this arc; copy it for new courses.
 
 ## Tests
 
-- Each course has a content test that checks the arc and that every wrong
-  choice, reason, prediction and claim has feedback. Extend it rather than
-  relying on review.
+- Each course has a content test for rules types cannot express (hints,
+  distinct choices, every sort bin used). Content the app can check itself
+  implements `Validated`; the registry runs it at startup.
 - Scene tests use `pumpScene` and `opacityOf` from `test/support/`;
   `opacityOf` fails if the text is missing.
 - Looping animations never settle: use fixed `pump(duration)` calls, not

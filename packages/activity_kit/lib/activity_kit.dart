@@ -2,6 +2,8 @@ export 'src/activity_header.dart' show ActivityKind;
 export 'src/answer_panel.dart' show AnswerPanel;
 export 'src/basic_lesson.dart';
 export 'src/choice_quiz_activity.dart';
+export 'src/content/choice.dart' show Choice, Right, Wrong;
+export 'src/content/question.dart';
 export 'src/experiment/control.dart';
 export 'src/experiment/controlled_experiment.dart';
 export 'src/experiment/experiment.dart';

@@ -7,13 +7,24 @@ import 'feedback_banner.dart';
 import 'score.dart';
 import 'shake.dart';
 
+/// A bin items are sorted into; bins with the same label are the same bin.
+class SortBin {
+  const SortBin(this.label);
+
+  final String label;
+
+  @override
+  bool operator ==(Object other) => other is SortBin && other.label == label;
+
+  @override
+  int get hashCode => label.hashCode;
+}
+
 class SortItem {
   const SortItem(this.label, {required this.bin, this.why});
 
   final String label;
-
-  /// Index into the activity's bins where this item belongs.
-  final int bin;
+  final SortBin bin;
 
   /// Why it belongs there; shown once it is placed.
   final String? why;
@@ -22,7 +33,7 @@ class SortItem {
 /// Drag each item into the right bin, or tap a bin to place it there.
 /// A wrong bin is counted as a mistake and answered with the [hint]; using
 /// the hint or missing first makes that item worth half.
-class SortActivity implements ActivityPlugin {
+class SortActivity implements ActivityPlugin, Validated {
   const SortActivity({
     required this.prompt,
     required this.bins,
@@ -32,12 +43,24 @@ class SortActivity implements ActivityPlugin {
   });
 
   final String prompt;
-  final List<String> bins;
+  final List<SortBin> bins;
   final List<SortItem> items;
 
   /// The rule that decides the bins, offered on request and after a miss.
   final String? hint;
   final int maxXp;
+
+  @override
+  void validate() {
+    for (final item in items) {
+      if (!bins.contains(item.bin)) {
+        throw ArgumentError(
+          '$prompt: ${item.label} belongs in ${item.bin.label}, '
+          'which is not one of the bins',
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, ActivityHost host) =>
@@ -84,7 +107,7 @@ class _SortViewState extends State<_SortView> {
   Future<void> _drop(int bin) async {
     if (_done) return;
     final item = _a.items[_next];
-    if (item.bin == bin) {
+    if (item.bin == _a.bins[bin]) {
       HapticFeedback.selectionClick();
       setState(() {
         _placed[bin].add(item);
@@ -93,7 +116,7 @@ class _SortViewState extends State<_SortView> {
         _next++;
         _feedback = (
           FeedbackKind.correct,
-          '${item.label}: ${_a.bins[bin]}',
+          '${item.label}: ${_a.bins[bin].label}',
           item.why ?? 'Nice sorting!',
         );
       });
@@ -279,7 +302,7 @@ class _SortViewState extends State<_SortView> {
                           onWillAcceptWithDetails: (_) => true,
                           onAcceptWithDetails: (_) => _drop(i),
                           builder: (context, candidates, _) => _Bin(
-                            title: _a.bins[i],
+                            title: _a.bins[i].label,
                             color: _binColor(i),
                             items: _placed[i],
                             hovered: candidates.isNotEmpty,

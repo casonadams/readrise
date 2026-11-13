@@ -3,10 +3,11 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'lessons/changes_lesson.dart';
 import 'lessons/heat_lesson.dart';
 import 'lessons/matter_lesson.dart';
+import 'lessons/science_lesson.dart';
 import 'lessons/states_lesson.dart';
 
 /// Matter, particles, states, heat and changes of state (NGSS MS-PS1-1, -4, -5).
-class StatesOfMatterCourse implements CoursePlugin {
+class StatesOfMatterCourse implements CoursePlugin, Validated {
   StatesOfMatterCourse();
 
   @override
@@ -25,10 +26,13 @@ class StatesOfMatterCourse implements CoursePlugin {
   List<CourseId> get requires => const [];
 
   @override
-  final List<LessonPlugin> lessons = [
+  final List<ScienceLesson> lessons = [
     matterLesson,
     statesLesson,
     heatLesson,
     changesLesson,
   ];
+
+  @override
+  void validate() => checkWarmUps(lessons);
 }

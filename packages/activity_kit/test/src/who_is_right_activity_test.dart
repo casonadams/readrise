@@ -9,10 +9,14 @@ const _leo = Kid('Leo', skin: Color(0xFF8D5524), hair: Color(0xFF212121));
 
 const _activity = WhoIsRightActivity(
   situation: 'Is air matter?',
-  claims: [Claim(_mia, 'Air is nothing.'), Claim(_leo, 'Air has mass.')],
-  answer: 1,
+  claims: [
+    Claim(
+      _mia,
+      Wrong('Air is nothing.', 'Air fills balloons, so it is something.'),
+    ),
+    Claim(_leo, Right('Air has mass.')),
+  ],
   explanation: 'Air takes up space and has mass.',
-  feedback: {0: 'Air fills balloons, so it is something.'},
 );
 
 void main() {

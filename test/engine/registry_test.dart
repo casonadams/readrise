@@ -9,6 +9,20 @@ class _NoActivities extends FakeLesson {
   _NoActivities() : super('x', activities: const []);
 }
 
+class _InvalidActivity extends FakeActivity implements Validated {
+  const _InvalidActivity() : super('broken');
+
+  @override
+  void validate() => throw ArgumentError('broken content');
+}
+
+class _InvalidCourse extends FakeCourse implements Validated {
+  _InvalidCourse() : super('a', ['1']);
+
+  @override
+  void validate() => throw ArgumentError('broken course');
+}
+
 void main() {
   test('keeps courses in the order given and looks them up by id', () {
     final registry = buildRegistry();
@@ -98,6 +112,12 @@ void main() {
     'empty lesson id': () => [
       FakeCourse('a', ['']),
     ],
+    'an activity that fails its own check': () => [
+      FakeCourse.of('a', [
+        FakeLesson('1', activities: const [_InvalidActivity()]),
+      ]),
+    ],
+    'a course that fails its own check': () => [_InvalidCourse()],
   };
   invalid.forEach((name, build) {
     test('rejects $name', () {

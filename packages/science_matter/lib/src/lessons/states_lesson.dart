@@ -7,58 +7,69 @@ import '../particle_view.dart';
 import '../states_scenes.dart';
 import '../experiments/zoom.dart';
 import 'classmates.dart';
+import 'science_lesson.dart';
 
 WidgetBuilder _particles(MatterState state, double energy) =>
     (_) => ParticleView(state: state, energy: energy);
 
+const _solid = SortBin('Solid');
+const _liquid = SortBin('Liquid');
+const _gas = SortBin('Gas');
+
 /// Solid, liquid, gas as particle arrangements. Targets "air fills the gaps
 /// between particles" and "particles are hard or cold like the whole".
-final statesLesson = BasicLesson(
+final statesLesson = ScienceLesson(
   id: LessonId('states'),
   title: 'States',
-  activities: <ActivityPlugin>[
-    const ChoiceQuizActivity(
-      kind: ActivityKind.warmUp,
-      questions: [
-        ChoiceQuestion(
-          prompt: 'Which of these is matter?',
-          options: ['Sound', 'Air', 'Light'],
-          answer: 1,
-          hint: 'Which one tipped the scale?',
-          feedback: {
-            0: 'Sound is energy moving through matter.',
-            2: 'Light is energy. It has no mass.',
-          },
-          explanation: 'Air has mass and takes up space, so it is matter.',
-        ),
-        ChoiceQuestion(
-          prompt: 'What is all matter made of?',
-          options: ['Tiny particles called atoms', 'Energy', 'Water'],
-          answer: 0,
-          hint: 'Think of the H and O balls.',
-          feedback: {
-            1: 'Energy is not matter, so matter cannot be made of it.',
-            2: 'Water is one kind of matter, made of atoms like everything.',
-          },
-          explanation: 'All matter is made of tiny particles called atoms.',
-        ),
-      ],
-    ),
-    const PredictActivity(
-      question:
-          'Imagine zooming into a jar of air until you see its particles. What '
-          'is between the particles?',
-      options: ['More air', 'Nothing at all, just empty space', 'Water'],
-      answer: 1,
-      tryIt: 'Drag the slider all the way to zoom in.',
-      experiment: zoomExperiment,
-      outcome: 'The particles are the air. Between them is nothing at all, just empty space.',
-      reactions: {
-        0: 'Most people guess this, even grown-ups!',
-        2: 'Any water in air is particles too, not what fills the gaps.',
-      },
-    ),
-    const ExplainerActivity(
+  warmUp: WarmUp(
+    recalls: [LessonId('matter')],
+    questions: [
+      ChoiceQuestion(
+        prompt: 'Which of these is matter?',
+        choices: [
+          Wrong('Sound', 'Sound is energy moving through matter.'),
+          Right('Air'),
+          Wrong('Light', 'Light is energy. It has no mass.'),
+        ],
+        hint: 'Which one tipped the scale?',
+        explanation: 'Air has mass and takes up space, so it is matter.',
+      ),
+      ChoiceQuestion(
+        prompt: 'What is all matter made of?',
+        choices: [
+          Right('Tiny particles called atoms'),
+          Wrong(
+            'Energy',
+            'Energy is not matter, so matter cannot be made of it.',
+          ),
+          Wrong(
+            'Water',
+            'Water is one kind of matter, made of atoms like everything.',
+          ),
+        ],
+        hint: 'Think of the H and O balls.',
+        explanation: 'All matter is made of tiny particles called atoms.',
+      ),
+    ],
+  ),
+  predict: const PredictActivity(
+    question:
+        'Imagine zooming into a jar of air until you see its particles. What '
+        'is between the particles?',
+    choices: [
+      Wrong('More air', 'Most people guess this, even grown-ups!'),
+      Right('Nothing at all, just empty space'),
+      Wrong(
+        'Water',
+        'Any water in air is particles too, not what fills the gaps.',
+      ),
+    ],
+    tryIt: 'Drag the slider all the way to zoom in.',
+    experiment: zoomExperiment,
+    outcome: 'The particles are the air. Between them is nothing at all, just empty space.',
+  ),
+  explain: const [
+    ExplainerActivity(
       title: 'Solid, liquid, gas',
       steps: [
         ExplainerStep(
@@ -83,144 +94,148 @@ final statesLesson = BasicLesson(
       ],
       scene: statesScene,
     ),
-    const SortActivity(
+  ],
+  practise: const [
+    SortActivity(
       prompt: 'Which state is it at room temperature?',
       hint:
           'Does it keep its own shape (solid), pour (liquid), or spread out '
           'to fill a space (gas)?',
-      bins: ['Solid', 'Liquid', 'Gas'],
+      bins: [_solid, _liquid, _gas],
       items: [
-        SortItem('Ice cube', bin: 0, why: 'Ice keeps its own shape.'),
+        SortItem('Ice cube', bin: _solid, why: 'Ice keeps its own shape.'),
         SortItem(
           'Orange juice',
-          bin: 1,
+          bin: _liquid,
           why: 'Juice takes the shape of its glass.',
         ),
         SortItem(
           'Helium',
-          bin: 2,
+          bin: _gas,
           why: 'Helium spreads out to fill a balloon.',
         ),
         SortItem(
           'Wooden block',
-          bin: 0,
+          bin: _solid,
           why: 'A block keeps its shape on its own.',
         ),
         SortItem(
           'Milk',
-          bin: 1,
+          bin: _liquid,
           why: 'Milk pours and takes the shape of its jug.',
         ),
         SortItem(
           'Oxygen',
-          bin: 2,
+          bin: _gas,
           why: 'Oxygen is a gas in the air around you.',
         ),
         SortItem(
           'Gold ring',
-          bin: 0,
+          bin: _solid,
           why: 'Gold is a solid metal at room temperature.',
         ),
       ],
     ),
-    ChoiceQuizActivity(
-      questions: [
-        ChoiceQuestion(
-          prompt: 'Which state of matter is this?',
-          options: const ['Solid', 'Liquid', 'Gas'],
-          answer: 2,
-          visual: _particles(MatterState.gas, 0.7),
-          hint: 'Are the particles packed, touching, or far apart?',
-          feedback: const {
-            0: 'Solid particles sit packed in rows. These fly around.',
-            1: 'Liquid particles touch each other. These are far apart.',
-          },
-          reason: const Reason(
-            options: [
-              'The particles are far apart and fly around',
-              'The particles are hot',
-              'The particles are tiny',
-            ],
-            answer: 0,
-            feedback: {
-              1:
-                  'Gases can be cold, like the air in winter. Look at how the '
-                  'particles are spread out.',
-              2: 'Particles are tiny in every state.',
-            },
-          ),
-          explanation:
-              'The particles are far apart and moving fast in every direction. '
-              'That is a gas.',
+  ],
+  check: [
+    ChoiceQuestion(
+      prompt: 'Which state of matter is this?',
+      choices: [
+        Wrong('Solid', 'Solid particles sit packed in rows. These fly around.'),
+        Wrong(
+          'Liquid',
+          'Liquid particles touch each other. These are far apart.',
         ),
-        ChoiceQuestion(
-          prompt: 'Which state of matter is this?',
-          options: const ['Solid', 'Liquid', 'Gas'],
-          answer: 0,
-          visual: _particles(MatterState.solid, 0.3),
-          hint: 'Do the particles move around, or stay in their spots?',
-          feedback: const {
-            1: 'Liquid particles slide past each other. These stay in rows.',
-            2: 'Gas particles fly apart. These are packed together.',
-          },
-          reason: const Reason(
-            options: [
-              'The particles are packed and vibrate in place',
-              'The particles do not move at all',
-              'The particles are hard',
-            ],
-            answer: 0,
-            feedback: {
-              1:
-                  'Look closely: solid particles still wiggle. They vibrate in '
-                  'place.',
-              2:
-                  'One particle is not hard or soft. A solid is hard because '
-                  'its particles are held tightly together.',
-            },
+        Right('Gas'),
+      ],
+      visual: _particles(MatterState.gas, 0.7),
+      hint: 'Are the particles packed, touching, or far apart?',
+      reason: const Reason(
+        choices: [
+          Right('The particles are far apart and fly around'),
+          Wrong(
+            'The particles are hot',
+            'Gases can be cold, like the air in winter. Look at how the '
+                'particles are spread out.',
           ),
-          explanation:
-              'The particles are packed in fixed positions and only vibrate. '
-              'That is a solid.',
+          Wrong('The particles are tiny', 'Particles are tiny in every state.'),
+        ],
+      ),
+      explanation:
+          'The particles are far apart and moving fast in every direction. '
+          'That is a gas.',
+    ),
+    ChoiceQuestion(
+      prompt: 'Which state of matter is this?',
+      choices: [
+        Right('Solid'),
+        Wrong(
+          'Liquid',
+          'Liquid particles slide past each other. These stay in rows.',
         ),
-        const ChoiceQuestion(
-          prompt: 'Why can you pour juice but not a wooden block?',
-          options: [
-            'Juice particles slide past each other',
-            'Juice particles are smaller',
-            'Wood particles are glued with air',
-          ],
-          answer: 0,
-          hint: 'Think about how liquid particles move.',
-          feedback: {
-            1: 'Size is not the reason. It is how the particles move.',
-            2: 'There is no air between particles, only empty space.',
-          },
-          explanation:
-              'In a liquid, particles slide past each other, so it flows. In a '
-              'solid, they are held in place.',
+        Wrong('Gas', 'Gas particles fly apart. These are packed together.'),
+      ],
+      visual: _particles(MatterState.solid, 0.3),
+      hint: 'Do the particles move around, or stay in their spots?',
+      reason: const Reason(
+        choices: [
+          Right('The particles are packed and vibrate in place'),
+          Wrong(
+            'The particles do not move at all',
+            'Look closely: solid particles still wiggle. They vibrate in '
+                'place.',
+          ),
+          Wrong(
+            'The particles are hard',
+            'One particle is not hard or soft. A solid is hard because '
+                'its particles are held tightly together.',
+          ),
+        ],
+      ),
+      explanation:
+          'The particles are packed in fixed positions and only vibrate. '
+          'That is a solid.',
+    ),
+    ChoiceQuestion(
+      prompt: 'Why can you pour juice but not a wooden block?',
+      choices: [
+        Right('Juice particles slide past each other'),
+        Wrong(
+          'Juice particles are smaller',
+          'Size is not the reason. It is how the particles move.',
+        ),
+        Wrong(
+          'Wood particles are glued with air',
+          'There is no air between particles, only empty space.',
         ),
       ],
+      hint: 'Think about how liquid particles move.',
+      explanation:
+          'In a liquid, particles slide past each other, so it flows. In a '
+          'solid, they are held in place.',
     ),
-    const WhoIsRightActivity(
-      situation: 'Ava and Sam are talking about an ice cube.',
-      claims: [
-        Claim(ava, 'Ice is hard because each ice particle is cold and hard.'),
-        Claim(
-          sam,
+  ],
+  debate: const WhoIsRightActivity(
+    situation: 'Ava and Sam are talking about an ice cube.',
+    claims: [
+      Claim(
+        ava,
+        Wrong(
+          'Ice is hard because each ice particle is cold and hard.',
+          'A single particle is not hard or cold. Ice is hard because of how '
+              'its particles are arranged.',
+        ),
+      ),
+      Claim(
+        sam,
+        Right(
           'Ice particles are the same as water particles. They are just '
           'packed tight and held in place.',
         ),
-      ],
-      answer: 1,
-      feedback: {
-        0:
-            'A single particle is not hard or cold. Ice is hard because of how '
-            'its particles are arranged.',
-      },
-      explanation:
-          'Ice, water, and steam are made of the same particles. Ice is hard '
-          'because its particles are packed and held in place.',
-    ),
-  ],
+      ),
+    ],
+    explanation:
+        'Ice, water, and steam are made of the same particles. Ice is hard '
+        'because its particles are packed and held in place.',
+  ),
 );

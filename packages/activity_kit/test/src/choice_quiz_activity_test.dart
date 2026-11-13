@@ -7,14 +7,12 @@ import '../support/recording_host.dart';
 const questions = [
   ChoiceQuestion(
     prompt: 'First?',
-    options: ['no', 'yes', 'nope'],
-    answer: 1,
+    choices: [Wrong('no', 'Not no.'), Right('yes'), Wrong('nope', 'Not nope.')],
     explanation: 'Because one.',
   ),
   ChoiceQuestion(
     prompt: 'Second?',
-    options: ['right', 'wrong'],
-    answer: 0,
+    choices: [Right('right'), Wrong('wrong', 'Not wrong.')],
     explanation: 'Because two.',
   ),
 ];
@@ -83,8 +81,7 @@ void main() {
         questions: [
           ChoiceQuestion(
             prompt: 'Look',
-            options: const ['a', 'b'],
-            answer: 0,
+            choices: const [Right('a'), Wrong('b', 'Not b.')],
             explanation: 'x',
             visual: (_) => const Text('diagram'),
           ),
@@ -101,10 +98,12 @@ void main() {
         questions: [
           ChoiceQuestion(
             prompt: 'Q',
-            options: ['a', 'b', 'c'],
-            answer: 2,
+            choices: [
+              Wrong('a', 'a is a trap.'),
+              Wrong('b', 'b is a trap too.'),
+              Right('c'),
+            ],
             explanation: 'x',
-            feedback: {0: 'a is a trap.'},
           ),
         ],
       ),
@@ -117,15 +116,19 @@ void main() {
     await tester.tap(find.text('b'));
     await tester.pumpAndSettle();
     expect(find.text('a is a trap.'), findsNothing);
-    expect(find.text('Not quite. Try another answer.'), findsOneWidget);
+    expect(find.text('b is a trap too.'), findsOneWidget);
   });
 
   const hinted = ChoiceQuizActivity(
     questions: [
       ChoiceQuestion(
         prompt: 'Q',
-        options: ['a', 'b', 'c', 'd'],
-        answer: 3,
+        choices: [
+          Wrong('a', 'Not a.'),
+          Wrong('b', 'Not b.'),
+          Wrong('c', 'Not c.'),
+          Right('d'),
+        ],
         explanation: 'x',
         hint: 'Think about d.',
       ),
@@ -177,13 +180,13 @@ void main() {
     questions: [
       ChoiceQuestion(
         prompt: 'Q',
-        options: ['wrong', 'right'],
-        answer: 1,
+        choices: [Wrong('wrong', 'Not that one.'), Right('right')],
         explanation: 'Because.',
         reason: Reason(
-          options: ['bad reason', 'good reason'],
-          answer: 1,
-          feedback: {0: 'That reason is a myth.'},
+          choices: [
+            Wrong('bad reason', 'That reason is a myth.'),
+            Right('good reason'),
+          ],
         ),
       ),
     ],

@@ -11,15 +11,28 @@ then add something new (to this kit if any subject could use it).
 | --- | --- |
 | `BasicLesson` | A lesson as `id`, `title` and a list of activities. |
 
+## Content
+
+| Name | Use |
+| --- | --- |
+| `Right` / `Wrong` | Answer choices (`Choice`). `Wrong(text, feedback)` carries what the learner is told after picking it. Used by questions, reasons, predictions and claims. |
+| `ChoiceQuestion` | A prompt, its `choices`, an explanation, an optional hint, `Reason` and picture. |
+| `Reason` | The second tier of a question: why the right answer is right, as `choices`. |
+| `Claim` | What a classmate (`Kid`) says, as a `Right` or `Wrong` choice. |
+| `SortBin` / `SortItem` | Bins and the items that belong in them; an item names its bin. |
+
+Activities with content implement `Validated`; the app checks them at startup
+(exactly one `Right`, items only in listed bins).
+
 ## Activities
 
 | Name | Use |
 | --- | --- |
-| `ChoiceQuizActivity` | Multiple-choice questions (`ChoiceQuestion`) with per-option feedback, a hint, and an optional second-tier `Reason`. `kind: ActivityKind.warmUp` or `.check`. |
-| `PredictActivity` | Predict, say how sure (`Confidence`), run an `Experiment`, see the outcome. |
+| `ChoiceQuizActivity` | `ChoiceQuestion`s with a hint after misses and an optional `Reason`. `kind: ActivityKind.warmUp` or `.check`. |
+| `PredictActivity` | Predict from `choices`, say how sure (`Confidence`), run an `Experiment`, see the outcome. |
 | `ExplainerActivity` | Captioned steps (`ExplainerStep`) over an `ExplainerScene(context, step)`. |
-| `SortActivity` | Drag or tap `SortItem`s into bins, with a hint and a "why" per item. |
-| `WhoIsRightActivity` | Classmates (`Kid`) make `Claim`s; the learner picks who is right. |
+| `SortActivity` | Drag or tap `SortItem`s into `SortBin`s, with a hint and a "why" per item. |
+| `WhoIsRightActivity` | Classmates make `Claim`s; the learner picks who is right. |
 | `InfoCardActivity` | A short explanation with an optional picture, then Continue. |
 
 ## Experiments

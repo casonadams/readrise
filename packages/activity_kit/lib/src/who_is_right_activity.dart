@@ -4,43 +4,40 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'activity_header.dart';
 import 'answer_panel.dart';
+import 'content/choice.dart';
 import 'feedback_banner.dart';
 import 'kid_avatar.dart';
 import 'option_tile.dart';
 import 'score.dart';
 import 'shake.dart';
 
-/// What one classmate says.
+/// What one classmate says: [Right], or [Wrong] with why it is wrong.
 class Claim {
-  const Claim(this.kid, this.says);
+  const Claim(this.kid, this.choice);
 
   final Kid kid;
-  final String says;
+  final Choice choice;
 }
 
 /// Classmates disagree; the learner decides who is right. Each wrong claim is
 /// a common misconception, so picking it earns an explanation of the flaw.
 /// Right first time earns full credit, otherwise half.
-class WhoIsRightActivity implements ActivityPlugin {
+class WhoIsRightActivity implements ActivityPlugin, Validated {
   const WhoIsRightActivity({
     required this.situation,
     required this.claims,
-    required this.answer,
     required this.explanation,
-    this.feedback = const {},
     this.maxXp = 10,
   });
 
   final String situation;
   final List<Claim> claims;
-
-  /// Index into [claims] of the one who is right.
-  final int answer;
   final String explanation;
-
-  /// Why a wrong claim is wrong, keyed by its index in [claims].
-  final Map<int, String> feedback;
   final int maxXp;
+
+  @override
+  void validate() =>
+      checkOneRight([for (final c in claims) c.choice], situation);
 
   @override
   Widget build(BuildContext context, ActivityHost host) =>
@@ -67,7 +64,7 @@ class _WhoIsRightViewState extends State<_WhoIsRightView> {
   void _pick(int i) {
     if (_solved || _wrong.contains(i)) return;
     setState(() {
-      if (i == _a.answer) {
+      if (_a.claims[i].choice is Right) {
         HapticFeedback.selectionClick();
         _solved = true;
         return;
@@ -91,7 +88,7 @@ class _WhoIsRightViewState extends State<_WhoIsRightView> {
   );
 
   OptionState _stateOf(int i) {
-    if (_solved && i == _a.answer) return OptionState.correct;
+    if (_solved && _a.claims[i].choice is Right) return OptionState.correct;
     if (_wrong.contains(i)) return OptionState.wrong;
     return _solved ? OptionState.dimmed : OptionState.open;
   }
@@ -101,7 +98,7 @@ class _WhoIsRightViewState extends State<_WhoIsRightView> {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     final lastWrong = _wrong.isEmpty ? null : _wrong.last;
-    final winner = _a.claims[_a.answer].kid.name;
+    final winner = _a.claims.firstWhere((c) => c.choice is Right).kid.name;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
       child: Column(
@@ -139,9 +136,7 @@ class _WhoIsRightViewState extends State<_WhoIsRightView> {
                       key: ValueKey(lastWrong),
                       kind: FeedbackKind.wrong,
                       title: 'Not ${_a.claims[lastWrong].kid.name}',
-                      message:
-                          _a.feedback[lastWrong] ??
-                          'Think about what the particles are doing.',
+                      message: (_a.claims[lastWrong].choice as Wrong).feedback,
                     ),
                 ],
               ),
@@ -218,9 +213,11 @@ class _ClaimCard extends StatelessWidget {
             button: true,
             enabled: state == OptionState.open,
             label: switch (state) {
-              OptionState.correct => '${claim.kid.name}: ${claim.says}, right',
-              OptionState.wrong => '${claim.kid.name}: ${claim.says}, wrong',
-              _ => '${claim.kid.name}: ${claim.says}',
+              OptionState.correct =>
+                '${claim.kid.name}: ${claim.choice.text}, right',
+              OptionState.wrong =>
+                '${claim.kid.name}: ${claim.choice.text}, wrong',
+              _ => '${claim.kid.name}: ${claim.choice.text}',
             },
             excludeSemantics: true,
             child: Padding(
@@ -229,7 +226,7 @@ class _ClaimCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      '\u201C${claim.says}\u201D',
+                      '\u201C${claim.choice.text}\u201D',
                       style: text.titleMedium?.copyWith(height: 1.3),
                     ),
                   ),

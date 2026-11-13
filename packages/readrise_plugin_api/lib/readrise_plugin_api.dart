@@ -93,6 +93,13 @@ abstract interface class ActivityPlugin {
   Widget build(BuildContext context, ActivityHost host);
 }
 
+/// A course, lesson or activity that can check its own content. The engine
+/// calls [validate] on each one at startup.
+abstract interface class Validated {
+  /// Throws an [ArgumentError] naming the first problem found.
+  void validate();
+}
+
 /// What the engine offers to the running activity.
 abstract interface class ActivityHost {
   Speaker get speaker;

@@ -4,75 +4,19 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'activity_header.dart';
 import 'answer_panel.dart';
+import 'content/choice.dart';
+import 'content/question.dart';
 import 'feedback_banner.dart';
 import 'option_tile.dart';
 import 'score.dart';
 import 'shake.dart';
 import 'step_dots.dart';
 
-/// The second tier of a question: after the right answer, the learner picks
-/// the reason it is right. A right answer for a wrong reason is the
-/// misconception this catches.
-class Reason {
-  const Reason({
-    required this.options,
-    required this.answer,
-    this.prompt = 'Why is that?',
-    this.feedback = const {},
-  });
-
-  final String prompt;
-  final List<String> options;
-
-  /// Index into [options] of the right reason.
-  final int answer;
-
-  /// Why a wrong reason is wrong, keyed by its index in [options].
-  final Map<int, String> feedback;
-}
-
-class ChoiceQuestion {
-  const ChoiceQuestion({
-    required this.prompt,
-    required this.options,
-    required this.answer,
-    required this.explanation,
-    this.hint,
-    this.feedback = const {},
-    this.reason,
-    this.visual,
-  });
-
-  final String prompt;
-  final List<String> options;
-
-  /// Index into [options] of the correct choice.
-  final int answer;
-
-  /// Shown once the question is settled; say why it is right.
-  final String explanation;
-
-  /// A nudge toward the answer without giving it away. Offered on request,
-  /// and shown on its own after [hintAfterMisses] wrong picks.
-  final String? hint;
-
-  /// Why a wrong option is wrong, keyed by its index in [options].
-  final Map<int, String> feedback;
-
-  /// Asked once the answer is right, before the explanation.
-  final Reason? reason;
-
-  final WidgetBuilder? visual;
-}
-
-/// Wrong picks before a question's hint appears unasked.
-const hintAfterMisses = 2;
-
 /// Multiple-choice questions with scaffolding. A wrong pick is crossed out,
 /// counted as a mistake, and explained; the learner keeps trying. A question
 /// with a [Reason] asks why once the answer is right. Settling a question
 /// without a miss or a hint earns full credit, otherwise half.
-class ChoiceQuizActivity implements ActivityPlugin {
+class ChoiceQuizActivity implements ActivityPlugin, Validated {
   const ChoiceQuizActivity({
     required this.questions,
     this.kind = ActivityKind.check,
@@ -86,6 +30,13 @@ class ChoiceQuizActivity implements ActivityPlugin {
   @override
   Widget build(BuildContext context, ActivityHost host) =>
       _QuizView(activity: this, host: host);
+
+  @override
+  void validate() {
+    for (final q in questions) {
+      q.validate();
+    }
+  }
 }
 
 class _QuizView extends StatefulWidget {
@@ -129,7 +80,7 @@ class _QuizViewState extends State<_QuizView> {
   void _pick(int option) {
     if (_answered || _wrong.contains(option)) return;
     setState(() {
-      if (option == _question.answer) {
+      if (_question.choices[option] is Right) {
         HapticFeedback.selectionClick();
         _answered = true;
         if (_question.reason == null) _score();
@@ -147,7 +98,7 @@ class _QuizViewState extends State<_QuizView> {
     final reason = _question.reason!;
     if (_reasoned || _wrongReasons.contains(option)) return;
     setState(() {
-      if (option == reason.answer) {
+      if (reason.choices[option] is Right) {
         HapticFeedback.selectionClick();
         _reasoned = true;
         _score();
@@ -184,13 +135,17 @@ class _QuizViewState extends State<_QuizView> {
   }
 
   OptionState _answerState(int i) {
-    if (_answered && i == _question.answer) return OptionState.correct;
+    if (_answered && _question.choices[i] is Right) {
+      return OptionState.correct;
+    }
     if (_wrong.contains(i)) return OptionState.wrong;
     return _answered ? OptionState.dimmed : OptionState.open;
   }
 
   OptionState _reasonState(int i) {
-    if (_reasoned && i == _question.reason!.answer) return OptionState.correct;
+    if (_reasoned && _question.reason!.choices[i] is Right) {
+      return OptionState.correct;
+    }
     if (_wrongReasons.contains(i)) return OptionState.wrong;
     return _reasoned ? OptionState.dimmed : OptionState.open;
   }
@@ -264,11 +219,11 @@ class _QuizViewState extends State<_QuizView> {
                       SizedBox(height: 180, child: q.visual!(context)),
                     ],
                     const SizedBox(height: 20),
-                    for (var i = 0; i < q.options.length; i++)
+                    for (var i = 0; i < q.choices.length; i++)
                       _tile(
                         key: 'a$i',
                         letter: String.fromCharCode(65 + i),
-                        label: q.options[i],
+                        label: q.choices[i].text,
                         state: _answerState(i),
                         onTap: () => _pick(i),
                       ),
@@ -282,8 +237,7 @@ class _QuizViewState extends State<_QuizView> {
                           if (!_answered && lastWrong != null)
                             _banner(
                               FeedbackKind.wrong,
-                              q.feedback[lastWrong] ??
-                                  'Not quite. Try another answer.',
+                              (q.choices[lastWrong] as Wrong).feedback,
                               key: 'wrong:$lastWrong',
                             ),
                           if (!_answered && _hintShown && q.hint != null)
@@ -301,19 +255,19 @@ class _QuizViewState extends State<_QuizView> {
                             const SizedBox(height: 8),
                             _ReasonHeading(prompt: reason.prompt),
                             const SizedBox(height: 12),
-                            for (var i = 0; i < reason.options.length; i++)
+                            for (var i = 0; i < reason.choices.length; i++)
                               _tile(
                                 key: 'r$i',
                                 letter: '${i + 1}',
-                                label: reason.options[i],
+                                label: reason.choices[i].text,
                                 state: _reasonState(i),
                                 onTap: () => _pickReason(i),
                               ),
                             if (!_reasoned && lastWrongReason != null)
                               _banner(
                                 FeedbackKind.wrong,
-                                reason.feedback[lastWrongReason] ??
-                                    'Not quite. Think about the particles.',
+                                (reason.choices[lastWrongReason] as Wrong)
+                                    .feedback,
                                 key: 'wrongReason:$lastWrongReason',
                               ),
                           ],

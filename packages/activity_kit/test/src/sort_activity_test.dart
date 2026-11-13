@@ -5,10 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../support/recording_host.dart';
 
+const _hot = SortBin('Hot');
+const _cold = SortBin('Cold');
+
 const activity = SortActivity(
   prompt: 'Sort them',
-  bins: ['Hot', 'Cold'],
-  items: [SortItem('Fire', bin: 0), SortItem('Ice', bin: 1)],
+  bins: [_hot, _cold],
+  items: [
+    SortItem('Fire', bin: _hot),
+    SortItem('Ice', bin: _cold),
+  ],
 );
 
 void main() {
@@ -76,8 +82,10 @@ void main() {
       tester,
       const SortActivity(
         prompt: 'Sort',
-        bins: ['One', 'Two', 'Three'],
-        items: [SortItem('Extraordinarily long label here', bin: 0)],
+        bins: [SortBin('One'), SortBin('Two'), SortBin('Three')],
+        items: [
+          SortItem('Extraordinarily long label here', bin: SortBin('One')),
+        ],
       ),
     );
     await tester.tap(find.text('One'));
@@ -104,8 +112,8 @@ void main() {
       tester,
       const SortActivity(
         prompt: 'Sort',
-        bins: ['Hot', 'Cold'],
-        items: [SortItem('Fire', bin: 0, why: 'Fire gives off heat.')],
+        bins: [_hot, _cold],
+        items: [SortItem('Fire', bin: _hot, why: 'Fire gives off heat.')],
       ),
     );
     await tester.tap(find.text('Hot'));
@@ -115,9 +123,12 @@ void main() {
 
   const hinted = SortActivity(
     prompt: 'Sort',
-    bins: ['Hot', 'Cold'],
+    bins: [_hot, _cold],
     hint: 'Hot things warm you up.',
-    items: [SortItem('Fire', bin: 0), SortItem('Ice', bin: 1)],
+    items: [
+      SortItem('Fire', bin: _hot),
+      SortItem('Ice', bin: _cold),
+    ],
   );
 
   testWidgets('a wrong bin answers with the hint', (tester) async {

@@ -24,12 +24,13 @@ class _StandIn implements Experiment {
 
 const _activity = PredictActivity(
   question: 'Will it float?',
-  options: ['Sink', 'Float'],
-  answer: 1,
+  choices: [
+    Wrong('Sink', 'Lots of people think heavy-looking things sink.'),
+    Right('Float'),
+  ],
   tryIt: 'Drop it in',
   experiment: _StandIn(),
   outcome: 'It floats because it is light.',
-  reactions: {0: 'Lots of people think heavy-looking things sink.'},
 );
 
 Future<void> predict(WidgetTester tester, String option, String sure) async {
