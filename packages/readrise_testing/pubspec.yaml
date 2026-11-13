@@ -1,0 +1,16 @@
+name: readrise_testing
+description: Shared test helpers for Readrise packages; a dev dependency only.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  activity_kit:
+  faker: ^2.2.0
+  flutter:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  readrise_plugin_api:

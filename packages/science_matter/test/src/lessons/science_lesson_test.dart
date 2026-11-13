@@ -2,7 +2,7 @@ import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
-import 'package:science_matter/src/lessons/classmates.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 import 'package:science_matter/src/lessons/science_lesson.dart';
 
 class _StandIn implements Experiment {
@@ -16,21 +16,11 @@ class _StandIn implements Experiment {
   }) => const SizedBox();
 }
 
-const _question = ChoiceQuestion(
-  prompt: 'Q',
-  choices: [Right('a'), Wrong('b', 'no')],
-  explanation: 'x',
-);
-
-const _sort = SortActivity(
-  prompt: 'Sort',
-  bins: [SortBin('A')],
-  items: [SortItem('a', bin: SortBin('A'))],
-);
+final _fake = ContentFaker();
 
 ExplainerActivity _explainer(String title) => ExplainerActivity(
   title: title,
-  steps: const [ExplainerStep('step')],
+  steps: [ExplainerStep(_fake.sentence())],
   scene: (_, _) => const SizedBox(),
 );
 
@@ -45,23 +35,13 @@ ScienceLesson _lesson(
       ? null
       : WarmUp(
           recalls: [for (final r in recalls) LessonId(r)],
-          questions: const [_question],
+          questions: [_fake.question()],
         ),
-  predict: const PredictActivity(
-    question: 'P',
-    choices: [Right('a'), Wrong('b', 'hm')],
-    tryIt: 'Try',
-    experiment: _StandIn(),
-    outcome: 'O',
-  ),
+  predict: _fake.prediction(const _StandIn()),
   explain: explain ?? [_explainer('one'), _explainer('two')],
-  practise: const [_sort],
-  check: const [_question],
-  debate: const WhoIsRightActivity(
-    situation: 'S',
-    claims: [Claim(mia, Right('a')), Claim(leo, Wrong('b', 'no'))],
-    explanation: 'x',
-  ),
+  practise: [_fake.sort()],
+  check: [_fake.question()],
+  debate: _fake.debate(),
 );
 
 void main() {

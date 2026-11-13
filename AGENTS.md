@@ -132,7 +132,7 @@ order; `checkWarmUps` (run at startup) checks the warm-up rules.
   widget tests: build with `flutter build web --release`, serve `build/web`,
   enable semantics, and walk every step you changed. Widget-test fonts render
   text as blocks, so they cannot show text layout problems; a test that
-  measures text must load the app's font (`test/support/real_fonts.dart`).
+  measures text must load the app's font (`loadRoboto` in `readrise_testing`).
 - Accessibility: every tappable answer has a semantics label that includes
   its state ("..., wrong", "..., correct"), and hidden duplicates (like step
   dots next to "1 of 3") are excluded from semantics.
@@ -153,8 +153,13 @@ order; `checkWarmUps` (run at startup) checks the warm-up rules.
 - Each course has a content test for rules types cannot express (hints,
   distinct choices, every sort bin used). Content the app can check itself
   implements `Validated`; the registry runs it at startup.
-- Scene tests use `pumpScene` and `opacityOf` from `test/support/`;
-  `opacityOf` fails if the text is missing.
+- Shared test helpers live in `packages/readrise_testing` (a dev dependency;
+  shipped code may not import it): `pumpActivity`, `pumpScene` and
+  `opacityOf` (fails if the text is missing), `loadRoboto`, and
+  `experimentContract`, which every new experiment must pass.
+- Where the words do not matter, build content with the seeded
+  `ContentFaker` instead of hand-typing placeholders; type real strings only
+  when the test checks them.
 - Looping animations never settle: use fixed `pump(duration)` calls, not
   `pumpAndSettle`, for anything showing a particle view.
 - Run `flutter analyze` and `flutter test` at the root and in each changed

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../support/recording_host.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 
 const _hot = SortBin('Hot');
 const _cold = SortBin('Cold');

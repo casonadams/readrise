@@ -26,6 +26,7 @@ workspace:
   - packages/phonics_alphabet
   - packages/activity_kit
   - packages/science_matter
+  - packages/readrise_testing
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions

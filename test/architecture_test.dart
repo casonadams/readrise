@@ -52,22 +52,25 @@ const _allowed = {
       'step 9: moves to science_kit',
 };
 
-enum _Layer { api, activityKit, subjectKit, course, app }
+enum _Layer { api, activityKit, subjectKit, course, app, testing }
 
 _Layer _layerOf(String package) => switch (package) {
   'readrise' => _Layer.app,
   'readrise_plugin_api' => _Layer.api,
   'activity_kit' => _Layer.activityKit,
+  'readrise_testing' => _Layer.testing,
   _ when package.endsWith('_kit') => _Layer.subjectKit,
   _ => _Layer.course,
 };
 
+/// No layer lists [_Layer.testing]: shipped code never imports test helpers.
 const _mayImport = {
   _Layer.api: <_Layer>{},
   _Layer.activityKit: {_Layer.api},
   _Layer.subjectKit: {_Layer.api, _Layer.activityKit},
   _Layer.course: {_Layer.api, _Layer.activityKit, _Layer.subjectKit},
   _Layer.app: {_Layer.api},
+  _Layer.testing: {_Layer.api, _Layer.activityKit, _Layer.subjectKit},
 };
 
 class _Source {

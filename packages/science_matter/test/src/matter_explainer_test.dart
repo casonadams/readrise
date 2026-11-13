@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:science_matter/src/matter_explainer.dart';
 
-import '../support/scene_host.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 
 void main() {
   testWidgets('step 0 shows matter and its two properties only', (

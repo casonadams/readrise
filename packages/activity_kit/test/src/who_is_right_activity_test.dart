@@ -2,7 +2,7 @@ import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../support/recording_host.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 
 const _mia = Kid('Mia', skin: Color(0xFFF1C27D), hair: Color(0xFF4E342E));
 const _leo = Kid('Leo', skin: Color(0xFF8D5524), hair: Color(0xFF212121));

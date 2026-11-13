@@ -4,7 +4,7 @@ import 'package:science_matter/src/matter_state.dart';
 import 'package:science_matter/src/states_scenes.dart';
 import 'package:science_matter/src/water_molecule_scene.dart';
 
-import '../support/scene_host.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 
 void main() {
   testWidgets('molecule atoms join at step 1, then count, then H2O', (

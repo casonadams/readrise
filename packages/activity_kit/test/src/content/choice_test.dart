@@ -2,6 +2,7 @@ import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 
 class _NoExperiment implements Experiment {
   const _NoExperiment();
@@ -14,50 +15,32 @@ class _NoExperiment implements Experiment {
   }) => throw UnimplementedError();
 }
 
-const _kid = Kid('Mia', skin: Color(0xFFF1C27D), hair: Color(0xFF4E342E));
-
-ChoiceQuizActivity _quiz(List<Choice> choices, {Reason? reason}) =>
-    ChoiceQuizActivity(
-      questions: [
-        ChoiceQuestion(
-          prompt: 'Q',
-          choices: choices,
-          explanation: 'x',
-          reason: reason,
-        ),
-      ],
-    );
-
 void main() {
+  final fake = ContentFaker();
+  ChoiceQuizActivity quiz(ChoiceQuestion q) =>
+      ChoiceQuizActivity(questions: [q]);
+
   final invalid = <String, Validated>{
-    'a question without a right choice': _quiz([
-      const Wrong('a', 'no'),
-      const Wrong('b', 'no'),
-    ]),
-    'a question with two right choices': _quiz([
-      const Right('a'),
-      const Right('b'),
-    ]),
-    'a reason with two right choices': _quiz([
-      const Right('a'),
-      const Wrong('b', 'no'),
-    ], reason: const Reason(choices: [Right('x'), Right('y')])),
-    'a prediction without a right choice': const PredictActivity(
-      question: 'Q',
-      choices: [Wrong('a', 'hm'), Wrong('b', 'hm')],
-      tryIt: 'Try',
-      experiment: _NoExperiment(),
-      outcome: 'O',
+    'a question without a right choice': quiz(
+      fake.question(choices: [fake.wrong(), fake.wrong()]),
     ),
-    'claims with two right choices': const WhoIsRightActivity(
-      situation: 'S',
-      claims: [Claim(_kid, Right('a')), Claim(_kid, Right('b'))],
-      explanation: 'x',
+    'a question with two right choices': quiz(
+      fake.question(choices: [fake.right(), fake.right()]),
     ),
-    'a sort item whose bin is missing': const SortActivity(
-      prompt: 'Sort',
-      bins: [SortBin('Hot')],
-      items: [SortItem('Ice', bin: SortBin('Cold'))],
+    'a reason with two right choices': quiz(
+      fake.question(reason: fake.reason(choices: [fake.right(), fake.right()])),
+    ),
+    'a prediction without a right choice': fake.prediction(
+      const _NoExperiment(),
+      choices: [fake.wrong(), fake.wrong()],
+    ),
+    'claims with two right choices': fake.debate(
+      claims: [fake.right(), fake.right()],
+    ),
+    'a sort item whose bin is missing': SortActivity(
+      prompt: fake.sentence(),
+      bins: [SortBin(fake.phrase())],
+      items: [SortItem(fake.phrase(), bin: SortBin(fake.phrase()))],
     ),
   };
   invalid.forEach((name, content) {

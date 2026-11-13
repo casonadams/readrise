@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:science_matter/science_matter.dart';
 
-import '../support/real_fonts.dart';
-import '../support/recording_host.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 
 const _experimentKey = Key('experiment');
 

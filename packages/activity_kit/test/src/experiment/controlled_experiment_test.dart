@@ -1,6 +1,7 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 
 const _slider = ControlledExperiment<double>(
   control: SliderControl(
@@ -32,52 +33,22 @@ class _ValueText extends StatelessWidget {
   Widget build(BuildContext context) => Text('value $value');
 }
 
-/// Shows [experiment] and returns the list its reports are added to.
-Future<List<int>> show(
-  WidgetTester tester,
-  Experiment experiment, {
-  bool active = true,
-}) async {
-  final reports = <int>[];
-  await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(
-        body: SizedBox(
-          width: 400,
-          height: 300,
-          child: Builder(
-            builder: (context) => experiment.build(
-              context,
-              active: active,
-              onObserved: () => reports.add(1),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-  return reports;
-}
-
-Future<void> slideToEnd(WidgetTester tester) async {
-  await tester.drag(find.byType(Slider), const Offset(600, 0));
-  await tester.pump();
-}
-
 void main() {
+  experimentContract('slider', _slider, observe: slideToEnd);
+  experimentContract('tap', _pump, observe: tapTimes('Pump', 2));
+
   testWidgets('the control does nothing until the experiment is active', (
     tester,
   ) async {
-    final reports = await show(tester, _slider, active: false);
+    await pumpExperiment(tester, _slider, active: false);
     await slideToEnd(tester);
     expect(find.text('value 0.0'), findsOneWidget);
-    expect(reports, isEmpty);
   });
 
   testWidgets('reports once, however often the result is reached', (
     tester,
   ) async {
-    final reports = await show(tester, _slider);
+    final reports = await pumpExperiment(tester, _slider);
     await slideToEnd(tester);
     await tester.drag(find.byType(Slider), const Offset(-600, 0));
     await tester.pump();
@@ -87,7 +58,7 @@ void main() {
   });
 
   testWidgets('waits for the settle time before reporting', (tester) async {
-    final reports = await show(tester, _pump);
+    final reports = await pumpExperiment(tester, _pump);
     await tester.tap(find.text('Pump'));
     await tester.pump();
     await tester.tap(find.text('Pump'));
@@ -100,7 +71,7 @@ void main() {
   testWidgets('never reports if it leaves the screen while settling', (
     tester,
   ) async {
-    final reports = await show(tester, _pump);
+    final reports = await pumpExperiment(tester, _pump);
     await tester.tap(find.text('Pump'));
     await tester.pump();
     await tester.tap(find.text('Pump'));
@@ -111,7 +82,7 @@ void main() {
   });
 
   testWidgets('a tap control steps aside after its last press', (tester) async {
-    await show(tester, _pump);
+    await pumpExperiment(tester, _pump);
     await tester.tap(find.text('Pump'));
     await tester.pump();
     expect(find.text('Pump'), findsOneWidget);

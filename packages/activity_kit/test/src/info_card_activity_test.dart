@@ -2,7 +2,7 @@ import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../support/recording_host.dart';
+import 'package:readrise_testing/readrise_testing.dart';
 
 void main() {
   testWidgets('shows title, body and visual, and Continue completes', (
