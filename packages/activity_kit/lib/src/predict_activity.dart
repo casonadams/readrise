@@ -4,16 +4,8 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'activity_header.dart';
 import 'answer_panel.dart';
+import 'experiment/experiment.dart';
 import 'option_tile.dart';
-
-/// The hands-on part of a prediction. While [active] is false the learner
-/// sees the setup but cannot run it; once the experiment has shown its
-/// result, it calls [onObserved].
-typedef Experiment = Widget Function(
-  BuildContext context,
-  bool active,
-  VoidCallback onObserved,
-);
 
 /// How sure the learner is of a prediction. Asked before the reveal: errors
 /// made with confidence are the ones feedback corrects best.
@@ -146,7 +138,11 @@ class _PredictViewState extends State<_PredictView> {
               ),
               clipBehavior: Clip.antiAlias,
               padding: const EdgeInsets.all(12),
-              child: _a.experiment(context, _testing, _onObserved),
+              child: _a.experiment.build(
+                context,
+                active: _testing,
+                onObserved: _onObserved,
+              ),
             ),
           ),
           const SizedBox(height: 12),

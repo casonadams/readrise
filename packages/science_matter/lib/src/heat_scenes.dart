@@ -1,10 +1,8 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 
-import 'fact_pill.dart';
 import 'matter_state.dart';
 import 'particle_view.dart';
-import 'pop.dart';
 
 const _coldest = -20.0;
 const _hottest = 120.0;

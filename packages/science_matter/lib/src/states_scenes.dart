@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 
 import 'matter_state.dart';
 import 'particle_view.dart';
-import 'fact_pill.dart';
-import 'pop.dart';
 
 const _energy = {
   MatterState.solid: 0.3,

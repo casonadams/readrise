@@ -1,7 +1,7 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
-import '../balloon_experiment.dart';
+import '../experiments/balloon.dart';
 import '../matter_explainer.dart';
 import '../water_molecule_scene.dart';
 import 'classmates.dart';

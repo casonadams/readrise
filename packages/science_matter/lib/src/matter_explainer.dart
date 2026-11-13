@@ -1,8 +1,6 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 
-import 'pop.dart';
-
 const matterExplainerSteps = [
   ExplainerStep('Matter is anything that has mass and takes up space.'),
   ExplainerStep('Rocks, water, and even the air you breathe are matter.'),

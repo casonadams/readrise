@@ -1,11 +1,7 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
-
-import 'fact_pill.dart';
-import 'pop.dart';
 
 const _canvas = Size(320, 300);
 const _pivot = Offset(160, 84);
@@ -19,53 +15,34 @@ const _pumpsToFill = 4;
 /// Two identical empty balloons balance. Each pump of air fills the right
 /// one: it grows, because air takes up space, and the scale tips toward it,
 /// because air has mass.
-const Experiment balloonExperiment = _balloonExperiment;
+const balloonExperiment = ControlledExperiment<int>(
+  control: TapControl(
+    label: 'Pump',
+    icon: Icons.air_rounded,
+    presses: _pumpsToFill,
+    color: _balloonColor,
+  ),
+  observed: _full,
+  view: _BalloonView.new,
+  settle: Duration(milliseconds: 1400),
+);
 
-Widget _balloonExperiment(
-  BuildContext context,
-  bool active,
-  VoidCallback onObserved,
-) => _BalloonExperiment(active: active, onObserved: onObserved);
+bool _full(int pumps) => pumps >= _pumpsToFill;
 
-class _BalloonExperiment extends StatefulWidget {
-  const _BalloonExperiment({required this.active, required this.onObserved});
+class _BalloonView extends StatelessWidget {
+  const _BalloonView(this.pumps);
 
-  final bool active;
-  final VoidCallback onObserved;
-
-  @override
-  State<_BalloonExperiment> createState() => _BalloonExperimentState();
-}
-
-class _BalloonExperimentState extends State<_BalloonExperiment> {
-  int _pumps = 0;
-  Timer? _settle;
-
-  bool get _full => _pumps == _pumpsToFill;
-
-  @override
-  void dispose() {
-    _settle?.cancel();
-    super.dispose();
-  }
-
-  void _pump() {
-    setState(() => _pumps++);
-    if (_full) {
-      _settle = Timer(const Duration(milliseconds: 1400), widget.onObserved);
-    }
-  }
+  final int pumps;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final air = _pumps / _pumpsToFill;
     return Column(
       children: [
         Expanded(
           child: FittedBox(
             child: TweenAnimationBuilder<double>(
-              tween: Tween(end: air),
+              tween: Tween(end: pumps / _pumpsToFill),
               duration: const Duration(milliseconds: 600),
               curve: Curves.easeOutBack,
               builder: (context, air, _) => TweenAnimationBuilder<double>(
@@ -85,7 +62,7 @@ class _BalloonExperimentState extends State<_BalloonExperiment> {
           ),
         ),
         const SizedBox(height: 8),
-        if (_full)
+        if (_full(pumps))
           const Wrap(
             spacing: 8,
             runSpacing: 6,
@@ -102,30 +79,6 @@ class _BalloonExperimentState extends State<_BalloonExperiment> {
                 visible: true,
                 delay: Duration(milliseconds: 300),
                 child: FactPill('Has mass', icon: Icons.scale_rounded),
-              ),
-            ],
-          )
-        else
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (var i = 0; i < _pumpsToFill; i++)
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.only(right: 6),
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: i < _pumps ? _balloonColor : scheme.outlineVariant,
-                  ),
-                ),
-              const SizedBox(width: 10),
-              FilledButton.icon(
-                onPressed: widget.active ? _pump : null,
-                style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
-                icon: const Icon(Icons.air_rounded),
-                label: const Text('Pump'),
               ),
             ],
           ),

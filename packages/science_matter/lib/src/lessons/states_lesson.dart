@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import '../matter_state.dart';
 import '../particle_view.dart';
 import '../states_scenes.dart';
-import '../zoom_experiment.dart';
+import '../experiments/zoom.dart';
 import 'classmates.dart';
 
 WidgetBuilder _particles(MatterState state, double energy) =>

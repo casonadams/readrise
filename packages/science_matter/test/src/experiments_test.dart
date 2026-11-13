@@ -1,9 +1,9 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:science_matter/src/balloon_experiment.dart';
-import 'package:science_matter/src/heat_experiments.dart';
-import 'package:science_matter/src/zoom_experiment.dart';
+import 'package:science_matter/src/experiments/balloon.dart';
+import 'package:science_matter/src/experiments/heat.dart';
+import 'package:science_matter/src/experiments/zoom.dart';
 
 /// Shows [experiment] and returns how many times it reported a result.
 Future<List<int>> pumpExperiment(
@@ -19,8 +19,11 @@ Future<List<int>> pumpExperiment(
           width: 400,
           height: 520,
           child: Builder(
-            builder: (context) =>
-                experiment(context, active, () => observed.add(1)),
+            builder: (context) => experiment.build(
+              context,
+              active: active,
+              onObserved: () => observed.add(1),
+            ),
           ),
         ),
       ),

@@ -1,9 +1,7 @@
 import 'dart:math';
 
+import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
-
-import 'fact_pill.dart';
-import 'pop.dart';
 
 const _stage = Size(320, 250);
 const _bondLength = 92.0;

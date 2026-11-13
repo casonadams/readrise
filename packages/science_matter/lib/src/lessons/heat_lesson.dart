@@ -1,7 +1,7 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
-import '../heat_experiments.dart';
+import '../experiments/heat.dart';
 import '../heat_lab_activity.dart';
 import '../heat_scenes.dart';
 import '../matter_state.dart';

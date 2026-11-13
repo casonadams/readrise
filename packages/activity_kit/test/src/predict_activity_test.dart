@@ -6,20 +6,28 @@ import '../support/recording_host.dart';
 
 /// A stand-in experiment: shows whether it is running and has a button that
 /// reports the observation.
-Widget _experiment(BuildContext context, bool active, VoidCallback done) =>
-    Column(
-      children: [
-        Text(active ? 'running' : 'waiting'),
-        TextButton(onPressed: done, child: const Text('observe')),
-      ],
-    );
+class _StandIn implements Experiment {
+  const _StandIn();
+
+  @override
+  Widget build(
+    BuildContext context, {
+    required bool active,
+    required VoidCallback onObserved,
+  }) => Column(
+    children: [
+      Text(active ? 'running' : 'waiting'),
+      TextButton(onPressed: onObserved, child: const Text('observe')),
+    ],
+  );
+}
 
 const _activity = PredictActivity(
   question: 'Will it float?',
   options: ['Sink', 'Float'],
   answer: 1,
   tryIt: 'Drop it in',
-  experiment: _experiment,
+  experiment: _StandIn(),
   outcome: 'It floats because it is light.',
   reactions: {0: 'Lots of people think heavy-looking things sink.'},
 );

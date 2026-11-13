@@ -1,9 +1,15 @@
 export 'src/activity_header.dart' show ActivityKind;
 export 'src/basic_lesson.dart';
 export 'src/choice_quiz_activity.dart';
+export 'src/experiment/control.dart';
+export 'src/experiment/controlled_experiment.dart';
+export 'src/experiment/experiment.dart';
+export 'src/experiment_slider.dart';
 export 'src/explainer_activity.dart';
+export 'src/fact_pill.dart';
 export 'src/info_card_activity.dart';
 export 'src/kid_avatar.dart' show Kid;
+export 'src/pop.dart';
 export 'src/predict_activity.dart';
 export 'src/shake.dart';
 export 'src/sort_activity.dart';
