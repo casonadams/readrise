@@ -36,6 +36,20 @@ class FakeActivity implements ActivityPlugin {
   );
 }
 
+const reading = Subject(
+  id: 'reading',
+  title: 'Reading',
+  emoji: '\u{1F4D6}',
+  color: Color(0xFFFF7A2F),
+);
+
+const science = Subject(
+  id: 'science',
+  title: 'Science',
+  emoji: '\u{1F52C}',
+  color: Color(0xFF1976D2),
+);
+
 /// A [FakeActivity] whose label, once shuffled, ends with the first number
 /// the attempt's random gave it, so tests can see which arrangement ran.
 class FakeShufflingActivity extends FakeActivity implements Randomizable {
@@ -86,7 +100,7 @@ class FakeCourse implements CoursePlugin {
     String id,
     List<String> lessonIds, {
     List<String> requires = const [],
-    this.subject = Subject.reading,
+    this.subject = reading,
   }) : id = CourseId(id),
        requires = [for (final r in requires) CourseId(r)],
        lessons = [for (final l in lessonIds) FakeLesson(l)];
@@ -95,7 +109,7 @@ class FakeCourse implements CoursePlugin {
     String id,
     this.lessons, {
     List<String> requires = const [],
-    this.subject = Subject.reading,
+    this.subject = reading,
   }) : id = CourseId(id),
        requires = [for (final r in requires) CourseId(r)];
 
@@ -129,5 +143,5 @@ PluginRegistry buildRegistry() => PluginRegistry([
 PluginRegistry buildSubjectRegistry() => PluginRegistry([
   FakeCourse('r1', ['a', 'b']),
   FakeCourse('r2', ['c'], requires: ['r1']),
-  FakeCourse('s1', ['x', 'y'], subject: Subject.science),
+  FakeCourse('s1', ['x', 'y'], subject: science),
 ]);

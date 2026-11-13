@@ -1,9 +1,8 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'package:flutter/widgets.dart';
+import 'package:science_kit/science_kit.dart';
 
-import '../matter_state.dart';
-import '../particle_view.dart';
 import '../states_scenes.dart';
 import '../experiments/zoom.dart';
 import 'classmates.dart';

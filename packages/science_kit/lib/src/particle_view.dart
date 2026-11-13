@@ -3,22 +3,25 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-import 'matter_state.dart';
-import 'particle_sim.dart';
+import 'particles/matter_state.dart';
+import 'particles/particle_sim.dart';
 
 /// Animated particles for [state]; [energy] (0..1) sets how fast they move.
 /// [count] keeps fewer particles than the full set (liquid or gas only).
+/// [seed] sets the particles' starting directions.
 class ParticleView extends StatefulWidget {
   const ParticleView({
     required this.state,
     this.energy = 0.5,
     this.count,
+    this.seed = 0,
     super.key,
   });
 
   final MatterState state;
   final double energy;
   final int? count;
+  final int seed;
 
   @override
   State<ParticleView> createState() => _ParticleViewState();
@@ -26,10 +29,14 @@ class ParticleView extends StatefulWidget {
 
 class _ParticleViewState extends State<ParticleView>
     with SingleTickerProviderStateMixin {
-  final ParticleSim _sim = ParticleSim();
+  late final ParticleSim _sim = ParticleSim(random: Random(widget.seed));
   final ValueNotifier<int> _frame = ValueNotifier(0);
   late final Ticker _ticker;
   Duration _last = Duration.zero;
+
+  /// Reduced motion is on: draw one settled frame instead of animating.
+  bool _still = false;
+  bool _settled = false;
 
   @override
   void initState() {
@@ -40,7 +47,20 @@ class _ParticleViewState extends State<ParticleView>
       _last = elapsed;
       _sim.step(dt, widget.state, widget.energy);
       _frame.value++;
-    })..start();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _still = MediaQuery.of(context).disableAnimations;
+    if (_still) {
+      _ticker.stop();
+      _settled = false;
+    } else if (!_ticker.isActive) {
+      _last = Duration.zero;
+      _ticker.start();
+    }
   }
 
   @override
@@ -49,6 +69,23 @@ class _ParticleViewState extends State<ParticleView>
     if (widget.count case final count? when count != old.count) {
       _sim.resize(count);
     }
+    if (widget.state != old.state ||
+        widget.energy != old.energy ||
+        widget.count != old.count) {
+      _settled = false;
+    }
+  }
+
+  /// Runs the particles for a few seconds, so a still frame shows them as
+  /// they settle: a liquid pooled, a gas spread through the box.
+  void _settle() {
+    for (var i = 0; i < 180; i++) {
+      _sim.step(1 / 60, widget.state, widget.energy);
+    }
+    _settled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _frame.value++;
+    });
   }
 
   @override
@@ -65,7 +102,7 @@ class _ParticleViewState extends State<ParticleView>
       label: 'Particles in a ${widget.state.name}',
       child: TweenAnimationBuilder<Color?>(
         tween: ColorTween(end: particleColor(widget.state)),
-        duration: const Duration(milliseconds: 500),
+        duration: _still ? Duration.zero : const Duration(milliseconds: 500),
         builder: (context, color, _) => DecoratedBox(
           decoration: BoxDecoration(
             color: Color.alphaBlend(
@@ -80,6 +117,7 @@ class _ParticleViewState extends State<ParticleView>
             child: LayoutBuilder(
               builder: (context, box) {
                 _sim.fit(box.maxHeight / box.maxWidth);
+                if (_still && !_settled) _settle();
                 return CustomPaint(
                   size: Size.infinite,
                   painter: _ParticlePainter(

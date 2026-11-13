@@ -1,9 +1,7 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
-
-import 'matter_state.dart';
-import 'particle_view.dart';
+import 'package:science_kit/science_kit.dart';
 
 class HeatGoal {
   const HeatGoal({required this.prompt, required this.target});

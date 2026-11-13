@@ -26,26 +26,8 @@ const _allowed = {
       'one-off reading activity',
   'packages/phonics_alphabet/lib/src/letter_trace_activity.dart: _TracePainter draws with CustomPainter':
       'reading has one course; moves to a reading kit with the second',
-  'packages/science_matter/lib/src/experiments/balloon.dart: _BalancePainter draws with CustomPainter':
-      'step 9: moves to science_kit',
   'packages/science_matter/lib/src/heat_lab_activity.dart: _HeatLabView is a StatefulWidget':
       'one-off science activity',
-  'packages/science_matter/lib/src/heat_scenes.dart: _ThermometerPainter draws with CustomPainter':
-      'step 9: moves to science_kit',
-  'packages/science_matter/lib/src/particle_sim.dart: unseeded Random()':
-      'step 9: moves to science_kit',
-  'packages/science_matter/lib/src/particle_view.dart: _ParticlePainter draws with CustomPainter':
-      'step 9: moves to science_kit',
-  'packages/science_matter/lib/src/particle_view.dart: _ParticleViewState runs a Ticker':
-      'step 9: moves to science_kit',
-  'packages/science_matter/lib/src/particle_view.dart: ParticleView is a StatefulWidget':
-      'step 9: moves to science_kit',
-  'packages/science_matter/lib/src/water_molecule_scene.dart: _BondPainter draws with CustomPainter':
-      'step 9: moves to science_kit',
-  'packages/science_matter/lib/src/water_molecule_scene.dart: _MoleculeScene is a StatefulWidget':
-      'step 9: moves to science_kit',
-  'packages/science_matter/lib/src/water_molecule_scene.dart: _MoleculeSceneState runs a Ticker':
-      'step 9: moves to science_kit',
 };
 
 enum _Layer { api, activityKit, subjectKit, course, app, testing }
@@ -98,6 +80,10 @@ List<String> _violations(_Source source, Set<String> ours) {
   for (final directive
       in source.unit.directives.whereType<UriBasedDirective>()) {
     final uri = directive.uri.stringValue ?? '';
+    if (source.path.contains('/src/particles/') &&
+        uri.startsWith('package:flutter/')) {
+      found.add('${source.path}: imports Flutter into pure Dart');
+    }
     if (!uri.startsWith('package:')) continue;
     final target = uri.substring('package:'.length).split('/').first;
     if (!ours.contains(target) || target == source.package) continue;

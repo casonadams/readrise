@@ -13,6 +13,7 @@ words or grammar.
 | `packages/readrise_plugin_api` | Interfaces: `CoursePlugin` > `LessonPlugin` > `ActivityPlugin`, plus `ActivityHost` and `Speaker` |
 | `packages/activity_kit` | Reusable activities: explainer, predict-then-experiment, choice quiz (hints, two-tier reasons, warm-up/check), drag-to-sort, "Who's right?", info card; `BasicLesson` |
 | `packages/phonics_alphabet` | Course plugins for the whole alphabet (7 courses, ages 3-6): meet a letter, trace it, pop balloons, feed the monster, then a review per set |
+| `packages/science_kit` | Science components shared by science courses: particle simulation and view, thermometer, water molecule, balloon balance, standard colours, the Science subject |
 | `packages/science_matter` | Course plugin: states of matter with hands-on particle experiments, grades 5-8 (NGSS MS-PS1); one file per lesson in `lib/src/lessons/` |
 | `packages/readrise_testing` | Test helpers shared by packages (dev dependency only): activity and scene hosts, experiment contract tests, seeded fake content |
 | `lib/engine` | Plugin registry, progress, unlock rules, scoring (XP, stars, streaks), subject summaries and "continue" target; lesson sessions (shuffled attempts that resume where the learner left off) |

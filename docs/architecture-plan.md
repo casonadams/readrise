@@ -258,21 +258,33 @@ Not done, with the reason:
 - Phonics and the non-quiz activities (predictions, sorts, debates) record
   no answers: none of them is reviewed yet.
 
-### 9. Particle world (`science_kit`)
+### 9. Particle world (`science_kit`) - kit done; behaviour split deferred
 
-- Create `science_kit`; move `MatterState`, colours and `Subject.science`.
-- Split `ParticleSim`: pure-Dart `World`, `Behaviour` (`Lattice`, `Pooling`,
-  `FreeFlight`), `Box`, `Contacts`, `Spawn`; Flutter `ParticleCanvas`,
-  `ShinyBall`, `SimFrame`. `Container` and `ParticleStyle` become interfaces
-  when their second implementation arrives.
-- `ParticleCanvas` pauses under reduced motion.
-- Move the balance-scale and jar drawings out of `experiments/` into
-  `science_kit`.
-- Contract test: every behaviour in every container keeps particles inside,
-  keeps the count, has no NaN, and moves faster with more energy.
+Done:
+- `packages/science_kit`: `ParticleSim` and `MatterState` (pure Dart, in
+  `src/particles/`), `ParticleView`, and three drawings pulled out of the
+  course as public widgets: `Thermometer` (with `temperatureColor`),
+  `WaterMolecule` (its drift animation included) and `BalloonBalance`.
+  `ScienceColors` holds the standard colours; `scienceSubject` and
+  `readingSubject` (in `phonics_alphabet`) replace the subject constants
+  that sat in `readrise_plugin_api`.
+- `ParticleSim` takes a required `Random`; `ParticleView` a `seed`. No
+  unseeded `Random()` is left in any package.
+- Reduced motion: `ParticleView` draws one frame settled over 3 simulated
+  seconds and skips its colour fade, instead of animating.
+- Architecture test: the science allowlist went from 10 entries to 1 (the
+  heat lab, a deliberate one-off); a new rule keeps `src/particles/` free
+  of Flutter.
+- A pixel diff of the molecule scene and the balloon experiment before and
+  after the move found 0 changed pixels.
 
-Accept: existing scene and simulation tests pass; `particles/` imports no
-Flutter.
+Deferred, with the reason:
+- Splitting `ParticleSim` into `World`/`Behaviour`/`Container`/`Spawn` and
+  the behaviour contract test: the proof lesson needed only a parameter
+  (particle count). Split it when a lesson needs a new kind of motion (an
+  open box, dissolving, a mixture).
+- The jar in the zoom experiment is plain widget composition, not drawing
+  code, so it stays in the course.
 
 ### Later
 

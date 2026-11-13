@@ -1,13 +1,6 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
-
-import 'matter_state.dart';
-import 'particle_view.dart';
-
-const _coldest = -20.0;
-const _hottest = 120.0;
-const _cold = Color(0xFF1E88E5);
-const _hot = Color(0xFFE53935);
+import 'package:science_kit/science_kit.dart';
 
 /// Water moving from [from] to [to] degrees Celsius while its step is shown.
 class HeatStage {
@@ -58,16 +51,7 @@ ExplainerScene heatScene(List<HeatStage> stages) => (context, step) {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  width: 56,
-                  child: CustomPaint(
-                    painter: _ThermometerPainter(
-                      celsius: celsius,
-                      track: Theme.of(context).colorScheme.outlineVariant,
-                      ink: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
+                SizedBox(width: 56, child: Thermometer(celsius)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ParticleView(
@@ -86,7 +70,7 @@ ExplainerScene heatScene(List<HeatStage> stages) => (context, step) {
             Text(
               '${celsius.round()}\u00B0C',
               style: text.headlineSmall?.copyWith(
-                color: _temperatureColor(celsius),
+                color: temperatureColor(celsius),
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
@@ -94,7 +78,7 @@ ExplainerScene heatScene(List<HeatStage> stages) => (context, step) {
             FactPill(
               'Particles: ${speedWord(celsius)}',
               icon: Icons.speed_rounded,
-              color: _temperatureColor(celsius),
+              color: temperatureColor(celsius),
             ),
           ],
         ),
@@ -109,12 +93,6 @@ ExplainerScene heatScene(List<HeatStage> stages) => (context, step) {
     ),
   );
 };
-
-Color _temperatureColor(double celsius) => Color.lerp(
-  _cold,
-  _hot,
-  ((celsius - _coldest) / (_hottest - _coldest)).clamp(0.0, 1.0),
-)!;
 
 /// Solid, liquid and gas in a row. The current state is filled in, and the
 /// link for a change underway names it and whether energy goes in or out.
@@ -191,7 +169,9 @@ class _Link extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final active = label != null;
-    final color = active ? (heating ? _hot : _cold) : scheme.outlineVariant;
+    final color = active
+        ? (heating ? ScienceColors.heat : ScienceColors.cold)
+        : scheme.outlineVariant;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -239,83 +219,4 @@ class _Link extends StatelessWidget {
       ],
     );
   }
-}
-
-class _ThermometerPainter extends CustomPainter {
-  const _ThermometerPainter({
-    required this.celsius,
-    required this.track,
-    required this.ink,
-  });
-
-  final double celsius;
-  final Color track;
-  final Color ink;
-
-  static const _tubeWidth = 14.0;
-  static const _bulbRadius = 15.0;
-  static const _tubeX = 20.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final top = 6.0;
-    final bulb = Offset(_tubeX, size.height - _bulbRadius - 2);
-    final bottom = bulb.dy - _bulbRadius * 0.6;
-    double yAt(double c) =>
-        bottom - (bottom - top - 8) * ((c - _coldest) / (_hottest - _coldest));
-
-    final tube = RRect.fromLTRBR(
-      _tubeX - _tubeWidth / 2,
-      top,
-      _tubeX + _tubeWidth / 2,
-      bulb.dy,
-      const Radius.circular(_tubeWidth / 2),
-    );
-    canvas.drawRRect(tube, Paint()..color = track);
-    canvas.drawCircle(bulb, _bulbRadius, Paint()..color = track);
-
-    final fill = Paint()..color = _temperatureColor(celsius);
-    final level = yAt(celsius.clamp(_coldest, _hottest));
-    canvas.drawRRect(
-      RRect.fromLTRBR(
-        _tubeX - _tubeWidth / 2 + 3,
-        level,
-        _tubeX + _tubeWidth / 2 - 3,
-        bulb.dy,
-        const Radius.circular(4),
-      ),
-      fill,
-    );
-    canvas.drawCircle(bulb, _bulbRadius - 3, fill);
-
-    for (final (mark, label) in [(0.0, '0\u00B0'), (100.0, '100\u00B0')]) {
-      final y = yAt(mark);
-      canvas.drawLine(
-        Offset(_tubeX + _tubeWidth / 2 + 2, y),
-        Offset(_tubeX + _tubeWidth / 2 + 8, y),
-        Paint()
-          ..color = ink
-          ..strokeWidth = 2,
-      );
-      final painter = TextPainter(
-        text: TextSpan(
-          text: label,
-          style: TextStyle(
-            color: ink,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      painter.paint(
-        canvas,
-        Offset(_tubeX + _tubeWidth / 2 + 10, y - painter.height / 2),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ThermometerPainter old) =>
-      old.celsius != celsius || old.track != track || old.ink != ink;
 }

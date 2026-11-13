@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:readrise/plugins.dart';
 import 'package:readrise/ui/theme.dart';
-import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 double contrast(Color a, Color b) {
   final hi = max(a.computeLuminance(), b.computeLuminance());
@@ -13,7 +13,7 @@ double contrast(Color a, Color b) {
 
 void main() {
   test('a subject uses its own colour, readable with its text colour', () {
-    for (final subject in [Subject.reading, Subject.science]) {
+    for (final subject in {for (final c in installedCourses()) c.subject}) {
       final scheme = subjectTheme(subject).colorScheme;
       expect(scheme.primary, subject.color);
       expect(

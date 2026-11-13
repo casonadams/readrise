@@ -1,0 +1,17 @@
+name: science_kit
+description: Readrise science components shared by science courses (particles, thermometer, molecules).
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  activity_kit:
+  flutter:
+    sdk: flutter
+  readrise_plugin_api:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

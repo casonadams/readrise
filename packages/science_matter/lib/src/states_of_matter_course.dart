@@ -1,4 +1,5 @@
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
+import 'package:science_kit/science_kit.dart';
 
 import 'lessons/changes_lesson.dart';
 import 'lessons/evaporation_lesson.dart';
@@ -21,7 +22,7 @@ class StatesOfMatterCourse implements CoursePlugin, Validated {
   Grade get grade => Grade.grade6;
 
   @override
-  Subject get subject => Subject.science;
+  Subject get subject => scienceSubject;
 
   @override
   List<CourseId> get requires => const [];

@@ -1,8 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:science_matter/src/matter_state.dart';
-import 'package:science_matter/src/particle_sim.dart';
+import 'package:science_kit/science_kit.dart';
 
 ParticleSim settled(
   MatterState state, {

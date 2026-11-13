@@ -30,8 +30,7 @@ class Particle {
 /// bottom, where they jostle, slide past each other, and level out. Gas: they
 /// fly through the whole box and bounce off each other and the walls.
 class ParticleSim {
-  ParticleSim({Random? random, this.columns = 6, this.rows = 5})
-    : _random = random ?? Random() {
+  ParticleSim({required this._random, this.columns = 6, this.rows = 5}) {
     for (var i = 0; i < columns * rows; i++) {
       final (homeX, homeDepth) = _home(i);
       final angle = _random.nextDouble() * 2 * pi;

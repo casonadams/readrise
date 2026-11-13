@@ -30,8 +30,9 @@ otherwise.
 
 ## Reuse and boundaries
 
-- Before writing a widget, read the kit's catalog
-  (`packages/activity_kit/CATALOG.md`).
+- Before writing a widget, read the kits' catalogs
+  (`packages/activity_kit/CATALOG.md`, and for science
+  `packages/science_kit/CATALOG.md`).
 - Reuse in this order: use a component as is; compose components; implement
   an interface a kit offers (`Control`, `Experiment`); extract an interface
   from an existing class and add your implementation; only then add a new
@@ -124,8 +125,9 @@ order; `checkWarmUps` (run at startup) checks the warm-up rules.
   drawn at one scale on both axes: never stretch a simulation to fit a box.
   Liquids pool and level out, gases fill the whole box and bounce off each
   other, solids rest on the floor.
-- Use the standard colours already in use: oxygen red, hydrogen white,
-  negative charge red, positive charge blue, heat red, cold blue.
+- Use the standard colours (`ScienceColors` in `science_kit`): oxygen red,
+  hydrogen white, negative charge red, positive charge blue, heat red, cold
+  blue.
 
 ## UI and UX
 

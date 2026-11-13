@@ -1,8 +1,6 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:flutter/material.dart';
-
-import 'matter_state.dart';
-import 'particle_view.dart';
+import 'package:science_kit/science_kit.dart';
 
 /// Water particles in the glass at the start.
 const waterParticles = 30;

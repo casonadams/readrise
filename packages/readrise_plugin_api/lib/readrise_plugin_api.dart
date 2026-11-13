@@ -29,20 +29,6 @@ class Subject {
     required this.color,
   });
 
-  static const reading = Subject(
-    id: 'reading',
-    title: 'Reading',
-    emoji: '\u{1F4D6}',
-    color: Color(0xFFFF7A2F),
-  );
-
-  static const science = Subject(
-    id: 'science',
-    title: 'Science',
-    emoji: '\u{1F52C}',
-    color: Color(0xFF1976D2),
-  );
-
   final String id;
   final String title;
   final String emoji;

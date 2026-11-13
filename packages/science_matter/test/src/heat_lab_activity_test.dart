@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:science_matter/src/heat_lab_activity.dart';
-import 'package:science_matter/src/matter_state.dart';
 
 import 'package:readrise_testing/readrise_testing.dart';
+import 'package:science_kit/science_kit.dart';
 
 const activity = HeatLabActivity(
   goals: [

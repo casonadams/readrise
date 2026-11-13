@@ -3,6 +3,7 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'letter.dart';
 import 'letter_lesson.dart';
 import 'letters.dart';
+import 'subject.dart';
 
 /// One set of letters: a lesson per letter and a review at the end.
 /// [before] are letters from earlier courses (review items); [after] are
@@ -52,7 +53,7 @@ class AlphabetCourse implements CoursePlugin {
   final Grade grade;
 
   @override
-  Subject get subject => Subject.reading;
+  Subject get subject => readingSubject;
 
   @override
   final List<CourseId> requires;

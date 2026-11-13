@@ -1,10 +1,10 @@
 import 'package:activity_kit/activity_kit.dart';
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
+import 'package:science_kit/science_kit.dart';
 
 import '../experiments/heat.dart';
 import '../heat_lab_activity.dart';
 import '../heat_scenes.dart';
-import '../matter_state.dart';
 import 'classmates.dart';
 import 'states_lesson.dart';
 import 'science_lesson.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:science_matter/src/matter_state.dart';
+import 'package:science_kit/science_kit.dart';
 
 void main() {
   group('waterStateAt', () {
