@@ -11,13 +11,21 @@ class Particle {
     required this.vx,
     required this.vy,
     required this.phase,
+    this.sugar = false,
   });
 
-  /// Where this particle sits in a solid: across from the left wall, and up
-  /// from the floor.
-  final double homeX;
-  final double homeDepth;
+  /// Where this particle sits in a solid or a crystal: across from the left
+  /// wall, and up from the floor.
+  double homeX;
+  double homeDepth;
   final double phase;
+
+  /// A particle of sugar dissolving in the water, rather than water.
+  final bool sugar;
+
+  /// Still held in its crystal: it vibrates at its home instead of moving
+  /// with the liquid.
+  bool held = false;
   double x;
   double y;
   double vx;
@@ -29,6 +37,8 @@ class Particle {
 /// around lattice sites on the floor. Liquid: gravity pools them at the
 /// bottom, where they jostle, slide past each other, and level out. Gas: they
 /// fly through the whole box and bounce off each other and the walls.
+/// Sugar particles (see [setSugar]) sit in a crystal on the floor until they
+/// dissolve, then move with the water.
 class ParticleSim {
   ParticleSim({required this._random, this.columns = 6, this.rows = 5}) {
     for (var i = 0; i < columns * rows; i++) {
@@ -44,6 +54,10 @@ class ParticleSim {
 
   /// The shortest box the solid lattice fits in.
   static const minHeight = 0.6;
+
+  /// Crystal sites per row, and the distance between neighbouring sites.
+  static const _crystalColumns = 4;
+  static const _crystalSpacing = radius * 2.1;
 
   static const _gravity = 4.0;
   static const _maxLiquidSpeed = 1.2;
@@ -76,15 +90,54 @@ class ParticleSim {
   /// the floor heading up, as vapor rises from water below.
   void resize(int count) {
     RangeError.checkValueInInterval(count, 0, columns * rows, 'count');
-    while (particles.length > count) {
-      particles.remove(particles.reduce((a, b) => a.y <= b.y ? a : b));
+    var water = particles.where((p) => !p.sugar).length;
+    while (water > count) {
+      particles.remove(
+        particles.where((p) => !p.sugar).reduce((a, b) => a.y <= b.y ? a : b),
+      );
+      water--;
     }
-    while (particles.length < count) {
+    while (water < count) {
       final x = radius + _random.nextDouble() * (width - 2 * radius);
       final angle = -pi / 2 + _random.nextDouble() - 0.5;
-      particles.add(
-        _particle(particles.length, x: x, y: height - radius, angle: angle),
+      particles.add(_particle(water, x: x, y: height - radius, angle: angle));
+      water++;
+    }
+  }
+
+  /// Keeps [dissolved] sugar particles moving with the water and
+  /// [undissolved] still in a crystal in the middle of the floor. Particles
+  /// dissolve from the top of the crystal; fewer dissolved ones re-form it.
+  void setSugar({required int dissolved, required int undissolved}) {
+    final sugar = particles.where((p) => p.sugar).toList();
+    for (final extra in sugar.skip(dissolved + undissolved)) {
+      particles.remove(extra);
+    }
+    for (var i = sugar.length; i < dissolved + undissolved; i++) {
+      final added = Particle(
+        homeX: 0.5,
+        homeDepth: double.infinity,
+        x: width / 2,
+        y: height - radius,
+        vx: 0,
+        vy: 0,
+        phase: _random.nextDouble() * 2 * pi,
+        sugar: true,
+      )..held = true;
+      particles.add(added);
+    }
+    final all = particles.where((p) => p.sugar).toList()
+      ..sort(
+        (a, b) => a.held != b.held
+            ? (a.held ? -1 : 1)
+            : a.homeDepth.compareTo(b.homeDepth),
       );
+    for (final (i, p) in all.indexed) {
+      p.held = i < undissolved;
+      if (p.held) {
+        p.homeX = 0.5 + ((i % _crystalColumns) - 1.5) * _crystalSpacing;
+        p.homeDepth = radius + (i ~/ _crystalColumns) * _crystalSpacing;
+      }
     }
   }
 
@@ -115,18 +168,20 @@ class ParticleSim {
     _time += dt;
     switch (state) {
       case MatterState.solid:
-        _vibrate(dt, energy);
+        _vibrate(dt, energy, particles);
       case MatterState.liquid:
         _pour(dt, energy);
+        _vibrate(dt, energy, particles.where((p) => p.held));
       case MatterState.gas:
         _fly(dt, energy);
+        _vibrate(dt, energy, particles.where((p) => p.held));
     }
   }
 
-  void _vibrate(double dt, double energy) {
+  void _vibrate(double dt, double energy, Iterable<Particle> vibrating) {
     final amplitude = 0.008 + 0.014 * energy;
     final pull = min(1.0, 8 * dt);
-    for (final p in particles) {
+    for (final p in vibrating) {
       final tx =
           p.homeX + (width - 1) / 2 + amplitude * sin(_time * 18 + p.phase);
       final ty = height - p.homeDepth + amplitude * cos(_time * 15 + p.phase);
@@ -139,11 +194,15 @@ class ParticleSim {
   /// apart and those pushes become velocity, so a heap flows and levels out
   /// like water instead of standing like sand.
   void _pour(double dt, double energy) {
+    final free = [
+      for (final p in particles)
+        if (!p.held) p,
+    ];
     final kick = (0.4 + 0.8 * energy) * sqrt(dt);
     final damping = 1 - min(1.0, dt);
-    final startX = [for (final p in particles) p.x];
-    final startY = [for (final p in particles) p.y];
-    for (final p in particles) {
+    final startX = [for (final p in free) p.x];
+    final startY = [for (final p in free) p.y];
+    for (final p in free) {
       p.vx = (p.vx + (_random.nextDouble() * 2 - 1) * kick) * damping;
       p.vy =
           (p.vy + (_random.nextDouble() * 2 - 1) * kick + _gravity * dt) *
@@ -155,7 +214,7 @@ class ParticleSim {
       _separate();
       _keepInside();
     }
-    for (final (i, p) in particles.indexed) {
+    for (final (i, p) in free.indexed) {
       p.vx = (p.x - startX[i]) / dt;
       p.vy = (p.y - startY[i]) / dt;
       final speed = sqrt(p.vx * p.vx + p.vy * p.vy);
@@ -169,26 +228,31 @@ class ParticleSim {
   /// Free flight with elastic bounces; a thermostat sets the average speed
   /// from [energy] without forcing every particle to the same speed.
   void _fly(double dt, double energy) {
+    final free = [
+      for (final p in particles)
+        if (!p.held) p,
+    ];
+    if (free.isEmpty) return;
     final target = 0.35 + 0.35 * energy;
     var sum = 0.0;
-    for (final p in particles) {
+    for (final p in free) {
       sum += p.vx * p.vx + p.vy * p.vy;
     }
-    final rms = sqrt(sum / particles.length);
+    final rms = sqrt(sum / free.length);
     if (rms < 1e-6) {
-      for (final p in particles) {
+      for (final p in free) {
         final angle = _random.nextDouble() * 2 * pi;
         p.vx = cos(angle) * target;
         p.vy = sin(angle) * target;
       }
     } else {
       final scale = 1 + (target / rms - 1) * min(1.0, 4 * dt);
-      for (final p in particles) {
+      for (final p in free) {
         p.vx *= scale;
         p.vy *= scale;
       }
     }
-    for (final p in particles) {
+    for (final p in free) {
       p.x += p.vx * dt;
       p.y += p.vy * dt;
     }
@@ -228,24 +292,29 @@ class ParticleSim {
     }
   }
 
-  /// Pushes every overlapping pair apart along the line between them.
-  void _separate() {
-    _forEachOverlap((a, b, nx, ny, overlap) {
-      a.x -= nx * overlap;
-      a.y -= ny * overlap;
-      b.x += nx * overlap;
-      b.y += ny * overlap;
-    });
+  /// Pushes every overlapping pair apart along the line between them; a
+  /// particle held in a crystal does not move, so the other moves for both.
+  void _push(Particle a, Particle b, double nx, double ny, double overlap) {
+    final (moveA, moveB) = switch ((a.held, b.held)) {
+      (true, true) => (0.0, 0.0),
+      (true, false) => (0.0, 2 * overlap),
+      (false, true) => (2 * overlap, 0.0),
+      (false, false) => (overlap, overlap),
+    };
+    a.x -= nx * moveA;
+    a.y -= ny * moveA;
+    b.x += nx * moveB;
+    b.y += ny * moveB;
   }
+
+  void _separate() => _forEachOverlap(_push);
 
   /// Separates overlapping pairs and, if they are closing in, swaps their
   /// speed along the line between them: an elastic bounce.
   void _collide() {
     _forEachOverlap((a, b, nx, ny, overlap) {
-      a.x -= nx * overlap;
-      a.y -= ny * overlap;
-      b.x += nx * overlap;
-      b.y += ny * overlap;
+      _push(a, b, nx, ny, overlap);
+      if (a.held || b.held) return;
       final closing = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
       if (closing >= 0) return;
       a.vx += closing * nx;

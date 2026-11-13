@@ -5,16 +5,20 @@ import 'package:flutter/scheduler.dart';
 
 import 'particles/matter_state.dart';
 import 'particles/particle_sim.dart';
+import 'science_colors.dart';
 
 /// Animated particles for [state]; [energy] (0..1) sets how fast they move.
 /// [count] keeps fewer particles than the full set (liquid or gas only).
-/// [seed] sets the particles' starting directions.
+/// [seed] sets the particles' starting directions. [dissolved] sugar
+/// particles move with a liquid; [undissolved] ones sit in a crystal.
 class ParticleView extends StatefulWidget {
   const ParticleView({
     required this.state,
     this.energy = 0.5,
     this.count,
     this.seed = 0,
+    this.dissolved = 0,
+    this.undissolved = 0,
     super.key,
   });
 
@@ -22,6 +26,8 @@ class ParticleView extends StatefulWidget {
   final double energy;
   final int? count;
   final int seed;
+  final int dissolved;
+  final int undissolved;
 
   @override
   State<ParticleView> createState() => _ParticleViewState();
@@ -42,6 +48,7 @@ class _ParticleViewState extends State<ParticleView>
   void initState() {
     super.initState();
     if (widget.count case final count?) _sim.resize(count);
+    _sim.setSugar(dissolved: widget.dissolved, undissolved: widget.undissolved);
     _ticker = createTicker((elapsed) {
       final dt = ((elapsed - _last).inMicroseconds / 1e6).clamp(0.0, 0.05);
       _last = elapsed;
@@ -69,9 +76,18 @@ class _ParticleViewState extends State<ParticleView>
     if (widget.count case final count? when count != old.count) {
       _sim.resize(count);
     }
+    if (widget.dissolved != old.dissolved ||
+        widget.undissolved != old.undissolved) {
+      _sim.setSugar(
+        dissolved: widget.dissolved,
+        undissolved: widget.undissolved,
+      );
+    }
     if (widget.state != old.state ||
         widget.energy != old.energy ||
-        widget.count != old.count) {
+        widget.count != old.count ||
+        widget.dissolved != old.dissolved ||
+        widget.undissolved != old.undissolved) {
       _settled = false;
     }
   }
@@ -99,7 +115,11 @@ class _ParticleViewState extends State<ParticleView>
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
-      label: 'Particles in a ${widget.state.name}',
+      label: [
+        'Particles in a ${widget.state.name}',
+        if (widget.dissolved > 0) '${widget.dissolved} sugar dissolved',
+        if (widget.undissolved > 0) '${widget.undissolved} sugar in a crystal',
+      ].join(', '),
       child: TweenAnimationBuilder<Color?>(
         tween: ColorTween(end: particleColor(widget.state)),
         duration: _still ? Duration.zero : const Duration(milliseconds: 500),
@@ -155,6 +175,7 @@ class _ParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final body = Paint()..color = color;
+    final sugar = Paint()..color = ScienceColors.sugar;
     final shine = Paint()..color = Colors.white.withValues(alpha: 0.45);
     final scale = min(size.width / sim.width, size.height / sim.height);
     final origin = Offset(
@@ -164,7 +185,7 @@ class _ParticlePainter extends CustomPainter {
     final r = ParticleSim.radius * scale;
     for (final p in sim.particles) {
       final at = origin + Offset(p.x, p.y) * scale;
-      canvas.drawCircle(at, r, body);
+      canvas.drawCircle(at, r, p.sugar ? sugar : body);
       canvas.drawCircle(at + Offset(-r * 0.35, -r * 0.35), r * 0.32, shine);
     }
   }

@@ -205,4 +205,62 @@ void main() {
       expect(p.vy, lessThan(0));
     }
   });
+
+  group('sugar', () {
+    Iterable<Particle> sugar(ParticleSim sim) =>
+        sim.particles.where((p) => p.sugar);
+    void run(ParticleSim sim, double seconds) {
+      for (var i = 0; i < seconds * 60; i++) {
+        sim.step(1 / 60, MatterState.liquid, 0.5);
+      }
+    }
+
+    test('keeps the asked-for dissolved and undissolved particles', () {
+      final sim = ParticleSim(random: Random(7))
+        ..setSugar(dissolved: 3, undissolved: 9);
+      expect(sugar(sim), hasLength(12));
+      expect(sugar(sim).where((p) => p.held), hasLength(9));
+      expect(sim.particles.where((p) => !p.sugar), hasLength(30));
+    });
+
+    test('the crystal stays on the floor while dissolved sugar spreads', () {
+      final sim = ParticleSim(random: Random(7))
+        ..setSugar(dissolved: 8, undissolved: 8);
+      run(sim, 4);
+      for (final p in sugar(sim).where((p) => p.held)) {
+        expect(p.y, greaterThan(sim.height - 0.3));
+        expect((p.x - sim.width / 2).abs(), lessThan(0.2));
+      }
+      final xs = sugar(sim).where((p) => !p.held).map((p) => p.x);
+      expect(xs.reduce(max) - xs.reduce(min), greaterThan(0.4));
+    });
+
+    test('dissolves from the top row of the crystal', () {
+      final sim = ParticleSim(random: Random(7))
+        ..setSugar(dissolved: 0, undissolved: 8);
+      final topRow = sugar(sim).map((p) => p.homeDepth).reduce(max);
+      sim.setSugar(dissolved: 1, undissolved: 7);
+      expect(sugar(sim).where((p) => !p.held).single.homeDepth, topRow);
+    });
+
+    test('fewer dissolved particles re-form the crystal', () {
+      final sim = ParticleSim(random: Random(7))
+        ..setSugar(dissolved: 8, undissolved: 0);
+      run(sim, 2);
+      sim.setSugar(dissolved: 0, undissolved: 8);
+      run(sim, 2);
+      for (final p in sugar(sim)) {
+        expect(p.held, isTrue);
+        expect(p.y, greaterThan(sim.height - 0.3));
+      }
+    });
+
+    test('changing the water leaves the sugar alone', () {
+      final sim = ParticleSim(random: Random(7))
+        ..setSugar(dissolved: 2, undissolved: 2)
+        ..resize(10);
+      expect(sim.particles.where((p) => !p.sugar), hasLength(10));
+      expect(sugar(sim), hasLength(4));
+    });
+  });
 }

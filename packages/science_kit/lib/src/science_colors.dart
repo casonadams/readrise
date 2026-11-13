@@ -8,4 +8,5 @@ abstract final class ScienceColors {
   static const positive = Color(0xFF1565C0);
   static const heat = Color(0xFFE53935);
   static const cold = Color(0xFF1E88E5);
+  static const sugar = Color(0xFFFFA000);
 }
