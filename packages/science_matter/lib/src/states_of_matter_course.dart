@@ -1,6 +1,7 @@
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'lessons/changes_lesson.dart';
+import 'lessons/evaporation_lesson.dart';
 import 'lessons/heat_lesson.dart';
 import 'lessons/matter_lesson.dart';
 import 'lessons/science_lesson.dart';
@@ -31,6 +32,7 @@ class StatesOfMatterCourse implements CoursePlugin, Validated {
     statesLesson,
     heatLesson,
     changesLesson,
+    evaporationLesson,
   ];
 
   @override

@@ -33,13 +33,14 @@ void main() {
     for (final a in activities.whereType<ChoiceQuizActivity>()) ...a.questions,
   ];
 
-  test('is open from the start and ordered matter, states, heat, changes', () {
+  test('is open from the start and ordered matter, states, heat, changes, evaporation', () {
     expect(course.requires, isEmpty);
     expect(course.lessons.map((l) => l.id.value), [
       'matter',
       'states',
       'heat',
       'changes',
+      'evaporation',
     ]);
   });
 

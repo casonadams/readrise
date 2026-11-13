@@ -32,23 +32,12 @@ class Particle {
 class ParticleSim {
   ParticleSim({Random? random, this.columns = 6, this.rows = 5})
     : _random = random ?? Random() {
-    for (var r = 0; r < rows; r++) {
-      for (var c = 0; c < columns; c++) {
-        final homeX = 0.15 + c * 0.14;
-        final homeDepth = 0.1 + r * 0.1;
-        final angle = _random.nextDouble() * 2 * pi;
-        particles.add(
-          Particle(
-            homeX: homeX,
-            homeDepth: homeDepth,
-            x: homeX,
-            y: height - homeDepth,
-            vx: cos(angle),
-            vy: sin(angle),
-            phase: _random.nextDouble() * 2 * pi,
-          ),
-        );
-      }
+    for (var i = 0; i < columns * rows; i++) {
+      final (homeX, homeDepth) = _home(i);
+      final angle = _random.nextDouble() * 2 * pi;
+      particles.add(
+        _particle(i, x: homeX, y: height - homeDepth, angle: angle),
+      );
     }
   }
 
@@ -81,6 +70,44 @@ class ParticleSim {
   void fit(double aspect) {
     _height = max(minHeight, aspect);
     _width = _height / aspect;
+  }
+
+  /// Keeps [count] liquid or gas particles, at most [columns] x [rows]. They
+  /// leave from the top, as surface particles leave a liquid, and arrive at
+  /// the floor heading up, as vapor rises from water below.
+  void resize(int count) {
+    RangeError.checkValueInInterval(count, 0, columns * rows, 'count');
+    while (particles.length > count) {
+      particles.remove(particles.reduce((a, b) => a.y <= b.y ? a : b));
+    }
+    while (particles.length < count) {
+      final x = radius + _random.nextDouble() * (width - 2 * radius);
+      final angle = -pi / 2 + _random.nextDouble() - 0.5;
+      particles.add(
+        _particle(particles.length, x: x, y: height - radius, angle: angle),
+      );
+    }
+  }
+
+  (double, double) _home(int i) =>
+      (0.15 + (i % columns) * 0.14, 0.1 + (i ~/ columns) * 0.1);
+
+  Particle _particle(
+    int i, {
+    required double x,
+    required double y,
+    required double angle,
+  }) {
+    final (homeX, homeDepth) = _home(i);
+    return Particle(
+      homeX: homeX,
+      homeDepth: homeDepth,
+      x: x,
+      y: y,
+      vx: cos(angle),
+      vy: sin(angle),
+      phase: _random.nextDouble() * 2 * pi,
+    );
   }
 
   /// Advances the simulation by [dt] seconds. [energy] is 0..1.

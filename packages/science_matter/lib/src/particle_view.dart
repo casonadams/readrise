@@ -7,11 +7,18 @@ import 'matter_state.dart';
 import 'particle_sim.dart';
 
 /// Animated particles for [state]; [energy] (0..1) sets how fast they move.
+/// [count] keeps fewer particles than the full set (liquid or gas only).
 class ParticleView extends StatefulWidget {
-  const ParticleView({required this.state, this.energy = 0.5, super.key});
+  const ParticleView({
+    required this.state,
+    this.energy = 0.5,
+    this.count,
+    super.key,
+  });
 
   final MatterState state;
   final double energy;
+  final int? count;
 
   @override
   State<ParticleView> createState() => _ParticleViewState();
@@ -27,12 +34,21 @@ class _ParticleViewState extends State<ParticleView>
   @override
   void initState() {
     super.initState();
+    if (widget.count case final count?) _sim.resize(count);
     _ticker = createTicker((elapsed) {
       final dt = ((elapsed - _last).inMicroseconds / 1e6).clamp(0.0, 0.05);
       _last = elapsed;
       _sim.step(dt, widget.state, widget.energy);
       _frame.value++;
     })..start();
+  }
+
+  @override
+  void didUpdateWidget(ParticleView old) {
+    super.didUpdateWidget(old);
+    if (widget.count case final count? when count != old.count) {
+      _sim.resize(count);
+    }
   }
 
   @override

@@ -152,11 +152,27 @@ Changed from the plan:
   so `content/` is not Flutter-free and has no import check. A future decoder
   would map picture ids to builders.
 
-### 5. Proof lesson
+### 5. Proof lesson - done (evaporation)
 
-Write one new science lesson on the new structure. Record lines of content,
-lines of new code, and anything that needed a new kit component. Use the
-result to decide how much of steps 6-9 is worth doing, and in what order.
+`evaporation_lesson.dart`: 205 lines of content. New code: 114 lines (one
+stateless view shared by the experiment and the explainer scene, a
+4-line-of-config `ControlledExperiment`, a 15-line scene), plus 43 net lines
+in `ParticleSim`/`ParticleView` for a particle count that can change. No new
+activity, template or test helper was needed; the experiment contract, the
+content checks and the phone-size result-panel test covered it unchanged.
+
+For comparison, the heat lesson's experiments and scenes were 507 lines of
+code when they were written. The cost now sits in content, not code.
+
+What it says about the remaining steps:
+- Step 6 (scenes): writing the scene was cheap because it reused the
+  experiment's view; a `KeyframeScene` would save little here. Do the
+  randomization half; keep the scene template until a scene needs it.
+- Step 9 (particle world): the one code change was in `ParticleSim`, and the
+  change was a parameter. The `Behaviour`/`Container` split pays off when a
+  lesson needs a new kind of motion (an open box, dissolving); not yet.
+- Step 7 (engine) is unaffected by lesson cost; it is about resume, scoring
+  and data, and stands on its own merits.
 
 ### 6. Scene template and randomization
 

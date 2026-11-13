@@ -185,4 +185,25 @@ void main() {
       }
     });
   });
+
+  test('fewer particles: the highest ones leave first', () {
+    final sim = settled(MatterState.liquid);
+    final ys = [for (final p in sim.particles) p.y]..sort();
+    sim.resize(20);
+    expect(sim.particles, hasLength(20));
+    expect(
+      sim.particles.map((p) => p.y).reduce(min),
+      greaterThanOrEqualTo(ys[10]),
+    );
+  });
+
+  test('more particles: new ones enter at the floor heading up', () {
+    final sim = ParticleSim(random: Random(7))..resize(0);
+    sim.resize(5);
+    expect(sim.particles, hasLength(5));
+    for (final p in sim.particles) {
+      expect(p.y, closeTo(sim.height - ParticleSim.radius, 1e-9));
+      expect(p.vy, lessThan(0));
+    }
+  });
 }
