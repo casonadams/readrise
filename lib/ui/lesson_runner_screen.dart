@@ -61,7 +61,15 @@ class _LessonRunnerScreenState extends ConsumerState<LessonRunnerScreen> {
     );
   }
 
-  Future<void> _onActivityDone(ActivityResult result) async {
+  Future<void> _onActivityDone(
+    ActivityResult result,
+    List<Answer> answers,
+  ) async {
+    if (answers.isNotEmpty) {
+      await ref
+          .read(progressProvider.notifier)
+          .recordAnswers(course: _course, answers: answers);
+    }
     final store = ref.read(sessionStoreProvider);
     switch (_session.advance(result, activityCount: _activities.length)) {
       case NextActivity(:final session):
@@ -211,7 +219,7 @@ class _ActivityHost extends ConsumerStatefulWidget {
   });
 
   final ActivityPlugin activity;
-  final Future<void> Function(ActivityResult) onDone;
+  final Future<void> Function(ActivityResult, List<Answer>) onDone;
 
   @override
   ConsumerState<_ActivityHost> createState() => _ActivityHostState();
@@ -220,15 +228,23 @@ class _ActivityHost extends ConsumerStatefulWidget {
 class _ActivityHostState extends ConsumerState<_ActivityHost>
     implements ActivityHost {
   bool _completed = false;
+  final List<Answer> _answers = [];
 
   @override
   Speaker get speaker => ref.read(speakerProvider);
+
+  /// Kept until the activity completes; leaving mid-activity drops them, as
+  /// resuming restarts the activity.
+  @override
+  void record(Answer answer) {
+    if (!_completed) _answers.add(answer);
+  }
 
   @override
   void complete(ActivityResult result) {
     if (_completed) return;
     _completed = true;
-    widget.onDone(result);
+    widget.onDone(result, List.unmodifiable(_answers));
   }
 
   @override

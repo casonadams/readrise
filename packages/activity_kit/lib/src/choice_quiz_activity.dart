@@ -84,9 +84,18 @@ class _QuizViewState extends State<_QuizView> {
 
   void _showHint() => setState(() => _hintShown = true);
 
-  void _score() => _wrong.isEmpty && _wrongReasons.isEmpty && !_hintShown
-      ? _firstTry++
-      : _recovered++;
+  /// Settled with no wrong answer or reason and no hint.
+  bool get _clean => _wrong.isEmpty && _wrongReasons.isEmpty && !_hintShown;
+
+  void _score() {
+    final firstTry = _clean;
+    if (firstTry) {
+      _firstTry++;
+    } else {
+      _recovered++;
+    }
+    widget.host.record(Answer(_question.id, firstTry: firstTry));
+  }
 
   void _miss(String key) {
     HapticFeedback.lightImpact();
@@ -178,9 +187,7 @@ class _QuizViewState extends State<_QuizView> {
     if (_settled) {
       return AnswerPanel(
         key: ValueKey('settled:$_index'),
-        title: _wrong.isEmpty && _wrongReasons.isEmpty && !_hintShown
-            ? 'Correct!'
-            : 'You got it!',
+        title: _clean ? 'Correct!' : 'You got it!',
         explanation: q.explanation,
         onContinue: _next,
       );

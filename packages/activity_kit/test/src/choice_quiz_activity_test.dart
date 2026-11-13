@@ -67,6 +67,11 @@ void main() {
 
     expect(host.results.single.mistakes, 1);
     expect(host.results.single.xp, 15);
+    expect(
+      [for (final a in host.answers) (a.item, a.firstTry)],
+      [(questions[0].id, false), (questions[1].id, true)],
+      reason: 'each question is recorded once, when it is settled',
+    );
   });
 
   testWidgets('cannot continue before answering correctly', (tester) async {
@@ -156,6 +161,7 @@ void main() {
     await tester.tap(find.text('Continue'));
     expect(host.results.single.xp, 10);
     expect(host.results.single.mistakes, 0);
+    expect(host.answers.single.firstTry, isFalse, reason: 'a hint was used');
   });
 
   testWidgets('the hint appears on its own after two misses', (tester) async {

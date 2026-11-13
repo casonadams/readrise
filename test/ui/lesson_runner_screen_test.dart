@@ -121,6 +121,34 @@ void main() {
     expect(find.text('Back to the path'), findsOneWidget);
   });
 
+  testWidgets('answers are saved when their activity finishes', (tester) async {
+    final container = await pumpApp(
+      tester,
+      PluginRegistry([
+        FakeCourse.of('a', [
+          FakeLesson(
+            '1',
+            activities: const [
+              FakeActivity('first', ActivityResult(), [
+                Answer(ItemId('q1'), firstTry: false),
+              ]),
+              FakeActivity('second'),
+            ],
+          ),
+        ]),
+      ]),
+    );
+    await openFirstLesson(tester);
+    await tester.tap(find.text('first'));
+    await tester.pumpAndSettle();
+
+    final stats = container
+        .read(progressProvider)
+        .itemsIn(const CourseId('a'))[const ItemId('q1')];
+    expect((stats?.seen, stats?.box), (1, 0));
+    expect(container.read(progressProvider).stars, isEmpty);
+  });
+
   group('leaving mid-lesson', () {
     testWidgets('on the first step leaves without asking', (tester) async {
       await pumpApp(tester, twoStepRegistry());

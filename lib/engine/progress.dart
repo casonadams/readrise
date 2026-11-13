@@ -1,5 +1,6 @@
 import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
+import 'item_stats.dart';
 import 'registry.dart';
 
 DateTime dateOnly(DateTime t) => DateTime.utc(t.year, t.month, t.day);
@@ -42,6 +43,7 @@ class Progress {
     this.lastPractice,
     this.lastLesson,
     this.stars = const {},
+    this.items = const {},
   });
 
   factory Progress.fromJson(Map<String, dynamic> json) => Progress(
@@ -59,6 +61,12 @@ class Progress {
       for (final e in (json['stars'] as Map? ?? {}).entries)
         decodeLessonKey(e.key as String): e.value as int,
     },
+    items: {
+      for (final e in (json['items'] as Map? ?? {}).entries)
+        decodeItemKey(e.key as String): ItemStats.fromJson(
+          e.value as Map<String, dynamic>,
+        ),
+    },
   );
 
   final int xp;
@@ -71,6 +79,9 @@ class Progress {
   /// Best stars per lesson.
   final Map<LessonKey, int> stars;
 
+  /// Per-question stats; saves from before they existed have none.
+  final Map<ItemKey, ItemStats> items;
+
   Map<String, dynamic> toJson() => {
     'xp': xp,
     'streak': streak,
@@ -80,10 +91,19 @@ class Progress {
       null => null,
     },
     'stars': {for (final e in stars.entries) encodeLessonKey(e.key): e.value},
+    'items': {
+      for (final e in items.entries) encodeItemKey(e.key): e.value.toJson(),
+    },
   };
 
   int starsFor(CoursePlugin course, LessonPlugin lesson) =>
       stars[lessonKey(course, lesson)] ?? 0;
+
+  /// The stats of [course]'s items the learner has answered.
+  Map<ItemId, ItemStats> itemsIn(CourseId course) => {
+    for (final e in items.entries)
+      if (e.key.course == course) e.key.item: e.value,
+  };
 
   bool isCourseComplete(CoursePlugin course) =>
       course.lessons.every((l) => starsFor(course, l) > 0);
@@ -134,6 +154,33 @@ class Progress {
         ...stars,
         lessonKey(course, lesson): outcome.stars > best ? outcome.stars : best,
       },
+      items: items,
+    );
+  }
+
+  /// Progress after [answers] to items of [course] at [now]. Stars, XP and
+  /// streak change only when a lesson is finished.
+  Progress recordAnswers({
+    required CourseId course,
+    required List<Answer> answers,
+    required DateTime now,
+  }) {
+    final next = {...items};
+    for (final answer in answers) {
+      final key = (course: course, item: answer.item);
+      next[key] = ItemStats.answered(
+        next[key],
+        firstTry: answer.firstTry,
+        now: now,
+      );
+    }
+    return Progress(
+      xp: xp,
+      streak: streak,
+      lastPractice: lastPractice,
+      lastLesson: lastLesson,
+      stars: stars,
+      items: next,
     );
   }
 }

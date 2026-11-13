@@ -26,7 +26,11 @@ class TestHost implements ActivityHost {
   @override
   final Speaker speaker;
 
+  final List<Answer> answers = [];
   final List<ActivityResult> results = [];
+
+  @override
+  void record(Answer answer) => answers.add(answer);
 
   @override
   void complete(ActivityResult result) => results.add(result);

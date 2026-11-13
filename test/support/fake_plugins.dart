@@ -11,17 +11,26 @@ class FakeSpeaker implements Speaker {
   Future<void> speak(String text) async => spoken.add(text);
 }
 
-/// Shows a button labelled [label] that completes with [result].
+/// Shows a button labelled [label] that records [answers], then completes
+/// with [result].
 class FakeActivity implements ActivityPlugin {
-  const FakeActivity(this.label, [this.result = const ActivityResult()]);
+  const FakeActivity(
+    this.label, [
+    this.result = const ActivityResult(),
+    this.answers = const [],
+  ]);
 
   final String label;
   final ActivityResult result;
+  final List<Answer> answers;
 
   @override
   Widget build(BuildContext context, ActivityHost host) => Center(
     child: FilledButton(
-      onPressed: () => host.complete(result),
+      onPressed: () {
+        answers.forEach(host.record);
+        host.complete(result);
+      },
       child: Text(label),
     ),
   );

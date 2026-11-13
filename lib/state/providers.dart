@@ -52,4 +52,16 @@ class ProgressNotifier extends Notifier<Progress> {
     );
     return _store.save(state);
   }
+
+  Future<void> recordAnswers({
+    required CoursePlugin course,
+    required List<Answer> answers,
+  }) {
+    state = state.recordAnswers(
+      course: course.id,
+      answers: answers,
+      now: ref.read(clockProvider)(),
+    );
+    return _store.save(state);
+  }
 }

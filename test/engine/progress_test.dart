@@ -124,6 +124,41 @@ void main() {
     final p = Progress.fromJson(saved);
     expect(p.starsFor(a, a.lessons[0]), 3);
     expect(p.starsFor(b, b.lessons[1]), 1);
-    expect(p.toJson(), saved);
+    expect(p.toJson(), {...saved, 'items': <String, dynamic>{}});
+  });
+
+  test('answers update per-question stats and nothing else', () {
+    final before = record(const Progress(), a, a.lessons[0]);
+    final p = before.recordAnswers(
+      course: a.id,
+      answers: const [
+        Answer(ItemId('q1'), firstTry: true),
+        Answer(ItemId('q2'), firstTry: false),
+        Answer(ItemId('q1'), firstTry: true),
+      ],
+      now: day,
+    );
+    final stats = p.itemsIn(a.id);
+    expect(
+      (stats[const ItemId('q1')]!.box, stats[const ItemId('q1')]!.seen),
+      (2, 2),
+    );
+    expect(stats[const ItemId('q2')]!.box, 0);
+    expect(p.itemsIn(b.id), isEmpty);
+    expect((p.xp, p.streak, p.stars), (before.xp, before.streak, before.stars));
+  });
+
+  test('per-question stats survive a JSON round trip', () {
+    final p = const Progress().recordAnswers(
+      course: a.id,
+      answers: const [Answer(ItemId('q1'), firstTry: true)],
+      now: day,
+    );
+    final back = Progress.fromJson(p.toJson())
+        .itemsIn(a.id)[const ItemId('q1')]!;
+    expect(
+      (back.seen, back.firstTries, back.box, back.lastSeen),
+      (1, 1, 1, day),
+    );
   });
 }

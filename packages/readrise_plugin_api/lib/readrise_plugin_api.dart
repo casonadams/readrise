@@ -123,7 +123,22 @@ abstract interface class Randomizable {
 /// What the engine offers to the running activity.
 abstract interface class ActivityHost {
   Speaker get speaker;
+
+  /// Keeps [answer] for the learner's per-question stats. Call it once per
+  /// item, when the item is settled.
+  void record(Answer answer);
+
   void complete(ActivityResult result);
+}
+
+/// How a learner answered one item.
+class Answer {
+  const Answer(this.item, {required this.firstTry});
+
+  final ItemId item;
+
+  /// Right on the first pick, without a hint.
+  final bool firstTry;
 }
 
 class ActivityResult {
