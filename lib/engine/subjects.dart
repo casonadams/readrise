@@ -84,9 +84,8 @@ LessonRef? continueTarget(
 }) {
   final last = progress.lastLesson;
   if (last != null) {
-    final courseId = last.split('/').first;
     for (final c in registry.courses) {
-      if (c.id == courseId && !closed.contains(c.subject.id)) {
+      if (c.id == last.course && !closed.contains(c.subject.id)) {
         final inSubject = nextUp(registry, progress, subjectId: c.subject.id);
         if (inSubject != null) return inSubject;
       }

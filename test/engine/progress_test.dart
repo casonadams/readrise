@@ -6,8 +6,8 @@ import '../support/fake_plugins.dart';
 
 void main() {
   final registry = buildRegistry();
-  final a = registry.courseById('a');
-  final b = registry.courseById('b');
+  final a = registry.courseById(const CourseId('a'));
+  final b = registry.courseById(const CourseId('b'));
   final day = DateTime(2026, 3, 8);
 
   Progress record(
@@ -97,7 +97,10 @@ void main() {
 
   test('records the last finished lesson', () {
     final p = record(const Progress(), b, b.lessons[1]);
-    expect(p.lastLesson, 'b/5');
+    expect(p.lastLesson, (
+      course: const CourseId('b'),
+      lesson: const LessonId('5'),
+    ));
   });
 
   test('survives JSON round trip', () {
@@ -108,5 +111,19 @@ void main() {
     expect(back.lastPractice, p.lastPractice);
     expect(back.lastLesson, p.lastLesson);
     expect(back.stars, p.stars);
+  });
+
+  test('reads and writes stars under "course/lesson" keys', () {
+    final saved = {
+      'xp': 30,
+      'streak': 2,
+      'lastPractice': '2026-03-08T00:00:00.000Z',
+      'lastLesson': 'b/5',
+      'stars': {'a/1': 3, 'b/5': 1},
+    };
+    final p = Progress.fromJson(saved);
+    expect(p.starsFor(a, a.lessons[0]), 3);
+    expect(p.starsFor(b, b.lessons[1]), 1);
+    expect(p.toJson(), saved);
   });
 }

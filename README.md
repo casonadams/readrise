@@ -28,7 +28,8 @@ calls `host.complete(ActivityResult)` when done. The engine runs activities in
 order, turns mistakes into stars, and unlocks lessons and courses.
 
 To add a course: create `packages/<name>` implementing `CoursePlugin`, add it
-to the workspace in the root `pubspec.yaml`, and list it in `lib/plugins.dart`.
+to the workspace in the root `pubspec.yaml`, list it in `lib/plugins.dart`,
+and add its `course/lesson` ids to `ids.lock`.
 Tests mirror the `lib/` layout in the app and in each package.
 To list a subject on the home screen before it is ready, add its id to
 `comingSoonSubjects` in `lib/plugins.dart`: it shows as "Coming soon" and

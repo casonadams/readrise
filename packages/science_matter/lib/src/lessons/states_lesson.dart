@@ -14,7 +14,7 @@ WidgetBuilder _particles(MatterState state, double energy) =>
 /// Solid, liquid, gas as particle arrangements. Targets "air fills the gaps
 /// between particles" and "particles are hard or cold like the whole".
 final statesLesson = BasicLesson(
-  id: 'states',
+  id: LessonId('states'),
   title: 'States',
   activities: <ActivityPlugin>[
     const ChoiceQuizActivity(

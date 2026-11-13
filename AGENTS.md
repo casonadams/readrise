@@ -13,8 +13,9 @@ otherwise.
   is a one-line change there.
 - Lessons in one course share code (scenes, simulations, classmates) inside the
   course package. Do not split a lesson into its own package.
-- Lesson ids are stored in learners' saved progress. Never rename an id; add a
-  new lesson instead.
+- Course and lesson ids are stored in learners' saved progress. Never rename
+  or remove one; add a new lesson instead. `ids.lock` lists every shipped id
+  and a test fails if one disappears; add new ids to it.
 - A warm-up may only recall lessons that come before it. When reordering
   lessons, re-check every warm-up.
 - Keep course content files small and cohesive: a lesson file holds content,

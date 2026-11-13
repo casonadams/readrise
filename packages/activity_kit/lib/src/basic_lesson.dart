@@ -8,7 +8,7 @@ class BasicLesson implements LessonPlugin {
   });
 
   @override
-  final String id;
+  final LessonId id;
 
   @override
   final String title;

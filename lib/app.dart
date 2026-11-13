@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'ui/home_screen.dart';
 import 'ui/lesson_runner_screen.dart';
@@ -17,8 +18,8 @@ GoRouter buildRouter() => GoRouter(
     GoRoute(
       path: '/lesson/:courseId/:lessonId',
       builder: (_, state) => LessonRunnerScreen(
-        courseId: state.pathParameters['courseId']!,
-        lessonId: state.pathParameters['lessonId']!,
+        courseId: CourseId(state.pathParameters['courseId']!),
+        lessonId: LessonId(state.pathParameters['lessonId']!),
       ),
     ),
   ],

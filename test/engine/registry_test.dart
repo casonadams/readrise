@@ -13,7 +13,10 @@ void main() {
   test('keeps courses in the order given and looks them up by id', () {
     final registry = buildRegistry();
     expect(registry.courses.map((c) => c.id), ['a', 'b']);
-    expect(registry.lessonById('b', '5').id, '5');
+    expect(
+      registry.lessonById(const CourseId('b'), const LessonId('5')).id,
+      '5',
+    );
   });
 
   test('the same lesson id may appear in different courses', () {
@@ -28,8 +31,14 @@ void main() {
 
   test('unknown ids are rejected', () {
     final registry = buildRegistry();
-    expect(() => registry.courseById('nope'), throwsArgumentError);
-    expect(() => registry.lessonById('a', 'nope'), throwsArgumentError);
+    expect(
+      () => registry.courseById(const CourseId('nope')),
+      throwsArgumentError,
+    );
+    expect(
+      () => registry.lessonById(const CourseId('a'), const LessonId('nope')),
+      throwsArgumentError,
+    );
   });
 
   test('one subject id with two different titles is rejected', () {
@@ -79,6 +88,15 @@ void main() {
     'course without lessons': () => [FakeCourse('a', [])],
     'lesson without activities': () => [
       FakeCourse.of('a', [_NoActivities()]),
+    ],
+    'course id containing "/"': () => [
+      FakeCourse('a/b', ['1']),
+    ],
+    'lesson id containing "/"': () => [
+      FakeCourse('a', ['1/2']),
+    ],
+    'empty lesson id': () => [
+      FakeCourse('a', ['']),
     ],
   };
   invalid.forEach((name, build) {

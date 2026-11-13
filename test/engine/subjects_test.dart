@@ -7,9 +7,9 @@ import '../support/fake_plugins.dart';
 
 void main() {
   final registry = buildSubjectRegistry();
-  final r1 = registry.courseById('r1');
-  final r2 = registry.courseById('r2');
-  final s1 = registry.courseById('s1');
+  final r1 = registry.courseById(const CourseId('r1'));
+  final r2 = registry.courseById(const CourseId('r2'));
+  final s1 = registry.courseById(const CourseId('s1'));
   final day = DateTime(2026, 3, 8);
 
   Progress finish(Progress p, CoursePlugin c, int lesson) => p.recordLesson(
@@ -65,7 +65,10 @@ void main() {
 
     test('stays in the subject that was practiced last', () {
       final p = finish(finish(const Progress(), r1, 0), s1, 0);
-      expect(p.lastLesson, 's1/x');
+      expect(p.lastLesson, (
+        course: const CourseId('s1'),
+        lesson: const LessonId('x'),
+      ));
       expect(idOf(continueTarget(registry, p)), 's1/y');
     });
 

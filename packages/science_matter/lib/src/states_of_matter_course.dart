@@ -10,7 +10,7 @@ class StatesOfMatterCourse implements CoursePlugin {
   StatesOfMatterCourse();
 
   @override
-  String get id => 'states-of-matter';
+  CourseId get id => const CourseId('states-of-matter');
 
   @override
   String get title => 'States of Matter';
@@ -22,7 +22,7 @@ class StatesOfMatterCourse implements CoursePlugin {
   Subject get subject => Subject.science;
 
   @override
-  List<String> get requires => const [];
+  List<CourseId> get requires => const [];
 
   @override
   final List<LessonPlugin> lessons = [

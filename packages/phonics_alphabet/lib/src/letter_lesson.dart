@@ -32,7 +32,7 @@ class LetterLesson implements LessonPlugin {
   final Letter letter;
 
   @override
-  String get id => letter.char;
+  LessonId get id => LessonId(letter.char);
 
   @override
   String get title => letter.display;
@@ -47,7 +47,7 @@ class ReviewLesson implements LessonPlugin {
     : activities = [LetterQuizActivity.review(letters: letters, known: known)];
 
   @override
-  String get id => 'review';
+  LessonId get id => const LessonId('review');
 
   @override
   String get title => 'Review';

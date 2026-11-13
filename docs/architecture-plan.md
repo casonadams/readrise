@@ -88,14 +88,16 @@ architecture test's allowlist, so every exception is visible in review.
 Result: course experiment code 596 -> 469 lines, stateful classes 4 -> 0;
 the template is 194 lines, shared by every future experiment.
 
-### 2. Typed ids and id lock
+### 2. Typed ids and id lock - done
 
-- Extension types `CourseId`, `LessonId`, `ItemId`; `LessonRef` replaces the
-  `'course/lesson'` string join and `split('/')`.
-- `ids.lock` lists every shipped id; a test fails if one disappears.
+- Extension types `CourseId` and `LessonId` in `readrise_plugin_api`;
+  progress uses a typed `LessonKey` record instead of joining and splitting
+  `'course/lesson'` strings. The stored format is unchanged.
+- The registry rejects empty ids and ids containing "/".
+- `ids.lock` lists every shipped id; tests fail if one disappears or a new
+  one is missing from it.
 
-Accept: no string-built progress keys remain; removing a shipped lesson id
-fails CI.
+`ItemId` arrives with the content model (step 4), where questions get ids.
 
 ### 3. Guardrails
 
@@ -124,8 +126,8 @@ Accept: each guardrail fails CI on a deliberate violation.
   debate:)` builds the arc; list slots wherever a lesson may need more than
   one activity, a single slot only where the rules demand one (the
   prediction). Phonics keeps its own lesson type.
-- Questions carry `ItemId`s; warm-ups reference earlier lessons' check
-  questions.
+- Questions carry `ItemId`s (a new extension type, added to `ids.lock`);
+  warm-ups reference earlier lessons' check questions.
 - `validate()` down the tree (exactly one `Right`, warm-ups only from earlier
   lessons, no positional option text such as "both of the above"), called by
   `PluginRegistry` at startup.

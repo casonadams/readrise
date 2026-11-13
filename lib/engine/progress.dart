@@ -4,8 +4,21 @@ import 'registry.dart';
 
 DateTime dateOnly(DateTime t) => DateTime.utc(t.year, t.month, t.day);
 
-String lessonKey(CoursePlugin course, LessonPlugin lesson) =>
-    '${course.id}/${lesson.id}';
+/// Where a lesson's progress is stored.
+typedef LessonKey = ({CourseId course, LessonId lesson});
+
+LessonKey lessonKey(CoursePlugin course, LessonPlugin lesson) =>
+    (course: course.id, lesson: lesson.id);
+
+String _encodeKey(LessonKey key) => '${key.course.value}/${key.lesson.value}';
+
+LessonKey _decodeKey(String text) => switch (text.split('/')) {
+  [final course, final lesson] => (
+    course: CourseId(course),
+    lesson: LessonId(lesson),
+  ),
+  _ => throw FormatException('not a "course/lesson" key', text),
+};
 
 /// Engine-owned scoring: plugins report mistakes and XP, never stars.
 class LessonOutcome {
@@ -37,10 +50,13 @@ class Progress {
       final String s => DateTime.parse(s),
       _ => null,
     },
-    lastLesson: json['lastLesson'] as String?,
+    lastLesson: switch (json['lastLesson']) {
+      final String s => _decodeKey(s),
+      _ => null,
+    },
     stars: {
       for (final e in (json['stars'] as Map? ?? {}).entries)
-        e.key as String: e.value as int,
+        _decodeKey(e.key as String): e.value as int,
     },
   );
 
@@ -48,18 +64,21 @@ class Progress {
   final int streak;
   final DateTime? lastPractice;
 
-  /// [lessonKey] of the most recently finished lesson.
-  final String? lastLesson;
+  /// The most recently finished lesson.
+  final LessonKey? lastLesson;
 
-  /// Best stars per [lessonKey].
-  final Map<String, int> stars;
+  /// Best stars per lesson.
+  final Map<LessonKey, int> stars;
 
   Map<String, dynamic> toJson() => {
     'xp': xp,
     'streak': streak,
     'lastPractice': lastPractice?.toIso8601String(),
-    'lastLesson': lastLesson,
-    'stars': stars,
+    'lastLesson': switch (lastLesson) {
+      final LessonKey key => _encodeKey(key),
+      null => null,
+    },
+    'stars': {for (final e in stars.entries) _encodeKey(e.key): e.value},
   };
 
   int starsFor(CoursePlugin course, LessonPlugin lesson) =>

@@ -19,8 +19,8 @@ class LessonRunnerScreen extends ConsumerStatefulWidget {
     super.key,
   });
 
-  final String courseId;
-  final String lessonId;
+  final CourseId courseId;
+  final LessonId lessonId;
 
   @override
   ConsumerState<LessonRunnerScreen> createState() => _LessonRunnerScreenState();

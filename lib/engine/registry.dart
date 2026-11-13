@@ -4,9 +4,10 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 class PluginRegistry {
   PluginRegistry(List<CoursePlugin> courses)
     : courses = List.unmodifiable(courses) {
-    final seen = <String>{};
+    final seen = <CourseId>{};
     final subjects = <String, Subject>{};
     for (final course in courses) {
+      _checkId(course.id.value, 'course ${course.id}');
       if (!seen.add(course.id)) {
         throw ArgumentError('duplicate course ${course.id}');
       }
@@ -29,8 +30,9 @@ class PluginRegistry {
       if (course.lessons.isEmpty) {
         throw ArgumentError('course ${course.id} has no lessons');
       }
-      final lessonIds = <String>{};
+      final lessonIds = <LessonId>{};
       for (final lesson in course.lessons) {
+        _checkId(lesson.id.value, 'lesson ${course.id}/${lesson.id}');
         if (!lessonIds.add(lesson.id)) {
           throw ArgumentError('duplicate lesson ${course.id}/${lesson.id}');
         }
@@ -43,14 +45,21 @@ class PluginRegistry {
     }
   }
 
+  /// Ids are stored as "course/lesson" and used as route segments.
+  static void _checkId(String id, String what) {
+    if (id.isEmpty || id.contains('/')) {
+      throw ArgumentError('$what: an id must be non-empty and contain no "/"');
+    }
+  }
+
   final List<CoursePlugin> courses;
 
-  CoursePlugin courseById(String id) => courses.firstWhere(
+  CoursePlugin courseById(CourseId id) => courses.firstWhere(
     (c) => c.id == id,
     orElse: () => throw ArgumentError.value(id, 'id', 'unknown course'),
   );
 
-  LessonPlugin lessonById(String courseId, String lessonId) =>
+  LessonPlugin lessonById(CourseId courseId, LessonId lessonId) =>
       courseById(courseId).lessons.firstWhere(
         (l) => l.id == lessonId,
         orElse: () =>

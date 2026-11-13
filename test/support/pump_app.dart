@@ -6,6 +6,7 @@ import 'package:readrise/data/progress_store.dart';
 import 'package:readrise/engine/progress.dart';
 import 'package:readrise/engine/registry.dart';
 import 'package:readrise/state/providers.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_plugins.dart';
@@ -58,10 +59,10 @@ Progress finished(
 }) {
   var p = const Progress();
   for (final key in keys) {
-    final parts = key.split('/');
+    final [course, lesson] = key.split('/');
     p = p.recordLesson(
-      course: registry.courseById(parts[0]),
-      lesson: registry.lessonById(parts[0], parts[1]),
+      course: registry.courseById(CourseId(course)),
+      lesson: registry.lessonById(CourseId(course), LessonId(lesson)),
       outcome: LessonOutcome(xp: xp, mistakes: mistakes),
       today: today,
     );

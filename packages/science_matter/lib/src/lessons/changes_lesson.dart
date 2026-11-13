@@ -17,7 +17,7 @@ final _changesScene = heatScene(const [
 /// Changes of state and conservation of mass. Targets "boiling bubbles are
 /// air" and "evaporated water is gone".
 final changesLesson = BasicLesson(
-  id: 'changes',
+  id: LessonId('changes'),
   title: 'Changes',
   activities: <ActivityPlugin>[
     const ChoiceQuizActivity(

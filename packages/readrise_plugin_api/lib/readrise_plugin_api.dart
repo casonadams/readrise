@@ -54,24 +54,32 @@ class Subject {
   int get hashCode => Object.hash(id, title);
 }
 
+/// Names a course. Learners' progress is stored under it, so it never
+/// changes once shipped, and it may not contain "/".
+extension type const CourseId(String value) {}
+
+/// Names a lesson within its course. Learners' progress is stored under it,
+/// so it never changes once shipped, and it may not contain "/".
+extension type const LessonId(String value) {}
+
 /// A course: an ordered set of lessons the engine shows as one learning path.
 abstract interface class CoursePlugin {
-  /// Stable and unique across all registered courses; progress is keyed by it.
-  String get id;
+  /// Unique across all registered courses.
+  CourseId get id;
   String get title;
   Grade get grade;
   Subject get subject;
 
-  /// Ids of courses that must be complete before this one opens.
-  List<String> get requires;
+  /// Courses that must be complete before this one opens.
+  List<CourseId> get requires;
 
   List<LessonPlugin> get lessons;
 }
 
 /// One node on the path: a sequence of activities the engine runs in order.
 abstract interface class LessonPlugin {
-  /// Stable and unique within its course.
-  String get id;
+  /// Unique within its course.
+  LessonId get id;
 
   /// Label on the path node.
   String get title;

@@ -8,7 +8,7 @@ import 'classmates.dart';
 
 /// Is air matter? Targets "air weighs nothing" and "light is matter".
 const matterLesson = BasicLesson(
-  id: 'matter',
+  id: LessonId('matter'),
   title: 'Matter',
   activities: <ActivityPlugin>[
     PredictActivity(

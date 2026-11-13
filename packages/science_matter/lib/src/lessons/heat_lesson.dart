@@ -16,7 +16,7 @@ final _heatMotion = heatScene(const [
 
 /// Temperature as particle speed. Targets "particles expand when heated".
 final heatLesson = BasicLesson(
-  id: 'heat',
+  id: LessonId('heat'),
   title: 'Heat',
   activities: <ActivityPlugin>[
     const ChoiceQuizActivity(

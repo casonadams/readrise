@@ -26,11 +26,12 @@ class FakeActivity implements ActivityPlugin {
 }
 
 class FakeLesson implements LessonPlugin {
-  FakeLesson(this.id, {List<ActivityPlugin>? activities})
-    : activities = activities ?? [FakeActivity('finish $id')];
+  FakeLesson(String id, {List<ActivityPlugin>? activities})
+    : id = LessonId(id),
+      activities = activities ?? [FakeActivity('finish $id')];
 
   @override
-  final String id;
+  final LessonId id;
 
   @override
   String get title => 'L$id';
@@ -41,21 +42,24 @@ class FakeLesson implements LessonPlugin {
 
 class FakeCourse implements CoursePlugin {
   FakeCourse(
-    this.id,
+    String id,
     List<String> lessonIds, {
-    this.requires = const [],
+    List<String> requires = const [],
     this.subject = Subject.reading,
-  }) : lessons = [for (final l in lessonIds) FakeLesson(l)];
+  }) : id = CourseId(id),
+       requires = [for (final r in requires) CourseId(r)],
+       lessons = [for (final l in lessonIds) FakeLesson(l)];
 
   FakeCourse.of(
-    this.id,
+    String id,
     this.lessons, {
-    this.requires = const [],
+    List<String> requires = const [],
     this.subject = Subject.reading,
-  });
+  }) : id = CourseId(id),
+       requires = [for (final r in requires) CourseId(r)];
 
   @override
-  final String id;
+  final CourseId id;
 
   @override
   String get title => 'Course $id';
@@ -67,7 +71,7 @@ class FakeCourse implements CoursePlugin {
   final Subject subject;
 
   @override
-  final List<String> requires;
+  final List<CourseId> requires;
 
   @override
   final List<LessonPlugin> lessons;

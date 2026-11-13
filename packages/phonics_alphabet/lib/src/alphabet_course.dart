@@ -30,20 +30,20 @@ class AlphabetCourse implements CoursePlugin {
   static List<AlphabetCourse> all() => [
     for (var n = 0; n < letterSets.length; n++)
       AlphabetCourse(
-        id: 'alphabet-${n + 1}',
+        id: CourseId('alphabet-${n + 1}'),
         title:
             'Alphabet ${n + 1}: '
             '${letterSets[n].map((l) => l.upper).join(' ')}',
         letters: letterSets[n],
         grade: n < 4 ? Grade.preK : Grade.kindergarten,
-        requires: n == 0 ? const [] : ['alphabet-$n'],
+        requires: n == 0 ? const [] : [CourseId('alphabet-$n')],
         before: [for (final s in letterSets.take(n)) ...s],
         after: [for (final s in letterSets.skip(n + 1)) ...s],
       ),
   ];
 
   @override
-  final String id;
+  final CourseId id;
 
   @override
   final String title;
@@ -55,7 +55,7 @@ class AlphabetCourse implements CoursePlugin {
   Subject get subject => Subject.reading;
 
   @override
-  final List<String> requires;
+  final List<CourseId> requires;
 
   @override
   final List<LessonPlugin> lessons;

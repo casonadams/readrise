@@ -33,13 +33,13 @@ void main() {
           );
         }
         final predicts = kinds.whereType<PredictActivity>();
-        expect(predicts, hasLength(1), reason: lesson.id);
+        expect(predicts, hasLength(1), reason: lesson.id.value);
         expect(
           kinds.indexOf(predicts.single),
           lessThan(kinds.indexWhere((a) => a is ExplainerActivity)),
           reason: '${lesson.id} predicts before explaining',
         );
-        expect(kinds.last, isA<WhoIsRightActivity>(), reason: lesson.id);
+        expect(kinds.last, isA<WhoIsRightActivity>(), reason: lesson.id.value);
       }
     },
   );

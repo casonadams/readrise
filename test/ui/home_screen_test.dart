@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:readrise/engine/progress.dart';
+import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import '../support/fake_plugins.dart';
 import '../support/pump_app.dart';
@@ -78,8 +79,8 @@ void main() {
   testWidgets('a lapsed streak shows zero', (tester) async {
     final handle = tester.ensureSemantics();
     final old = const Progress().recordLesson(
-      course: registry.courseById('r1'),
-      lesson: registry.courseById('r1').lessons.first,
+      course: registry.courseById(const CourseId('r1')),
+      lesson: registry.courseById(const CourseId('r1')).lessons.first,
       outcome: const LessonOutcome(xp: 5, mistakes: 0),
       today: DateTime(2026, 3, 1),
     );
