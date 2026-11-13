@@ -63,7 +63,7 @@ class _ParticleViewState extends State<ParticleView>
             borderRadius: BorderRadius.circular(18),
             child: LayoutBuilder(
               builder: (context, box) {
-                _sim.height = box.maxHeight / box.maxWidth;
+                _sim.fit(box.maxHeight / box.maxWidth);
                 return CustomPaint(
                   size: Size.infinite,
                   painter: _ParticlePainter(
@@ -102,9 +102,9 @@ class _ParticlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final body = Paint()..color = color;
     final shine = Paint()..color = Colors.white.withValues(alpha: 0.45);
-    final scale = min(size.width, size.height / sim.height);
+    final scale = min(size.width / sim.width, size.height / sim.height);
     final origin = Offset(
-      (size.width - scale) / 2,
+      (size.width - sim.width * scale) / 2,
       size.height - sim.height * scale,
     );
     final r = ParticleSim.radius * scale;

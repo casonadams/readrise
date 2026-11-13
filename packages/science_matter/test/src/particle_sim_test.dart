@@ -10,7 +10,7 @@ ParticleSim settled(
   double seconds = 4,
   double height = 1,
 }) {
-  final sim = ParticleSim(random: Random(7))..height = height;
+  final sim = ParticleSim(random: Random(7))..fit(height);
   for (var i = 0; i < seconds * 60; i++) {
     sim.step(1 / 60, state, energy);
   }
@@ -50,6 +50,21 @@ void main() {
       expect(p.x, inInclusiveRange(0, 1));
       expect(p.y, inInclusiveRange(0, 1));
     }
+  });
+
+  test('gas: particles fill a box wider than it is tall, edge to edge', () {
+    final sim = settled(MatterState.gas, energy: 0.8, height: 0.3);
+    expect(sim.width, closeTo(2, 1e-9));
+    final xs = sim.particles.map((p) => p.x);
+    expect(xs.reduce(min), lessThan(0.3));
+    expect(xs.reduce(max), greaterThan(sim.width - 0.3));
+  });
+
+  test('solid: the lattice sits in the middle of a wide box', () {
+    final sim = settled(MatterState.solid, height: 0.3);
+    final xs = sim.particles.map((p) => p.x);
+    final middle = (xs.reduce(min) + xs.reduce(max)) / 2;
+    expect(middle, closeTo(sim.width / 2, 0.03));
   });
 
   test('more energy means faster particles', () {

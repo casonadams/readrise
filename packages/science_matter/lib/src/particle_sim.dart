@@ -24,11 +24,11 @@ class Particle {
   double vy;
 }
 
-/// A qualitative particle model in a box one unit wide and [height] units
-/// tall (y grows downward). Solid: particles vibrate around lattice sites on
-/// the floor. Liquid: gravity pools them at the bottom, where they jostle,
-/// slide past each other, and level out. Gas: they fly through the whole box
-/// and bounce off each other and the walls.
+/// A qualitative particle model in a box [width] by [height] units, shaped
+/// like the view that shows it (y grows downward). Solid: particles vibrate
+/// around lattice sites on the floor. Liquid: gravity pools them at the
+/// bottom, where they jostle, slide past each other, and level out. Gas: they
+/// fly through the whole box and bounce off each other and the walls.
 class ParticleSim {
   ParticleSim({Random? random, this.columns = 6, this.rows = 5})
     : _random = random ?? Random() {
@@ -66,11 +66,22 @@ class ParticleSim {
   final Random _random;
   final List<Particle> particles = [];
   double _time = 0;
+  double _width = 1;
   double _height = 1;
 
-  /// The box's height as a multiple of its width, at least [minHeight].
+  /// The box's width: 1, or more when the box is flatter than [minHeight].
+  double get width => _width;
+
+  /// The box's height, at least [minHeight].
   double get height => _height;
-  set height(double value) => _height = max(minHeight, value);
+
+  /// Gives the box the real shape of its view: [aspect] is height over width.
+  /// A box flatter than [minHeight] grows wider instead, so particles fill
+  /// all of it and the solid lattice still fits.
+  void fit(double aspect) {
+    _height = max(minHeight, aspect);
+    _width = _height / aspect;
+  }
 
   /// Advances the simulation by [dt] seconds. [energy] is 0..1.
   void step(double dt, MatterState state, double energy) {
@@ -90,7 +101,8 @@ class ParticleSim {
     final amplitude = 0.008 + 0.014 * energy;
     final pull = min(1.0, 8 * dt);
     for (final p in particles) {
-      final tx = p.homeX + amplitude * sin(_time * 18 + p.phase);
+      final tx =
+          p.homeX + (width - 1) / 2 + amplitude * sin(_time * 18 + p.phase);
       final ty = height - p.homeDepth + amplitude * cos(_time * 15 + p.phase);
       p.x += (tx - p.x) * pull;
       p.y += (ty - p.y) * pull;
@@ -160,7 +172,7 @@ class ParticleSim {
 
   void _keepInside() {
     const low = radius;
-    const right = 1 - radius;
+    final right = width - radius;
     final floor = height - radius;
     for (final p in particles) {
       p.x = p.x.clamp(low, right);
@@ -170,7 +182,7 @@ class ParticleSim {
 
   void _bounceOffWalls() {
     const low = radius;
-    const right = 1 - radius;
+    final right = width - radius;
     final floor = height - radius;
     for (final p in particles) {
       if (p.x < low) {
