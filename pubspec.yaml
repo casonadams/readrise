@@ -27,6 +27,7 @@ workspace:
   - packages/activity_kit
   - packages/science_kit
   - packages/science_matter
+  - packages/science_mixtures
   - packages/readrise_testing
 
 # Dependencies specify other packages that your package needs in order to work.
@@ -45,6 +46,7 @@ dependencies:
   flutter_tts: ^4.2.5
   phonics_alphabet:
   science_matter:
+  science_mixtures:
   readrise_plugin_api:
   web: ^1.1.2
 

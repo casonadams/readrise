@@ -5,6 +5,7 @@ import 'package:readrise_plugin_api/readrise_plugin_api.dart';
 
 import 'activity_host.dart';
 import 'real_fonts.dart';
+import 'scenes.dart';
 
 const _experimentKey = Key('experiment');
 
@@ -63,6 +64,17 @@ void courseContentContract(CoursePlugin course) {
         expect(s.hint, isNotNull, reason: s.prompt);
         for (final item in s.items) {
           expect(item.why, isNotNull, reason: item.label);
+        }
+      }
+    });
+
+    testWidgets('every explainer scene can show each of its steps', (
+      tester,
+    ) async {
+      for (final e in activities.whereType<ExplainerActivity>()) {
+        for (var step = 0; step < e.steps.length; step++) {
+          await pumpScene(tester, e.scene, step);
+          expect(tester.takeException(), isNull, reason: '${e.title} $step');
         }
       }
     });

@@ -1,0 +1,19 @@
+name: science_mixtures
+description: Readrise course plugin on mixtures and solutions, for grades 5-8.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  activity_kit:
+  flutter:
+    sdk: flutter
+  readrise_plugin_api:
+  science_kit:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  readrise_testing:
