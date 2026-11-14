@@ -59,6 +59,11 @@ class ParticleSim {
   static const _crystalColumns = 4;
   static const _crystalSpacing = radius * 2.1;
 
+  /// How often, per second, a dissolved sugar particle and a touching water
+  /// particle swap places at middle energy: diffusion, which spreads the
+  /// sugar evenly through the water instead of leaving it near the crystal.
+  static const _diffusion = 1.5;
+
   static const _gravity = 4.0;
   static const _maxLiquidSpeed = 1.2;
   static const _liquidPasses = 4;
@@ -214,6 +219,7 @@ class ParticleSim {
       _separate();
       _keepInside();
     }
+    _diffuse(dt, energy);
     for (final (i, p) in free.indexed) {
       p.vx = (p.x - startX[i]) / dt;
       p.vy = (p.y - startY[i]) / dt;
@@ -221,6 +227,29 @@ class ParticleSim {
       if (speed > _maxLiquidSpeed) {
         p.vx *= _maxLiquidSpeed / speed;
         p.vy *= _maxLiquidSpeed / speed;
+      }
+    }
+  }
+
+  void _diffuse(double dt, double energy) {
+    final chance = _diffusion * (0.5 + energy) * dt;
+    const reach = radius * 2.3;
+    for (final sugar in particles) {
+      if (!sugar.sugar || sugar.held) continue;
+      for (final water in particles) {
+        if (water.sugar) continue;
+        final dx = water.x - sugar.x;
+        final dy = water.y - sugar.y;
+        if (dx * dx + dy * dy > reach * reach) continue;
+        if (_random.nextDouble() >= chance) continue;
+        final (x, y) = (sugar.x, sugar.y);
+        sugar
+          ..x = water.x
+          ..y = water.y;
+        water
+          ..x = x
+          ..y = y;
+        break;
       }
     }
   }

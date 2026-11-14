@@ -235,6 +235,26 @@ void main() {
       expect(xs.reduce(max) - xs.reduce(min), greaterThan(0.4));
     });
 
+    test(
+      'dissolved sugar mixes through the water, not just near the floor',
+      () {
+        var sugarHigh = 0;
+        var waterHigh = 0;
+        for (var seed = 0; seed < 6; seed++) {
+          final sim = ParticleSim(random: Random(seed))
+            ..fit(0.8)
+            ..setSugar(dissolved: 12, undissolved: 0);
+          run(sim, 10);
+          final water = sim.particles.where((p) => !p.sugar);
+          final surface = water.map((p) => p.y).reduce(min);
+          final middle = (surface + sim.height) / 2;
+          sugarHigh += sugar(sim).where((p) => p.y < middle).length;
+          waterHigh += water.where((p) => p.y < middle).length;
+        }
+        expect(sugarHigh / (6 * 12), greaterThan(0.75 * waterHigh / (6 * 30)));
+      },
+    );
+
     test('dissolves from the top row of the crystal', () {
       final sim = ParticleSim(random: Random(7))
         ..setSugar(dissolved: 0, undissolved: 8);
