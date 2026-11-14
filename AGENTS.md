@@ -175,5 +175,10 @@ order; `checkWarmUps` (run at startup) checks the warm-up rules.
   when the test checks them.
 - Looping animations never settle: use fixed `pump(duration)` calls, not
   `pumpAndSettle`, for anything showing a particle view.
-- Run `flutter analyze` and `flutter test` at the root and in each changed
-  package, and `npx -y jscpd@5.4.3` at the root, before finishing.
+- The app ships compiled to JavaScript, where ints are JS numbers: shifts
+  are 32-bit (`1 << 32` is 0) and `1.0` prints as `1`. Tests run on the VM
+  and with `--platform chrome`; mark a test that needs `dart:io` (files,
+  fonts from disk) `@TestOn('vm')`. Draw child seeds with `nextSeed()`.
+- Run `flutter analyze`, `flutter test` and `flutter test --platform chrome`
+  at the root and in each changed package, and `npx -y jscpd@5.4.3` at the
+  root, before finishing.

@@ -41,7 +41,7 @@ class LetterQuizActivity implements ActivityPlugin, Randomizable {
 
   @override
   LetterQuizActivity shuffled(Random random) =>
-      LetterQuizActivity(newSession, seed: random.nextInt(1 << 32));
+      LetterQuizActivity(newSession, seed: random.nextSeed());
 
   @override
   Widget build(BuildContext context, ActivityHost host) =>

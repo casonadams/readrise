@@ -120,6 +120,12 @@ abstract interface class Randomizable {
   ActivityPlugin shuffled(Random random);
 }
 
+/// Seeds for child [Random]s, drawn from the whole range [Random] accepts.
+extension SeedRandom on Random {
+  // Web shifts are 32-bit, so `1 << 32` is 0 there and nextInt(0) throws.
+  int nextSeed() => nextInt(0x100000000);
+}
+
 /// What the engine offers to the running activity.
 abstract interface class ActivityHost {
   Speaker get speaker;

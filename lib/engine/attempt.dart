@@ -17,7 +17,7 @@ List<ActivityPlugin> attemptActivities(
   final seeds = Random(seed);
   return [
     for (final authored in lesson.activities)
-      _arrange(authored, Random(seeds.nextInt(1 << 32)), stats),
+      _arrange(authored, Random(seeds.nextSeed()), stats),
   ];
 }
 

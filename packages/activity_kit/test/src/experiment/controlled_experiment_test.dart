@@ -10,7 +10,7 @@ const _slider = ControlledExperiment<double>(
     high: Icons.local_fire_department_rounded,
   ),
   observed: _atTop,
-  view: _ValueText.new,
+  view: _PercentText.new,
 );
 
 const _pump = ControlledExperiment<int>(
@@ -24,10 +24,19 @@ bool _atTop(double value) => value >= 0.98;
 
 bool _twoPresses(int presses) => presses >= 2;
 
+class _PercentText extends StatelessWidget {
+  const _PercentText(this.value);
+
+  final double value;
+
+  @override
+  Widget build(BuildContext context) => Text('${(value * 100).round()}%');
+}
+
 class _ValueText extends StatelessWidget {
   const _ValueText(this.value);
 
-  final Object value;
+  final int value;
 
   @override
   Widget build(BuildContext context) => Text('value $value');
@@ -42,7 +51,7 @@ void main() {
   ) async {
     await pumpExperiment(tester, _slider, active: false);
     await slideToEnd(tester);
-    expect(find.text('value 0.0'), findsOneWidget);
+    expect(find.text('0%'), findsOneWidget);
   });
 
   testWidgets('reports once, however often the result is reached', (
@@ -53,7 +62,7 @@ void main() {
     await tester.drag(find.byType(Slider), const Offset(-600, 0));
     await tester.pump();
     await slideToEnd(tester);
-    expect(find.text('value 1.0'), findsOneWidget);
+    expect(find.text('100%'), findsOneWidget);
     expect(reports, hasLength(1));
   });
 

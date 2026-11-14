@@ -28,10 +28,14 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: npx -y jscpd@5.4.3
-      - run: flutter test
-      - run: |
+      - name: Test on the VM and compiled to JavaScript
+        run: |
+          flutter test
+          flutter test --platform chrome
           for pkg in packages/*/; do
-            if [ -d "$pkg/test" ]; then (cd "$pkg" && flutter test); fi
+            if [ -d "$pkg/test" ]; then
+              (cd "$pkg" && flutter test && flutter test --platform chrome)
+            fi
           done
       - run: flutter build web --release --base-href /${{ github.event.repository.name }}/
 

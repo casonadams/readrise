@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:phonics_alphabet/src/letter_quiz_activity.dart';
 import 'package:phonics_alphabet/src/letter_text.dart';
@@ -155,5 +157,15 @@ void main() {
     final still = tester.getTopLeft(find.text('Ss'));
     await tester.pump(const Duration(milliseconds: 600));
     expect(tester.getTopLeft(find.text('Ss')), still);
+  });
+
+  test('each attempt orders the questions by its own seed', () {
+    final quiz = LetterQuizActivity.lesson(
+      letter: letterOf('m'),
+      learned: before('m'),
+      unseen: after('m'),
+    );
+    final seeds = {for (var s = 0; s < 10; s++) quiz.shuffled(Random(s)).seed};
+    expect(seeds, hasLength(greaterThan(1)));
   });
 }

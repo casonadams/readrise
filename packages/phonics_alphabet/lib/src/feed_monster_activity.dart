@@ -32,7 +32,7 @@ class FeedMonsterActivity implements ActivityPlugin, Randomizable {
     letter: letter,
     learned: learned,
     unseen: unseen,
-    seed: random.nextInt(1 << 32),
+    seed: random.nextSeed(),
   );
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:phonics_alphabet/src/feed_monster_activity.dart';
@@ -133,5 +135,12 @@ void main() {
     addTearDown(tester.view.reset);
     await pumpActivity(tester, activityFor('s'), textScale: 1.8);
     expect(tester.takeException(), isNull);
+  });
+
+  test('each attempt offers pictures by its own seed', () {
+    final seeds = {
+      for (var s = 0; s < 10; s++) activityFor('m').shuffled(Random(s)).seed,
+    };
+    expect(seeds, hasLength(greaterThan(1)));
   });
 }
