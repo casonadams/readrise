@@ -13,7 +13,8 @@ words or grammar.
 | `packages/readrise_plugin_api` | Interfaces: `CoursePlugin` > `LessonPlugin` > `ActivityPlugin`, plus `ActivityHost` and `Speaker` |
 | `packages/activity_kit` | Reusable activities: explainer, predict-then-experiment, choice quiz (hints, two-tier reasons, warm-up/check), drag-to-sort, "Who's right?", info card; `BasicLesson` |
 | `packages/phonics_alphabet` | Course plugins for the whole alphabet (7 courses, ages 3-6): meet a letter, trace it, pop balloons, feed the monster, then a review per set |
-| `packages/science_kit` | Science components shared by science courses: particle simulation and view, thermometer, water molecule, balloon balance, standard colours, the Science subject |
+| `packages/science_kit` | Science components shared by science courses: particle simulation and view (with dissolving sugar), thermometer, water molecule, balloon balance, standard colours, the Science subject, the science lesson arc (`ScienceLesson`) and the cast of classmates |
+| `packages/science_mixtures` | Course plugin: mixtures and solutions (dissolving, melting vs dissolving, mass, saturation), opens after States of Matter (NGSS 5-PS1-2, 5-PS1-4) |
 | `packages/science_matter` | Course plugin: states of matter with hands-on particle experiments, grades 5-8 (NGSS MS-PS1); one file per lesson in `lib/src/lessons/` |
 | `packages/readrise_testing` | Test helpers shared by packages (dev dependency only): activity and scene hosts, experiment contract tests, seeded fake content |
 | `lib/engine` | Plugin registry, progress, unlock rules, scoring (XP, stars, streaks), subject summaries and "continue" target; lesson sessions (shuffled attempts that resume where the learner left off) |

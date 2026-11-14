@@ -104,8 +104,8 @@ order; `checkWarmUps` (run at startup) checks the warm-up rules.
   the evidence on screen does the explaining.
 - Use concrete, everyday situations (balloons, puddles, a cold glass) before
   abstract statements.
-- Classmates in "Who's right?" come from `lessons/classmates.dart`; keep the
-  cast diverse and vary who is right.
+- Classmates in "Who's right?" come from the shared cast in `science_kit`
+  (`classmates.dart`); keep the cast diverse and vary who is right.
 
 ## Scenes and experiments
 

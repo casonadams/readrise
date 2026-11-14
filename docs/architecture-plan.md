@@ -286,6 +286,31 @@ Deferred, with the reason:
 - The jar in the zoom experiment is plain widget composition, not drawing
   code, so it stays in the course.
 
+### Second science course (Mixtures and Solutions) - done
+
+The test of whether `science_kit` and the reuse rules hold for a course
+they were not built from.
+
+- Reused as is: `ParticleView`, `ControlledExperiment` with `SliderControl`
+  and `TapControl`, `FactPill`, `Pop`, every activity, `WarmUpQuiz` review.
+- Moved to shared packages because a second course needed them:
+  `ScienceLesson`/`WarmUp`/`checkWarmUps` and the cast (to `science_kit`),
+  and the course content checks (`courseContentContract` in
+  `readrise_testing`), which also restored the hint checks on warm-up
+  questions.
+- Extended through data, not flags: `ParticleSim.setSugar` (dissolved
+  particles move with the liquid, undissolved ones are held in a crystal),
+  diffusion so dissolved sugar does not sit at the bottom, and a crystal
+  block drawn behind held particles. No `Behaviour` split was needed: a
+  held particle is one more piece of particle state.
+- Cost: 792 lines of content in 4 lessons, 417 lines of course code (four
+  stateless views and their configs), 0 painters, tickers or stateful
+  widgets in the course. Course 1 has 1,223 lines of non-lesson code.
+  Duplication fell from 0.23% to 0.16%; none is between the two courses.
+- Phone-size renders found two layout faults that tests did not: wrapped
+  fact pills squeezing the glass flat, and undissolved sugar that looked
+  loose. Both fixed in the shared view and the kit.
+
 ### Later
 
 - Glossary `Term` objects with a first-use check.

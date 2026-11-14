@@ -4,6 +4,15 @@ What science courses can use from `package:science_kit/science_kit.dart`.
 Read this and `packages/activity_kit/CATALOG.md` before writing a widget;
 physics and drawing belong here, not in a course.
 
+## Lessons
+
+| Name | Use |
+| --- | --- |
+| `ScienceLesson` | A science lesson built from the arc's named slots: `warmUp`, `predict`, `explain`, `practise`, `check`, `debate`. |
+| `WarmUp` | A warm-up's own questions and the earlier lessons it `recalls`; once a learner has answered enough, it reviews their hardest check questions. |
+| `checkWarmUps` | Course-level check: only the first lesson skips the warm-up, and warm-ups recall only earlier lessons. Call it from the course's `validate`. |
+| `mia`, `leo`, `ava`, `sam`, `noah`, `zoe`, `kai`, `lily` | The shared cast of classmates for "Who's right?". |
+
 ## Particles
 
 | Name | Use |
