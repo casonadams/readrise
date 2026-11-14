@@ -48,15 +48,13 @@ class SpoonsView extends StatelessWidget {
           color: ScienceColors.sugar,
         ),
         FactPill('Dissolved: $dissolvedSpoons', icon: Icons.water_drop_rounded),
-        Pop(
-          visible: full,
-          child: const FactPill(
-            'Full: the rest stays at the bottom',
-            icon: Icons.block_rounded,
-            color: Color(0xFF7B1FA2),
-          ),
-        ),
       ],
+      banner: const FactPill(
+        'Full: the rest stays at the bottom',
+        icon: Icons.block_rounded,
+        color: Color(0xFF7B1FA2),
+      ),
+      bannerShown: full,
     );
   }
 }

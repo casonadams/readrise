@@ -47,18 +47,16 @@ class DissolvingView extends StatelessWidget {
           color: ScienceColors.sugar,
         ),
         FactPill(
-          'Still in the cube: ${sugarCube - dissolved}',
+          'In the cube: ${sugarCube - dissolved}',
           icon: Icons.square_rounded,
         ),
-        Pop(
-          visible: dissolved == sugarCube,
-          child: const FactPill(
-            'Hidden, not gone',
-            icon: Icons.visibility_off_rounded,
-            color: Color(0xFF7B1FA2),
-          ),
-        ),
       ],
+      banner: const FactPill(
+        'Hidden, not gone',
+        icon: Icons.visibility_off_rounded,
+        color: Color(0xFF7B1FA2),
+      ),
+      bannerShown: dissolved == sugarCube,
     );
   }
 }
@@ -73,59 +71,51 @@ class MassView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dissolved = dissolvedAt(stir);
+    return GlassView(
+      dissolved: dissolved,
+      undissolved: sugarCube - dissolved,
+      facts: const [_ScaleReading()],
+      banner: const FactPill(
+        'No particle left the glass',
+        icon: Icons.check_circle_rounded,
+        color: Color(0xFF7B1FA2),
+      ),
+      bannerShown: dissolved == sugarCube,
+    );
+  }
+}
+
+/// The scale under the glass. It always reads 110 g: the evidence.
+class _ScaleReading extends StatelessWidget {
+  const _ScaleReading();
+
+  @override
+  Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Semantics(
-          label: 'Scale reads 110 grams',
-          excludeSemantics: true,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-            decoration: BoxDecoration(
-              color: scheme.inverseSurface,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.scale_rounded, color: scheme.onInverseSurface),
-                const SizedBox(width: 10),
-                Text(
-                  '110 g',
-                  style: text.headlineSmall?.copyWith(
-                    color: scheme.onInverseSurface,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-              ],
-            ),
-          ),
+    return Semantics(
+      label: 'Scale reads 110 grams',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+        decoration: BoxDecoration(
+          color: scheme.inverseSurface,
+          borderRadius: BorderRadius.circular(12),
         ),
-        const SizedBox(height: 8),
-        Expanded(
-          child: GlassView(
-            dissolved: dissolved,
-            undissolved: sugarCube - dissolved,
-            facts: [
-              const FactPill('Water: 100 g', icon: Icons.water_drop_rounded),
-              const FactPill(
-                'Sugar: 10 g',
-                icon: Icons.grain_rounded,
-                color: ScienceColors.sugar,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.scale_rounded, color: scheme.onInverseSurface),
+            const SizedBox(width: 10),
+            Text(
+              '110 g',
+              style: text.headlineSmall?.copyWith(
+                color: scheme.onInverseSurface,
               ),
-              Pop(
-                visible: dissolved == sugarCube,
-                child: const FactPill(
-                  'No particle left the glass',
-                  icon: Icons.check_circle_rounded,
-                  color: Color(0xFF7B1FA2),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

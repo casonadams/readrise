@@ -183,6 +183,35 @@ class _ParticlePainter extends CustomPainter {
       size.height - sim.height * scale,
     );
     final r = ParticleSim.radius * scale;
+    final crystal = [
+      for (final p in sim.particles)
+        if (p.held) p,
+    ];
+    if (crystal.isNotEmpty) {
+      final xs = crystal.map((p) => p.x);
+      final ys = crystal.map((p) => p.y);
+      final block = RRect.fromRectAndRadius(
+        Rect.fromLTRB(
+          xs.reduce(min) * scale + origin.dx - r * 1.3,
+          ys.reduce(min) * scale + origin.dy - r * 1.3,
+          xs.reduce(max) * scale + origin.dx + r * 1.3,
+          ys.reduce(max) * scale + origin.dy + r * 1.3,
+        ),
+        Radius.circular(r * 0.8),
+      );
+      canvas
+        ..drawRRect(
+          block,
+          Paint()..color = ScienceColors.sugar.withValues(alpha: 0.18),
+        )
+        ..drawRRect(
+          block,
+          Paint()
+            ..color = ScienceColors.sugar.withValues(alpha: 0.6)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+    }
     for (final p in sim.particles) {
       final at = origin + Offset(p.x, p.y) * scale;
       canvas.drawCircle(at, r, p.sugar ? sugar : body);

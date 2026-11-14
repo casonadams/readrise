@@ -46,15 +46,14 @@ final massLesson = ScienceLesson(
   ),
   predict: const PredictActivity(
     question:
-        'A glass with 100 g of water and a 10 g sugar cube sits on a scale '
-        'that reads 110 g. You stir until the sugar dissolves. What will it '
-        'read?',
+        'Water and a sugar cube weigh 110\u00A0g. You stir until the sugar '
+        'dissolves. What will the scale read?',
     choices: [
       Wrong(
         'Less, because the sugar disappeared',
         'Many people think so, even grown-ups!',
       ),
-      Right('Still 110 g'),
+      Right('Still 110\u00A0g'),
       Wrong(
         'More, because sugar water is heavier',
         'Sugar water does feel thicker, so that makes sense to guess.',
@@ -63,7 +62,7 @@ final massLesson = ScienceLesson(
     tryIt: 'Drag the slider to stir.',
     experiment: massExperiment,
     outcome:
-        'The scale still reads 110 g. Every sugar particle is still in the '
+        'The scale still reads 110\u00A0g. Every sugar particle is still in the '
         'glass, so the mass stays the same.',
   ),
   explain: [
@@ -77,7 +76,7 @@ final massLesson = ScienceLesson(
           'As the sugar dissolves, its particles move but stay in the glass.',
         ),
         ExplainerStep(
-          'No particle leaves or arrives, so it still weighs 110 g.',
+          'No particle leaves or arrives, so it still weighs 110\u00A0g.',
         ),
         ExplainerStep('Mass only changes when particles are added or leave.'),
       ],
@@ -127,14 +126,17 @@ final massLesson = ScienceLesson(
     ChoiceQuestion(
       id: ItemId('mass-salt'),
       prompt:
-          'You dissolve 20 g of salt in 200 g of water. What is the mass of '
+          'You dissolve 20\u00A0g of salt in 200\u00A0g of water. What is the mass of '
           'the salt water?',
       ordered: true,
       choices: [
-        Wrong('200 g', 'Dissolved salt still has mass.'),
-        Wrong('210 g', 'No salt left the water, so none of its mass is lost.'),
-        Right('220 g'),
-        Wrong('240 g', 'Nothing else was added, so it cannot weigh more.'),
+        Wrong('200\u00A0g', 'Dissolved salt still has mass.'),
+        Wrong(
+          '210\u00A0g',
+          'No salt left the water, so none of its mass is lost.',
+        ),
+        Right('220\u00A0g'),
+        Wrong('240\u00A0g', 'Nothing else was added, so it cannot weigh more.'),
       ],
       hint: 'Add the water and the salt together.',
       reason: Reason(
@@ -151,7 +153,7 @@ final massLesson = ScienceLesson(
         ],
       ),
       explanation:
-          '200 g + 20 g = 220 g. Dissolving moves the salt particles but '
+          '200\u00A0g + 20\u00A0g = 220\u00A0g. Dissolving moves the salt particles but '
           'keeps every one of them.',
     ),
     ChoiceQuestion(
@@ -159,7 +161,10 @@ final massLesson = ScienceLesson(
       prompt: 'Why does dissolving not change the mass?',
       choices: [
         Right('No particles leave or arrive'),
-        Wrong('Sugar has no mass', 'The sugar cube added 10 g to the scale.'),
+        Wrong(
+          'Sugar has no mass',
+          'The sugar cube added 10\u00A0g to the scale.',
+        ),
         Wrong(
           'Water gets lighter to make room',
           'Water particles keep their mass too.',

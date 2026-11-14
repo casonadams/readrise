@@ -23,16 +23,17 @@ final howMuchLesson = ScienceLesson(
       ChoiceQuestion(
         id: ItemId('how-much-warm-mass'),
         prompt:
-            'You dissolve 5 g of salt in 100 g of water. What is the mass of '
+            'You dissolve 5\u00A0g of salt in 100\u00A0g of water. What is the mass of '
             'the salt water?',
         ordered: true,
         choices: [
-          Wrong('100 g', 'Dissolved salt still has mass.'),
-          Right('105 g'),
-          Wrong('110 g', 'Only 5 g of salt was added.'),
+          Wrong('100\u00A0g', 'Dissolved salt still has mass.'),
+          Right('105\u00A0g'),
+          Wrong('110\u00A0g', 'Only 5\u00A0g of salt was added.'),
         ],
         hint: 'Add the water and the salt together.',
-        explanation: '100 g + 5 g = 105 g, because every particle stays.',
+        explanation:
+            '100\u00A0g + 5\u00A0g = 105\u00A0g, because every particle stays.',
       ),
       ChoiceQuestion(
         id: ItemId('how-much-warm-heat'),

@@ -22,9 +22,9 @@ void main() {
     tester,
   ) async {
     await pumpExperiment(tester, dissolvingExperiment);
-    expect(find.text('Still in the cube: 12'), findsOneWidget);
+    expect(find.text('In the cube: 12'), findsOneWidget);
     await slideToEnd(tester);
-    expect(find.text('Still in the cube: 0'), findsOneWidget);
+    expect(find.text('In the cube: 0'), findsOneWidget);
     expect(find.text('Sugar particles: 12'), findsOneWidget);
   });
 
